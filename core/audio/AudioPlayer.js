@@ -1,7 +1,17 @@
 class AudioPlayer {
     constructor() {
-        // 初始化UI组件
-        this.ui = new UIComponents();
+        // 检查依赖项是否存在
+        if (typeof EventBus === 'undefined') {
+            throw new Error('EventBus is not defined. Please load EventBus.js before AudioPlayer.js');
+        }
+        
+        if (typeof LocalResourceManager === 'undefined') {
+            throw new Error('LocalResourceManager is not defined. Please load LocalResourceManager.js before AudioPlayer.js');
+        }
+        
+        // 初始化事件总线
+        this.eventBus = new EventBus();
+        
         this.audioPlayer = null;
         
         // 初始化本地资源管理器
@@ -12,9 +22,8 @@ class AudioPlayer {
     
     async init() {
         try {
-            // 等待UI元素加载完成
-            await this.ui.delayInitialize();
-            this.audioPlayer = this.ui.getAudioPlayer();
+            // 直接获取音频播放器元素
+            this.audioPlayer = document.getElementById('audioPlayer');
             
             // 绑定事件监听器
             this.bindEvents();
@@ -24,14 +33,20 @@ class AudioPlayer {
     }
     
     bindEvents() {
+        // 获取所有相关元素
+        const audioFile = document.getElementById('audioFile');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        
         // 确保所有元素都存在
-        if (!this.ui.elementsExist()) {
+        if (!this.audioPlayer || !audioFile) {
             console.warn('部分UI元素未找到，跳过事件绑定');
             return;
         }
         
         // 文件选择事件
-        this.ui.getAudioFile().addEventListener('change', (e) => {
+        audioFile.addEventListener('change', (e) => {
             this.handleFileSelect(e);
         });
         
@@ -39,19 +54,25 @@ class AudioPlayer {
         this.setupDragAndDrop();
         
         // 播放按钮事件
-        this.ui.getPlayButton().addEventListener('click', () => {
-            this.play();
-        });
+        if (playBtn) {
+            playBtn.addEventListener('click', () => {
+                this.play();
+            });
+        }
         
         // 暂停按钮事件
-        this.ui.getPauseButton().addEventListener('click', () => {
-            this.pause();
-        });
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                this.pause();
+            });
+        }
         
         // 停止按钮事件
-        this.ui.getStopButton().addEventListener('click', () => {
-            this.stop();
-        });
+        if (stopBtn) {
+            stopBtn.addEventListener('click', () => {
+                this.stop();
+            });
+        }
         
         // 更新进度条
         this.audioPlayer.addEventListener('timeupdate', () => {
@@ -61,6 +82,11 @@ class AudioPlayer {
         // 音频加载完成后更新总时长
         this.audioPlayer.addEventListener('loadedmetadata', () => {
             this.updateDuration();
+        });
+        
+        // 音频播放结束事件
+        this.audioPlayer.addEventListener('ended', () => {
+            this.eventBus.emit('audioEnded');
         });
     }
     
@@ -126,7 +152,7 @@ class AudioPlayer {
     playFile(file) {
         if (file && file.url && this.audioPlayer) {
             this.audioPlayer.src = file.url;
-            this.ui.updateButtonStates(true);
+            this.eventBus.emit('playbackStarted', { isPlaying: true });
             this.play();
         }
     }
@@ -135,6 +161,7 @@ class AudioPlayer {
         if (this.audioPlayer) {
             this.audioPlayer.play().catch(error => {
                 console.error('播放失败:', error);
+                this.eventBus.emit('playbackError', { error });
             });
         }
     }
@@ -142,6 +169,7 @@ class AudioPlayer {
     pause() {
         if (this.audioPlayer) {
             this.audioPlayer.pause();
+            this.eventBus.emit('playbackPaused');
         }
     }
     
@@ -149,27 +177,26 @@ class AudioPlayer {
         if (this.audioPlayer) {
             this.audioPlayer.pause();
             this.audioPlayer.currentTime = 0;
-            this.ui.resetUI();
+            this.eventBus.emit('playbackStopped');
         }
     }
     
     updateProgress() {
-        if (!this.audioPlayer || !this.ui.elementsExist()) return;
+        if (!this.audioPlayer) return;
         
         const percent = (this.audioPlayer.currentTime / this.audioPlayer.duration) * 100;
-        this.ui.updateProgress(percent);
+        this.eventBus.emit('progressUpdated', { percent });
         
         // 更新时间显示
         const currentTime = this.formatTime(this.audioPlayer.currentTime);
         const duration = this.audioPlayer.duration ? this.formatTime(this.audioPlayer.duration) : null;
-        this.ui.updateTimeDisplays(currentTime, duration);
+        this.eventBus.emit('timeUpdated', { currentTime, duration });
     }
     
     updateDuration() {
-        if (!this.ui.elementsExist()) return;
-        
         if (this.audioPlayer && this.audioPlayer.duration) {
-            this.ui.getDurationDisplay().textContent = this.formatTime(this.audioPlayer.duration);
+            const duration = this.formatTime(this.audioPlayer.duration);
+            this.eventBus.emit('durationUpdated', { duration });
         }
     }
     
@@ -178,9 +205,20 @@ class AudioPlayer {
         const sec = Math.floor(seconds % 60);
         return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
     }
+    
+    // 添加事件监听器方法
+    on(eventName, callback) {
+        this.eventBus.on(eventName, callback);
+    }
+    
+    // 移除事件监听器方法
+    off(eventName, callback) {
+        this.eventBus.off(eventName, callback);
+    }
 }
 
-// 不再在DOM加载完成后自动初始化
-// document.addEventListener('DOMContentLoaded', () => {
-//     window.audioPlayer = new AudioPlayer();
-// });
+// 将AudioPlayer挂载到window对象上
+window.AudioPlayer = AudioPlayer;
+
+// 导出 AudioPlayer 类
+export { AudioPlayer };

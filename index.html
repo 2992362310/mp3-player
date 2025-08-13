@@ -25,22 +25,34 @@
         </div>
     </div>
     
-    <script src="core/ui/ModuleLoader.js"></script>
-    <script src="core/ui/DOMManager.js"></script>
-    <script src="core/ui/UIComponents.js"></script>
-    <script src="core/storage/LocalResourceManager.js"></script>
-    <script src="core/audio/AudioPlayer.js"></script>
+    <!-- 按依赖顺序加载脚本 -->
+    <script type="module" src="core/ui/EventBus.js"></script>
+    <script type="module" src="core/ui/ModuleLoader.js"></script>
+    <script type="module" src="core/ui/DOMManager.js"></script>
+    <script type="module" src="core/storage/LocalResourceManager.js"></script>
+    <script type="module" src="core/ui/UIComponents.js"></script>
+    <script type="module" src="core/audio/AudioPlayer.js"></script>
     
-    <script>
+    <script type="module">
         // 初始化应用
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 初始化模块加载器
-                await ModuleLoader.init();
+                // 初始化模块加载器（假设它已通过script标签加载并挂载到window对象）
+                if (window.ModuleLoader) {
+                    await window.ModuleLoader.init();
+                }
                 
                 // 初始化UI组件
-                window.uiComponents = new UIComponents();
-                await uiComponents.delayInitialize();
+                if (window.UIComponents) {
+                    window.uiComponents = new window.UIComponents();
+                    await window.uiComponents.delayInitialize();
+                }
+                
+                // 初始化音频播放器
+                if (window.AudioPlayer) {
+                    window.audioPlayer = new window.AudioPlayer();
+                    await window.audioPlayer.init();
+                }
                 
                 console.log('应用初始化完成');
             } catch (error) {

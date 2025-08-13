@@ -1,9 +1,11 @@
+// 本地资源管理器 - 用于处理本地文件和资源
 class LocalResourceManager {
     constructor() {
         this.localFiles = [];
-        this.init();
+        this.playlists = [];
+        this.loadFromLocalStorage();
     }
-
+    
     init() {
         // 从本地存储加载已保存的文件信息
         this.loadFromLocalStorage();
@@ -141,5 +143,5 @@ class LocalResourceManager {
     }
 }
 
-// 导出LocalResourceManager类
+// 将LocalResourceManager挂载到window对象上
 window.LocalResourceManager = LocalResourceManager;
