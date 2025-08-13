@@ -1,0 +1,38 @@
+/* 全局水墨风样式 */
+body {
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* 允许body正确收缩 */
+    height: 100vh; /* 确保body占满整个视口 */
+    overflow: hidden; /* 防止body出现滚动条 */
+}
+
+/* 水墨风格的滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(200, 200, 200, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.5);
+}
+
+/* 确保所有元素都能正确处理宽度 */
+*, *::before, *::after {
+    box-sizing: border-box;
+}

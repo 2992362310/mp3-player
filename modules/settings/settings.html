@@ -1,0 +1,180 @@
+<!-- 设置内容 -->
+<div class="content-section" id="settings-content">
+    <div class="content-header">
+        <h1>设置</h1>
+    </div>
+    
+    <div class="content-area">
+        <!-- 播放设置 -->
+        <section class="settings-section">
+            <h2>播放设置</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">音质选择</div>
+                        <div class="setting-description">选择播放时的音质</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="setting-select">
+                            <option>标准音质</option>
+                            <option selected>高音质</option>
+                            <option>无损音质</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">自动播放下一首</div>
+                        <div class="setting-description">当前歌曲播放完毕后自动播放下一首</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">循环模式</div>
+                        <div class="setting-description">设置播放列表的循环模式</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="setting-select">
+                            <option>顺序播放</option>
+                            <option>随机播放</option>
+                            <option selected>单曲循环</option>
+                            <option>列表循环</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 界面设置 -->
+        <section class="settings-section">
+            <h2>界面设置</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">主题颜色</div>
+                        <div class="setting-description">选择播放器的主题颜色</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="setting-select">
+                            <option selected>默认主题</option>
+                            <option>深色主题</option>
+                            <option>浅色主题</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">显示歌词</div>
+                        <div class="setting-description">在播放时显示歌词</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">动画效果</div>
+                        <div class="setting-description">启用界面动画效果</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 音频设置 -->
+        <section class="settings-section">
+            <h2>音频设置</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">默认音量</div>
+                        <div class="setting-description">设置播放器的默认音量</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" min="0" max="100" value="80" class="volume-slider">
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">音量平衡</div>
+                        <div class="setting-description">启用音量平衡功能</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 存储设置 -->
+        <section class="settings-section">
+            <h2>存储设置</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">缓存管理</div>
+                        <div class="setting-description">管理播放器的缓存文件</div>
+                    </div>
+                    <div class="setting-control">
+                        <button class="btn-secondary" id="clearCacheBtn">清除缓存</button>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">本地存储</div>
+                        <div class="setting-description">管理本地存储的数据</div>
+                    </div>
+                    <div class="setting-control">
+                        <button class="btn-secondary" id="clearStorageBtn">清除数据</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 关于 -->
+        <section class="settings-section">
+            <h2>关于</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">版本信息</div>
+                        <div class="setting-description">音频播放器 v1.0.0</div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">检查更新</div>
+                        <div class="setting-description">检查是否有新版本可用</div>
+                    </div>
+                    <div class="setting-control">
+                        <button class="btn-secondary" id="checkUpdateBtn">检查更新</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
