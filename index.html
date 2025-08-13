@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player</title>
+    <link rel="stylesheet" href="shared/css/style.css">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header data-module="./components/top-nav/top-nav.html"></header>
+    
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <aside data-module="./components/sidebar/sidebar.html"></aside>
+        
+        <!-- 右侧主要内容区域 -->
+        <div class="content-wrapper">
+            <!-- 主内容区域 -->
+            <main class="main-content" data-module="./components/main-content/main-content.html"></main>
+            
+            <!-- 底部控制器 -->
+            <footer data-module="./components/bottom-controller/bottom-controller.html"></footer>
+        </div>
+    </div>
+    
+    <script src="core/ui/ModuleLoader.js"></script>
+    <script src="core/ui/DOMManager.js"></script>
+    <script src="core/ui/UIComponents.js"></script>
+    <script src="core/storage/LocalResourceManager.js"></script>
+    <script src="core/audio/AudioPlayer.js"></script>
+    
+    <script>
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 初始化模块加载器
+                await ModuleLoader.init();
+                
+                // 初始化UI组件
+                window.uiComponents = new UIComponents();
+                await uiComponents.delayInitialize();
+                
+                console.log('应用初始化完成');
+            } catch (error) {
+                console.error('应用初始化失败:', error);
+            }
+        });
+    </script>
+</body>
+</html>

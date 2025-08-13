@@ -1,0 +1,55 @@
+<!-- 底部控制器 -->
+<footer class="bottom-controller">
+    <div class="controller-container">
+        <div class="main-controls">
+            <!-- 左侧控制按钮 -->
+            <div class="left-controls">
+                <button class="control-btn prev-btn">⏮</button>
+                <button class="control-btn play-btn">▶</button>
+                <button class="control-btn next-btn">⏭</button>
+            </div>
+            
+            <!-- 中间歌曲信息 -->
+            <div class="center-controls">
+                <div class="track-info">
+                    <div class="track-title">暂无播放</div>
+                    <div class="track-artist"></div>
+                </div>
+            </div>
+            
+            <!-- 右侧音量控制 -->
+            <div class="right-controls">
+                <div class="volume-controls">
+                    <span class="volume-icon">🔊</span>
+                    <input type="range" class="volume-slider" min="0" max="100" value="80">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部进度条和时间显示 -->
+        <div class="progress-section">
+            <div class="progress-times">
+                <span class="time current-time">00:00</span>
+                <span class="time total-time">00:00</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- 隐藏的音频播放器元素 -->
+        <audio id="audioPlayer"></audio>
+        <input type="file" id="audioFile" accept="audio/*" style="display: none;">
+    </div>
+    
+    <!-- 展开按钮 -->
+    <button class="expand-btn">⬆</button>
+    
+    <!-- 展开内容 -->
+    <div class="expand-content">
+        <div class="player-info">
+            <h4>播放器控制</h4>
+            <p>在这里可以进行更多播放控制</p>
+        </div>
+    </div>
+</footer>

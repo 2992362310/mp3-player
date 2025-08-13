@@ -1,0 +1,71 @@
+/* 设置模块样式 */
+
+.settings-section h2 {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+
+.settings-group {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 5px 25px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-info {
+    flex: 1;
+}
+
+.setting-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    font-size: 16px;
+}
+
+.setting-description {
+    color: #666;
+    font-size: 14px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.setting-control {
+    margin-left: 25px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 0;
+    }
+    
+    .setting-control {
+        margin-top: 12px;
+        margin-left: 0;
+    }
+    
+    .setting-label {
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+    
+    .setting-description {
+        font-size: 13px;
+    }
+}

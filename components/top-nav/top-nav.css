@@ -1,0 +1,51 @@
+/* 顶部导航栏 - 水墨风 */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-bottom: 1px solid #d0d0d0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-left .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.nav-center .search-box {
+    display: flex;
+    align-items: center;
+}
+
+.nav-center input {
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px 0 0 20px;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.nav-center input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.nav-center .search-btn {
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-radius: 0 20px 20px 0;
+    background: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.nav-center .search-btn:hover {
+    background: #e0e0e0;
+}

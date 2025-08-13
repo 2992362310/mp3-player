@@ -1,0 +1,29 @@
+/* Online Music Module Styles */
+/* 在线音乐模块样式 */
+
+.online-recommend-section h2,
+.online-categories-section h2,
+.online-charts-section h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    border-left: 3px solid #888;
+    padding-left: 10px;
+}
+
+/* 
+  在这里添加在线音乐模块的特定样式
+  例如:
+  
+  .online-music-container {
+    padding: 20px;
+  }
+  
+  .online-music-header {
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+  
+  等等...
+*/
