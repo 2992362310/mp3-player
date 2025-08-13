@@ -30,7 +30,7 @@ class ModuleLoader {
         }
         
         // 加载底部控制器模块
-        const footer = document.querySelector('.content-wrapper > footer[data-module]');
+        const footer = document.querySelector('footer[data-module]');
         if (footer) {
             await this.loadModuleToElement(footer, footer.dataset.module);
         }
@@ -38,140 +38,106 @@ class ModuleLoader {
     
     // 将模块加载到指定元素
     static async loadModuleToElement(element, modulePath) {
+        if (this.loadedModules.has(modulePath)) {
+            console.log(`模块已加载: ${modulePath}`);
+            return;
+        }
+        
         try {
             const response = await fetch(modulePath);
             if (!response.ok) {
                 throw new Error(`无法加载模块: ${modulePath}`);
             }
             
-            const htmlContent = await response.text();
-            element.innerHTML = htmlContent;
+            const html = await response.text();
+            element.innerHTML = html;
             
-            // 提取组件名称并加载相应CSS
-            const componentName = modulePath.split('/').slice(-1)[0].replace('.html', '');
-            await this.loadComponentCSS(componentName);
+            // 标记模块已加载
+            this.loadedModules.add(modulePath);
             
-            console.log(`模块 ${modulePath} 加载完成`);
+            // 加载模块相关的CSS（如果存在）
+            await this.loadModuleCSS(modulePath);
+            
+            console.log(`模块加载完成: ${modulePath}`);
         } catch (error) {
-            console.error(`加载模块 ${modulePath} 失败:`, error);
+            console.error('加载模块时出错:', error);
+            element.innerHTML = '<div class="error">模块加载失败</div>';
         }
     }
     
-    // 加载组件（HTML + CSS）
-    static async loadComponent(componentName) {
-        try {
-            // 加载组件的 CSS
-            await this.loadComponentCSS(componentName);
-            
-            // 加载组件的 HTML
-            await this.loadComponentHTML(componentName);
-            
-            this.loadedModules.add(componentName);
-            console.log(`组件 ${componentName} 加载完成`);
-        } catch (error) {
-            console.error(`加载组件 ${componentName} 失败:`, error);
-        }
-    }
-    
-    // 加载组件的 HTML
-    static async loadComponentHTML(componentName) {
-        const componentPath = `./components/${componentName}/${componentName}.html`;
-        const containerId = this.getComponentContainerId(componentName);
+    // 加载模块相关的CSS文件
+    static async loadModuleCSS(modulePath) {
+        // 从模块路径推断CSS路径
+        const cssPath = modulePath.replace('.html', '.css');
+        const moduleName = modulePath.split('/').pop().replace('.html', '');
         
-        const response = await fetch(componentPath);
-        if (!response.ok) {
-            throw new Error(`无法加载组件 HTML: ${componentPath}`);
+        // 检查CSS文件是否存在
+        if (this.loadedCSS.has(cssPath)) {
+            return; // CSS已加载
         }
         
-        const htmlContent = await response.text();
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.innerHTML = htmlContent;
-        } else {
-            console.warn(`未找到容器: ${containerId}`);
-        }
-    }
-    
-    // 加载组件的 CSS
-    static async loadComponentCSS(componentName) {
-        if (this.loadedCSS.has(componentName)) {
-            return; // 已加载则直接返回
-        }
-        
-        const cssPath = `./components/${componentName}/${componentName}.css`;
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = cssPath;
-        
-        // 等待样式表加载完成
-        const loadPromise = new Promise((resolve, reject) => {
-            link.onload = () => {
-                this.loadedCSS.add(componentName);
-                resolve();
-            };
-            link.onerror = reject;
-        });
-        
-        document.head.appendChild(link);
-        await loadPromise;
-    }
-    
-    // 加载内容区域的 CSS
-    static async loadContentCSS(contentType) {
-        const cssPath = `./modules/${contentType}/${contentType}.css`;
-        
-        // 检查是否已加载
-        if (this.loadedCSS.has(contentType)) {
-            return;
-        }
-        
-        // 检查文件是否存在
         try {
             const response = await fetch(cssPath, { method: 'HEAD' });
-            if (!response.ok) {
-                console.log(`内容 CSS 文件不存在: ${cssPath}`);
-                return;
+            if (response.ok) {
+                // CSS文件存在，加载它
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssPath;
+                document.head.appendChild(link);
+                this.loadedCSS.add(cssPath);
+                console.log(`CSS加载完成: ${cssPath}`);
+            } else {
+                console.log(`CSS文件不存在: ${cssPath}`);
             }
         } catch (error) {
-            console.log(`无法访问内容 CSS 文件: ${cssPath}`);
-            return;
+            console.log(`CSS文件不存在或加载失败: ${cssPath}`, error);
         }
-        
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = cssPath;
-        
-        // 等待样式表加载完成
-        const loadPromise = new Promise((resolve, reject) => {
-            link.onload = () => {
-                this.loadedCSS.add(contentType);
-                resolve();
-            };
-            link.onerror = reject;
-        });
-        
-        document.head.appendChild(link);
-        await loadPromise;
     }
     
-    // 获取组件容器 ID
-    static getComponentContainerId(componentName) {
-        const containerIds = {
-            'bottom-controller': 'bottomControllerContainer'
-            // 可以添加更多组件容器映射
-        };
+    // 按需加载内容CSS
+    static async loadContentCSS(contentType) {
+        // 构建CSS文件路径
+        let cssPath;
+        switch (contentType) {
+            case 'local-music':
+                cssPath = './modules/local-music/local-music.css';
+                break;
+            case 'online-music':
+                cssPath = './modules/online-music/online-music.css';
+                break;
+            case 'playlists':
+                cssPath = './modules/playlists/playlists.css';
+                break;
+            case 'settings':
+                cssPath = './modules/settings/settings.css';
+                break;
+            default:
+                cssPath = `./components/css/${contentType}.css`;
+        }
         
-        return containerIds[componentName] || componentName;
+        // 检查CSS文件是否已加载
+        if (this.loadedCSS.has(cssPath)) {
+            return; // CSS已加载
+        }
+        
+        try {
+            const response = await fetch(cssPath, { method: 'HEAD' });
+            if (response.ok) {
+                // CSS文件存在，加载它
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssPath;
+                document.head.appendChild(link);
+                this.loadedCSS.add(cssPath);
+                console.log(`内容CSS加载完成: ${cssPath}`);
+            } else {
+                console.log(`内容CSS文件不存在: ${cssPath}`);
+            }
+        } catch (error) {
+            console.log(`内容CSS文件不存在或加载失败: ${cssPath}`, error);
+        }
     }
 }
 
-// 为了向后兼容，也可以将类赋值给全局变量
+// 将ModuleLoader挂载到window对象上
 window.ModuleLoader = ModuleLoader;
-
-// 页面加载完成后处理模块
-document.addEventListener('DOMContentLoaded', async function() {
-    // 注意：由于这是静态HTML文件，我们需要使用JavaScript来模拟模块包含
-    // 在实际项目中，这应该由服务器端模板引擎或构建工具处理
-    
-    console.log('模块加载完成');
-});

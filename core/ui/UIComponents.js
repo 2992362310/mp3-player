@@ -1,9 +1,20 @@
 class UIComponents {
     constructor() {
+        // 检查依赖项是否存在
+        if (typeof EventBus === 'undefined') {
+            throw new Error('EventBus is not defined. Please load EventBus.js before UIComponents.js');
+        }
+        
+        // 初始化事件总线
+        this.eventBus = new EventBus();
+        
         this.initializeElements();
         this.isBottomControllerExpanded = false; // 添加底部控制器展开状态
         this.currentContent = 'local-music'; // 默认显示本地音乐
         this.contentCache = new Map(); // 添加内容缓存
+        
+        // 绑定事件监听器
+        this.bindEventListeners();
     }
     
     initializeElements() {
@@ -49,6 +60,56 @@ class UIComponents {
             };
             checkElements();
         });
+    }
+    
+    // 绑定事件监听器
+    bindEventListeners() {
+        // 监听播放状态变化事件
+        this.eventBus.on('playbackStarted', (data) => {
+            this.updateButtonStates(data.isPlaying);
+        });
+        
+        this.eventBus.on('playbackPaused', () => {
+            this.updateButtonStates(false);
+        });
+        
+        this.eventBus.on('playbackStopped', () => {
+            this.updateButtonStates(false);
+            this.resetUI();
+        });
+        
+        // 监听进度更新事件
+        this.eventBus.on('progressUpdated', (data) => {
+            this.updateProgress(data.percent);
+        });
+        
+        // 监听时间更新事件
+        this.eventBus.on('timeUpdated', (data) => {
+            this.updateTimeDisplays(data.currentTime, data.duration);
+        });
+        
+        // 监听时长更新事件
+        this.eventBus.on('durationUpdated', (data) => {
+            if (this.durationDisplay) {
+                this.durationDisplay.textContent = data.duration;
+            }
+        });
+        
+        // 监听播放结束事件
+        this.eventBus.on('audioEnded', () => {
+            this.handleAudioEnded();
+        });
+    }
+    
+    // 处理音频播放结束事件
+    handleAudioEnded() {
+        this.updateButtonStates(false);
+        if (this.progress) {
+            this.progress.style.width = '0%';
+        }
+        if (this.currentTimeDisplay) {
+            this.currentTimeDisplay.textContent = '00:00';
+        }
     }
     
     // 绑定导航菜单事件（用于优化事件处理）
@@ -442,4 +503,17 @@ class UIComponents {
     getDurationDisplay() {
         return this.durationDisplay;
     }
+    
+    // 添加事件监听器方法
+    on(eventName, callback) {
+        this.eventBus.on(eventName, callback);
+    }
+    
+    // 移除事件监听器方法
+    off(eventName, callback) {
+        this.eventBus.off(eventName, callback);
+    }
 }
+
+// 将UIComponents挂载到window对象上
+window.UIComponents = UIComponents;
