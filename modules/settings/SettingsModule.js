@@ -12,6 +12,9 @@ class SettingsModule {
     init() {
         // 初始化事件监听器
         this.bindEvents();
+        
+        // 初始化UI
+        this.initializeUI();
     }
 
     bindEvents() {
@@ -31,32 +34,55 @@ class SettingsModule {
             });
         }
         
-        // 检查更新按钮事件
-        const checkUpdateBtn = document.getElementById('checkUpdateBtn');
-        if (checkUpdateBtn) {
-            checkUpdateBtn.addEventListener('click', () => {
-                this.checkUpdate();
+        // 音量滑块事件
+        const volumeSlider = document.getElementById('volumeSlider');
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                this.setVolume(e.target.value);
             });
         }
+    }
+
+    // UI初始化方法
+    initializeUI() {
+        console.log('设置模块UI初始化完成');
+        // 可以在这里添加更多UI初始化逻辑
+        this.loadSettings();
+    }
+    
+    // 清理缓存
+    clearCache() {
+        // 发布事件通知清理缓存
+        this.eventBus.emit('clearCache');
+        console.log('清理缓存');
+        alert('缓存清理功能将在后续版本中实现');
+    }
+
+    // 清理数据存储
+    clearStorage() {
+        // 发布事件通知清理数据存储
+        this.eventBus.emit('clearStorage');
+        console.log('清理数据存储');
+        alert('数据清理功能将在后续版本中实现');
+    }
+
+    // 设置音量
+    setVolume(value) {
+        console.log(`设置音量: ${value}%`);
+        // 发布事件通知音频播放器调整音量
+        this.eventBus.emit('volumeChange', { volume: parseInt(value) });
+    }
+
+    // 加载设置
+    loadSettings() {
+        // 这里应该从本地存储加载设置
+        console.log('加载设置');
         
-        // 使用事件委托处理开关变化事件
-        const settingsContainer = document.querySelector('.settings-container');
-        if (settingsContainer) {
-            settingsContainer.addEventListener('change', (e) => {
-                // 检查是否是开关变化
-                if (e.target.type === 'checkbox' && e.target.closest('.switch')) {
-                    const switchElem = e.target.closest('.switch');
-                    const settingLabel = switchElem.closest('.setting-item').querySelector('.setting-label').textContent;
-                    const isEnabled = e.target.checked;
-                    this.toggleSetting(settingLabel, isEnabled);
-                }
-                // 检查是否是选择框变化
-                else if (e.target.classList.contains('setting-select')) {
-                    const settingLabel = e.target.closest('.setting-item').querySelector('.setting-label').textContent;
-                    const selectedValue = e.target.value;
-                    this.changeSetting(settingLabel, selectedValue);
-                }
-            });
+        // 模拟加载音量设置
+        const volumeSlider = document.getElementById('volumeSlider');
+        if (volumeSlider) {
+            // 默认音量为80%
+            volumeSlider.value = 80;
         }
     }
 

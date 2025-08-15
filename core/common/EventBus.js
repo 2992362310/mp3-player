@@ -58,3 +58,5 @@ class EventBus {
 
 // 将EventBus挂载到window对象上
 window.EventBus = EventBus;
+
+export default EventBus;

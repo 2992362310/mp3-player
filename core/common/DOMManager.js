@@ -115,3 +115,5 @@ class DOMManager {
 
 // 将DOMManager挂载到window对象上
 window.DOMManager = DOMManager;
+
+export default DOMManager;

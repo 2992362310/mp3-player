@@ -13,9 +13,13 @@ class LocalMusicModule {
     init() {
         // 初始化事件监听器
         this.bindEvents();
+        
+        // 初始化UI
+        this.initializeUI();
     }
 
     bindEvents() {
+        console.log(11111111);
         // 扫描音乐按钮事件
         const scanBtn = document.getElementById('scanMusicBtn');
         if (scanBtn) {
@@ -39,6 +43,12 @@ class LocalMusicModule {
                 }
             });
         }
+    }
+    
+    // UI初始化方法
+    initializeUI() {
+        console.log('本地音乐模块UI初始化完成');
+        // 可以在这里添加更多UI初始化逻辑
     }
 
     // 扫描音乐文件
@@ -101,6 +111,9 @@ class LocalMusicModule {
                     <td class="artist-col">未知艺术家</td>
                     <td class="album-col">未知专辑</td>
                     <td class="duration-col">00:00</td>
+                    <td class="controls-col">
+                        <button class="play-btn">播放</button>
+                    </td>
                 </tr>
             `;
         });

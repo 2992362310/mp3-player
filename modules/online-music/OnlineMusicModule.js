@@ -12,6 +12,9 @@ class OnlineMusicModule {
     init() {
         // 初始化事件监听器
         this.bindEvents();
+        
+        // 初始化UI
+        this.initializeUI();
     }
 
     bindEvents() {
@@ -33,56 +36,73 @@ class OnlineMusicModule {
             });
         }
         
-        // 使用事件委托处理分类点击事件
-        const categoryList = document.querySelector('.category-list');
-        if (categoryList) {
-            categoryList.addEventListener('click', (e) => {
-                const categoryItem = e.target.closest('.category-item');
-                if (categoryItem) {
-                    const categoryName = categoryItem.querySelector('.category-name').textContent;
-                    this.selectCategory(categoryName);
+        // 使用事件委托处理播放按钮点击事件
+        const resultsContainer = document.querySelector('.search-results');
+        if (resultsContainer) {
+            resultsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('play-btn')) {
+                    const songId = e.target.dataset.songId;
+                    this.playSong(songId);
                 }
             });
         }
-        
-        // 使用事件委托处理卡片点击事件
-        const cardContainer = document.querySelector('.card-container');
-        if (cardContainer) {
-            cardContainer.addEventListener('click', (e) => {
-                const card = e.target.closest('.card');
-                if (card) {
-                    const cardTitle = card.querySelector('.card-title').textContent;
-                    this.selectCard(cardTitle);
-                }
-            });
-        }
+    }
+    
+    // UI初始化方法
+    initializeUI() {
+        console.log('在线音乐模块UI初始化完成');
+        // 可以在这里添加更多UI初始化逻辑
     }
 
     // 搜索音乐
     searchMusic() {
         const searchInput = document.querySelector('.search-input');
-        if (searchInput) {
-            const keyword = searchInput.value.trim();
-            if (keyword) {
-                // 发布事件通知执行搜索
-                this.eventBus.emit('onlineMusicSearch', { keyword });
-                console.log(`搜索音乐: ${keyword}`);
-            }
+        const keyword = searchInput ? searchInput.value.trim() : '';
+        
+        if (keyword) {
+            // 这里应该调用实际的搜索API
+            console.log(`搜索关键词: ${keyword}`);
+            this.displayResults(keyword);
         }
     }
 
-    // 选择分类
-    selectCategory(categoryName) {
-        // 发布事件通知选择了分类
-        this.eventBus.emit('onlineMusicCategorySelected', { category: categoryName });
-        console.log(`选择了音乐分类: ${categoryName}`);
+    // 播放歌曲
+    playSong(songId) {
+        console.log(`播放歌曲: ${songId}`);
+        // 发布事件通知播放器播放歌曲
+        this.eventBus.emit('playOnlineSong', { songId });
     }
 
-    // 选择卡片
-    selectCard(cardTitle) {
-        // 发布事件通知选择了卡片
-        this.eventBus.emit('onlineMusicCardSelected', { card: cardTitle });
-        console.log(`选择了卡片: ${cardTitle}`);
+    // 显示搜索结果
+    displayResults(keyword) {
+        const resultsContainer = document.querySelector('.search-results');
+        if (!resultsContainer) return;
+        
+        // 模拟搜索结果
+        const mockResults = [
+            { id: 1, title: `${keyword} - 歌曲1`, artist: '艺术家1', album: '专辑1' },
+            { id: 2, title: `${keyword} - 歌曲2`, artist: '艺术家2', album: '专辑2' },
+            { id: 3, title: `${keyword} - 歌曲3`, artist: '艺术家3', album: '专辑3' }
+        ];
+        
+        let html = '<h3>搜索结果</h3>';
+        html += '<div class="results-list">';
+        
+        mockResults.forEach(song => {
+            html += `
+                <div class="result-item">
+                    <div class="song-info">
+                        <div class="song-title">${song.title}</div>
+                        <div class="song-artist">${song.artist}</div>
+                        <div class="song-album">${song.album}</div>
+                    </div>
+                    <button class="play-btn" data-song-id="${song.id}">播放</button>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        resultsContainer.innerHTML = html;
     }
 }
 
