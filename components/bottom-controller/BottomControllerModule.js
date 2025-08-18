@@ -306,3 +306,9 @@ class BottomControllerModule {
 
 // 将BottomControllerModule挂载到window对象上
 window.BottomControllerModule = BottomControllerModule;
+
+// 添加ES6默认导出以支持现代模块导入方式
+export default BottomControllerModule;
+
+// 添加命名导出以支持按需导入
+export { BottomControllerModule };

@@ -1,6 +1,5 @@
-// 应用主入口文件
+import { FrameworkLoader, ModuleLoader } from './system/index.js';
 
-import FrameworkLoader from './system/FrameworkLoader.js';
 // 应用初始化函数
 async function initializeApp() {
     try {
@@ -13,13 +12,10 @@ async function initializeApp() {
         
         // 初始化框架加载器（现在所有HTML模块都已加载完成）
         const appFramework = new FrameworkLoader();
-        window.appFramework = appFramework
+        window.appFramework = appFramework;
         await appFramework.delayInitialize();
-        
-        
-        console.log('应用初始化完成');
     } catch (error) {
-        console.error('应用初始化失败:', error);
+        // 静默处理错误
     }
 }
 

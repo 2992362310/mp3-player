@@ -3,7 +3,10 @@
  * 负责处理本地音乐模块中的所有事件绑定和交互逻辑
  */
 
-class LocalMusicModule {
+import { EventBus } from '../../core/common/index.js';
+import LocalResourceManager from '../../core/storage/LocalResourceManager.js';
+
+export default class LocalMusicModule {
     constructor() {
         this.localResourceManager = new LocalResourceManager();
         this.eventBus = new EventBus();
@@ -19,35 +22,48 @@ class LocalMusicModule {
     }
 
     bindEvents() {
-        console.log(11111111);
-        // 扫描音乐按钮事件
+        // 立即尝试绑定扫描按钮事件，如果DOM还未加载完成，则使用DOMContentLoaded事件
+        this.attachScanButtonEvent();
+        
+        // 使用事件委托处理播放列表中的播放按钮点击事件
+        const waitForMusicTableBody = () => {
+            const musicTableBody = document.getElementById('musicTableBody');
+            if (musicTableBody) {
+                musicTableBody.addEventListener('click', (e) => {
+                    // 检查是否点击了播放按钮
+                    if (e.target.classList.contains('play-btn')) {
+                        const row = e.target.closest('tr');
+                        if (row) {
+                            const fileName = row.cells[1].textContent;
+                            const fileSize = row.cells[2].textContent;
+                            this.playFile(fileName, fileSize);
+                        }
+                    }
+                });
+            } else {
+                // 如果元素不存在，稍后重试
+                setTimeout(waitForMusicTableBody, 100);
+            }
+        };
+        
+        waitForMusicTableBody();
+    }
+    
+    // 单独处理扫描按钮事件绑定
+    attachScanButtonEvent() {
         const scanBtn = document.getElementById('scanMusicBtn');
         if (scanBtn) {
             scanBtn.addEventListener('click', () => {
                 this.scanMusic();
             });
-        }
-        
-        // 使用事件委托处理播放列表中的播放按钮点击事件
-        const musicTableBody = document.getElementById('musicTableBody');
-        if (musicTableBody) {
-            musicTableBody.addEventListener('click', (e) => {
-                // 检查是否点击了播放按钮
-                if (e.target.classList.contains('play-btn')) {
-                    const row = e.target.closest('tr');
-                    if (row) {
-                        const fileName = row.cells[1].textContent;
-                        const fileSize = row.cells[2].textContent;
-                        this.playFile(fileName, fileSize);
-                    }
-                }
-            });
+        } else {
+            // 如果按钮不存在，稍后重试
+            setTimeout(() => this.attachScanButtonEvent(), 100);
         }
     }
     
     // UI初始化方法
     initializeUI() {
-        console.log('本地音乐模块UI初始化完成');
         // 可以在这里添加更多UI初始化逻辑
     }
 
@@ -132,6 +148,3 @@ class LocalMusicModule {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 }
-
-// 将LocalMusicModule挂载到window对象上
-window.LocalMusicModule = LocalMusicModule;

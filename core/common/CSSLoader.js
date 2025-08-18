@@ -28,7 +28,6 @@ class CSSLoader {
                 link.href = cssPath;
                 document.head.appendChild(link);
                 this.loadedCSS.add(cssPath);
-                console.log(`CSS加载完成: ${cssPath}`);
                 return true;
             } else {
                 console.log(`CSS文件不存在: ${cssPath}`);
