@@ -99,12 +99,9 @@ class FrameworkLoader {
             if (config.js) {
                 const module = await this.loadJSModule(config.js);
                 if (module) {
-                    // 实例化模块
-                    const moduleName = this.convertToModuleName(moduleType);
-                    if (module[moduleName]) {
-                        const moduleInstance = new module[moduleName]();
-                        this.moduleManagers.set(moduleType, moduleInstance);
-                    }
+                    // 实例化模块并传递EventBus实例
+                    const moduleInstance = new module.default(this.eventBus);
+                    this.moduleManagers.set(moduleType, moduleInstance);
                 }
             }
         }
@@ -134,7 +131,7 @@ class FrameworkLoader {
     // 初始化当前内容
     async initCurrentContent() {
         // 使用ModuleLoader初始化当前内容
-        const moduleLoader = new ModuleLoader();
+        const moduleLoader = new ModuleLoader(this.eventBus);
         // 复制必要的属性
         moduleLoader.mainContent = this.mainContent;
         moduleLoader.contentCache = this.contentCache;
@@ -177,7 +174,7 @@ class FrameworkLoader {
         });
         
         // 使用ModuleLoader加载并显示新内容
-        const moduleLoader = new ModuleLoader();
+        const moduleLoader = new ModuleLoader(this.eventBus);
         // 复制必要的属性
         moduleLoader.mainContent = this.mainContent;
         moduleLoader.contentCache = this.contentCache;
@@ -223,7 +220,7 @@ class FrameworkLoader {
             this.mainContent.innerHTML = '<div class="loading">加载中...</div>';
             
             // 使用ModuleLoader加载业务模块内容
-            const moduleLoader = new ModuleLoader();
+            const moduleLoader = new ModuleLoader(this.eventBus);
             await moduleLoader.loadContent(contentType);
             
             // 将加载的内容从moduleLoader复制到当前实例
