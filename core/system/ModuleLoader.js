@@ -1,7 +1,7 @@
 import { EventBus, StringUtils } from '../common/index.js';
 import CSSLoader from '../common/CSSLoader.js';
 
-class ModuleLoader {
+export default class ModuleLoader {
     constructor() {
         // 检查依赖项是否存在
         if (typeof EventBus === 'undefined') {
@@ -258,8 +258,3 @@ class ModuleLoader {
         return StringUtils.capitalize(str);
     }
 }
-
-// 将ModuleLoader挂载到window对象上
-window.ModuleLoader = ModuleLoader;
-
-export default ModuleLoader;
