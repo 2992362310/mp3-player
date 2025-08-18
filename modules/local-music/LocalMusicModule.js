@@ -10,15 +10,12 @@ export default class LocalMusicModule {
     constructor() {
         this.localResourceManager = new LocalResourceManager();
         this.eventBus = new EventBus();
+        // 在构造函数中完成初始化，确保模块加载后能自动初始化
         this.init();
     }
 
     init() {
-        // 初始化事件监听器
-        this.bindEvents();
-        
-        // 初始化UI
-        this.initializeUI();
+        // 初始化在ModuleLoader中统一处理
     }
 
     bindEvents() {
