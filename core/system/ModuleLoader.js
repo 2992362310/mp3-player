@@ -1,3 +1,6 @@
+import { EventBus, StringUtils } from '../common/index.js';
+import CSSLoader from '../common/CSSLoader.js';
+
 class ModuleLoader {
     constructor() {
         // 检查依赖项是否存在
@@ -114,19 +117,22 @@ class ModuleLoader {
     
     // 通用方法：加载JavaScript模块
     async loadJSModule(modulePath) {
+        console.log(modulePath);
         try {
             const module = await import(modulePath);
-            console.log(`JS模块加载完成: ${modulePath}`);
+            console.log(module);
             return module;
         } catch (error) {
-            console.error(`JS模块加载失败: ${modulePath}`, error);
+            console.log(error);
             return null;
         }
     }
     
     // 加载内容（框架层）
     async loadContent(contentType) {
-        if (!this.mainContent) return;
+        if (!this.mainContent) {
+            return;
+        }
         
         try {
             // 显示加载状态
@@ -154,14 +160,17 @@ class ModuleLoader {
             if (moduleConfig && moduleConfig.js) {
                 const moduleInstance = await this.loadAndInitModule(contentType, moduleConfig.js);
                 // 如果模块加载成功，执行模块特定的初始化方法
-                if (moduleInstance && typeof moduleInstance.initializeUI === 'function') {
-                    moduleInstance.initializeUI();
+                if (moduleInstance) {
+                    // 确保模块的事件监听器被绑定
+                    if (typeof moduleInstance.bindEvents === 'function') {
+                        moduleInstance.bindEvents();
+                    }
+                    if (typeof moduleInstance.initializeUI === 'function') {
+                        moduleInstance.initializeUI();
+                    }
                 }
             }
-            
-            console.log(`内容加载完成: ${contentType}`);
         } catch (error) {
-            console.error('加载内容时出错:', error);
             this.mainContent.innerHTML = '<div class="error">内容加载失败</div>';
         }
     }
@@ -175,21 +184,51 @@ class ModuleLoader {
         
         // 加载模块JS文件
         const module = await this.loadJSModule(modulePath);
+        
         if (module) {
             // 实例化模块管理器
-            const moduleName = `${StringUtils.capitalize(contentType)}Module`;
+            // 修复模块名称转换问题，对于带连字符的名称需要特殊处理
+            const moduleName = this.convertToModuleName(contentType);
+            
+            // 首先检查模块是否通过ES6导出
             if (module[moduleName]) {
                 const moduleInstance = new module[moduleName]();
                 
                 // 缓存模块管理器实例
                 this.moduleManagers.set(contentType, moduleInstance);
                 
-                console.log(`模块事件管理器初始化完成: ${contentType}`);
+                return moduleInstance;
+            } 
+            // 如果ES6导出不存在，检查window对象
+            else if (window[moduleName]) {
+                const moduleInstance = new window[moduleName]();
+                
+                // 缓存模块管理器实例
+                this.moduleManagers.set(contentType, moduleInstance);
+                
                 return moduleInstance;
             }
         }
         
         return null;
+    }
+    
+    // 转换内容类型为模块名称
+    convertToModuleName(contentType) {
+        // 对于带连字符的名称，需要将连字符后的首字母大写
+        if (contentType.includes('-')) {
+            const result = contentType
+                .split('-')
+                .map((part, index) => {
+                    // 第一个部分首字母大写，其余部分首字母大写
+                    return StringUtils.capitalize(part);
+                })
+                .join('');
+            return result;
+        }
+        // 对于不带连字符的名称，直接首字母大写
+        const result = StringUtils.capitalize(contentType);
+        return result;
     }
     
     // 获取内容路径
@@ -208,22 +247,22 @@ class ModuleLoader {
         const moduleConfigs = {
             'local-music': {
                 css: 'modules/local-music/local-music.css',
-                js: '/modules/local-music/LocalMusicModule.js',
+                js: '../../modules/local-music/LocalMusicModule.js',
                 html: 'modules/local-music/local-music.html'
             },
             'online-music': {
                 css: 'modules/online-music/online-music.css',
-                js: '/modules/online-music/OnlineMusicModule.js',
+                js: '../../modules/online-music/OnlineMusicModule.js',
                 html: 'modules/online-music/online-music.html'
             },
             'playlists': {
                 css: 'modules/playlists/playlists.css',
-                js: '/modules/playlists/PlaylistsModule.js',
+                js: '../../modules/playlists/PlaylistsModule.js',
                 html: 'modules/playlists/playlists.html'
             },
             'settings': {
                 css: 'modules/settings/settings.css',
-                js: '/modules/settings/SettingsModule.js',
+                js: '../../modules/settings/SettingsModule.js',
                 html: 'modules/settings/settings.html'
             }
         };

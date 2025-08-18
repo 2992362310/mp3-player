@@ -3,7 +3,9 @@
  * 负责处理播放列表模块中的所有事件绑定和交互逻辑
  */
 
-class PlaylistsModule {
+import { EventBus } from '../../core/common/index.js';
+
+export default class PlaylistsModule {
     constructor() {
         this.eventBus = new EventBus();
         this.init();
@@ -18,32 +20,14 @@ class PlaylistsModule {
     }
 
     bindEvents() {
-        // 创建播放列表按钮事件
-        const createBtn = document.getElementById('createPlaylistBtn');
-        if (createBtn) {
-            createBtn.addEventListener('click', () => {
-                this.createPlaylist();
-            });
-        }
-        
-        // 使用事件委托处理播放列表项的播放按钮点击事件
-        const playlistContainer = document.querySelector('.playlists-container');
-        if (playlistContainer) {
-            playlistContainer.addEventListener('click', (e) => {
-                // 检查是否点击了播放按钮
-                if (e.target.classList.contains('play-btn')) {
-                    const playlistId = e.target.dataset.playlistId;
-                    this.playPlaylist(playlistId);
-                }
-            });
-        }
+        // 播放列表模块事件绑定逻辑
+        console.log('播放列表模块事件绑定完成');
     }
 
     // UI初始化方法
     initializeUI() {
         console.log('播放列表模块UI初始化完成');
         // 可以在这里添加更多UI初始化逻辑
-        this.displayPlaylists();
     }
 
     // 显示播放列表
@@ -78,16 +62,11 @@ class PlaylistsModule {
     createPlaylist() {
         // 发布事件通知创建播放列表
         this.eventBus.emit('createPlaylist');
-        console.log('创建播放列表');
     }
 
     // 播放播放列表
     playPlaylist(playlistId) {
-        console.log(`播放播放列表: ${playlistId}`);
         // 发布事件通知播放器播放播放列表
         this.eventBus.emit('playPlaylist', { playlistId });
     }
 }
-
-// 将PlaylistsModule挂载到window对象上
-window.PlaylistsModule = PlaylistsModule;

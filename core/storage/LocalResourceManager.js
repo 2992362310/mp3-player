@@ -145,3 +145,9 @@ class LocalResourceManager {
 
 // 将LocalResourceManager挂载到window对象上
 window.LocalResourceManager = LocalResourceManager;
+
+// 添加ES6默认导出以支持现代模块导入方式
+export default LocalResourceManager;
+
+// 添加命名导出以支持按需导入
+export { LocalResourceManager };

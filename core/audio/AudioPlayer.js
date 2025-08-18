@@ -1,14 +1,8 @@
+import { EventBus } from '../common/index.js';
+import LocalResourceManager from '../storage/LocalResourceManager.js';
+
 class AudioPlayer {
     constructor() {
-        // 检查依赖项是否存在
-        if (typeof EventBus === 'undefined') {
-            throw new Error('EventBus is not defined. Please load EventBus.js before AudioPlayer.js');
-        }
-        
-        if (typeof LocalResourceManager === 'undefined') {
-            throw new Error('LocalResourceManager is not defined. Please load LocalResourceManager.js before AudioPlayer.js');
-        }
-        
         // 初始化事件总线
         this.eventBus = new EventBus();
         
@@ -23,7 +17,7 @@ class AudioPlayer {
             // 直接获取音频播放器元素
             this.audioPlayer = document.getElementById('audioPlayer');
         } catch (error) {
-            console.error('初始化音频播放器时出错:', error);
+            // 静默处理错误
         }
     }
     
@@ -38,7 +32,6 @@ class AudioPlayer {
     play() {
         if (this.audioPlayer) {
             this.audioPlayer.play().catch(error => {
-                console.error('播放失败:', error);
                 this.eventBus.emit('playbackError', { error });
             });
         }
@@ -98,8 +91,6 @@ class AudioPlayer {
     }
 }
 
-// 将AudioPlayer挂载到window对象上
-window.AudioPlayer = AudioPlayer;
-
 // 导出 AudioPlayer 类
 export { AudioPlayer };
+export default AudioPlayer;

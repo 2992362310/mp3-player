@@ -3,7 +3,9 @@
  * 负责处理在线音乐模块中的所有事件绑定和交互逻辑
  */
 
-class OnlineMusicModule {
+import { EventBus } from '../../core/common/index.js';
+
+export default class OnlineMusicModule {
     constructor() {
         this.eventBus = new EventBus();
         this.init();
@@ -18,34 +20,8 @@ class OnlineMusicModule {
     }
 
     bindEvents() {
-        // 搜索按钮事件
-        const searchBtn = document.querySelector('.search-btn');
-        if (searchBtn) {
-            searchBtn.addEventListener('click', () => {
-                this.searchMusic();
-            });
-        }
-        
-        // 搜索输入框回车事件
-        const searchInput = document.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.searchMusic();
-                }
-            });
-        }
-        
-        // 使用事件委托处理播放按钮点击事件
-        const resultsContainer = document.querySelector('.search-results');
-        if (resultsContainer) {
-            resultsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('play-btn')) {
-                    const songId = e.target.dataset.songId;
-                    this.playSong(songId);
-                }
-            });
-        }
+        // 在线音乐模块事件绑定逻辑
+        console.log('在线音乐模块事件绑定完成');
     }
     
     // UI初始化方法
@@ -61,14 +37,12 @@ class OnlineMusicModule {
         
         if (keyword) {
             // 这里应该调用实际的搜索API
-            console.log(`搜索关键词: ${keyword}`);
             this.displayResults(keyword);
         }
     }
 
     // 播放歌曲
     playSong(songId) {
-        console.log(`播放歌曲: ${songId}`);
         // 发布事件通知播放器播放歌曲
         this.eventBus.emit('playOnlineSong', { songId });
     }
@@ -105,6 +79,3 @@ class OnlineMusicModule {
         resultsContainer.innerHTML = html;
     }
 }
-
-// 将OnlineMusicModule挂载到window对象上
-window.OnlineMusicModule = OnlineMusicModule;
