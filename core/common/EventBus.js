@@ -1,6 +1,19 @@
+// 确保只创建一个EventBus实例
+let instance = null;
+let instanceCount = 0;
+
 class EventBus {
     constructor() {
+        // 如果已经存在实例，直接返回
+        if (instance) {
+            return instance;
+        }
+        
         this.events = {};
+        this.id = ++instanceCount; // 为每个实例分配唯一ID
+        
+        // 缓存实例
+        instance = this;
     }
 
     /**
@@ -35,10 +48,17 @@ class EventBus {
      * @param {*} data - 传递的数据
      */
     emit(eventName, data) {
-        if (!this.events[eventName]) return;
+        if (!this.events[eventName]) {
+            console.warn(`[EventBus #${this.id}] 警告: 没有找到事件 ${eventName} 的监听器`);
+            return;
+        }
         
-        this.events[eventName].forEach(callback => {
-            callback(data);
+        this.events[eventName].forEach((callback, index) => {
+            try {
+                callback(data);
+            } catch (error) {
+                console.error(`[EventBus #${this.id}] 处理事件 ${eventName} 时出错:`, error);
+            }
         });
     }
 
@@ -53,6 +73,14 @@ class EventBus {
             this.off(eventName, onceWrapper);
         };
         this.on(eventName, onceWrapper);
+    }
+    
+    // 获取当前实例信息（用于调试）
+    getInfo() {
+        return {
+            id: Math.random().toString(36).substr(2, 9),
+            events: Object.keys(this.events)
+        };
     }
 }
 

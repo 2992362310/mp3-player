@@ -6,8 +6,9 @@
 import { EventBus } from '../../core/common/index.js';
 
 export default class PlaylistsModule {
-    constructor() {
-        this.eventBus = new EventBus();
+    constructor(eventBus) {
+        // 使用传入的EventBus实例或创建新的实例
+        this.eventBus = eventBus || new EventBus();
         this.init();
     }
 
@@ -20,6 +21,13 @@ export default class PlaylistsModule {
     }
 
     bindEvents() {
+        // 监听本地音乐扫描完成事件
+        this.eventBus.on('localMusicScanned', (data) => {
+            console.log('播放列表模块接收到本地音乐扫描完成事件:', data);
+            // 可以在这里处理本地音乐扫描完成后的逻辑
+            // 例如更新播放列表视图等
+        });
+        
         // 播放列表模块事件绑定逻辑
         console.log('播放列表模块事件绑定完成');
     }

@@ -2,14 +2,14 @@ import { EventBus, StringUtils } from '../common/index.js';
 import CSSLoader from '../common/CSSLoader.js';
 
 export default class ModuleLoader {
-    constructor() {
+    constructor(eventBus) {
         // 检查依赖项是否存在
         if (typeof EventBus === 'undefined') {
             throw new Error('EventBus is not defined. Please load EventBus.js before ModuleLoader.js');
         }
         
-        // 初始化事件总线
-        this.eventBus = new EventBus();
+        // 使用传入的事件总线或创建新的实例
+        this.eventBus = eventBus || new EventBus();
         
         this.initializeElements();
         this.currentContent = 'local-music'; // 默认显示本地音乐
@@ -184,8 +184,8 @@ export default class ModuleLoader {
         const module = await this.loadJSModule(modulePath);
         
         if (module) {
-            // 实例化模块管理器
-            const moduleInstance = new module.default();
+            // 实例化模块管理器并传递EventBus实例
+            const moduleInstance = new module.default(this.eventBus);
             // 缓存模块管理器实例
             this.moduleManagers.set(contentType, moduleInstance);
             

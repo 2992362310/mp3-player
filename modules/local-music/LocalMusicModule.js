@@ -4,12 +4,13 @@
  */
 
 import { EventBus } from '../../core/common/index.js';
-import LocalResourceManager from '../../core/storage/LocalResourceManager.js';
+import LocalResourceManager from './LocalResourceManager.js';
 
 export default class LocalMusicModule {
-    constructor() {
+    constructor(eventBus) {
         this.localResourceManager = new LocalResourceManager();
-        this.eventBus = new EventBus();
+        // 使用传入的EventBus实例或创建新的实例
+        this.eventBus = eventBus || new EventBus();
         // 在构造函数中完成初始化，确保模块加载后能自动初始化
         this.init();
     }
@@ -32,7 +33,8 @@ export default class LocalMusicModule {
                         const row = e.target.closest('tr');
                         if (row) {
                             const fileName = row.cells[1].textContent;
-                            const fileSize = row.cells[2].textContent;
+                            // 修复：文件大小在第6列（索引为5），而不是第3列（索引为2）
+                            const fileSize = row.cells[5].textContent;
                             this.playFile(fileName, fileSize);
                         }
                     }
@@ -71,18 +73,18 @@ export default class LocalMusicModule {
         input.type = 'file';
         input.multiple = true;
         input.accept = 'audio/*';
-        
+
         input.onchange = (e) => {
             const files = e.target.files;
             this.localResourceManager.handleFileSelect(files);
             this.updateMusicList();
-            
+
             // 发布事件通知其他组件
             this.eventBus.emit('localMusicScanned', {
                 files: this.localResourceManager.getFiles()
             });
         };
-        
+
         input.click();
     }
 
@@ -94,6 +96,8 @@ export default class LocalMusicModule {
         if (file) {
             // 发布事件通知播放器播放文件
             this.eventBus.emit('playLocalFile', { file });
+        } else {
+            console.warn('[LocalMusicModule] 未找到匹配的文件，文件列表:', files, '查找条件:', fileName, fileSize);
         }
     }
 
@@ -117,21 +121,48 @@ export default class LocalMusicModule {
         
         let html = '';
         files.forEach((file, index) => {
-            html += `
-                <tr>
-                    <td class="index-col">${index + 1}</td>
-                    <td class="title-col">${file.name}</td>
-                    <td class="artist-col">未知艺术家</td>
-                    <td class="album-col">未知专辑</td>
-                    <td class="duration-col">00:00</td>
-                    <td class="controls-col">
-                        <button class="play-btn">播放</button>
-                    </td>
-                </tr>
-            `;
+            // 如果文件只有元数据（从localStorage加载的情况）
+            if (file.onlyMetadata) {
+                html += `
+                    <tr>
+                        <td class="index-col">${index + 1}</td>
+                        <td class="title-col">${file.name}</td>
+                        <td class="artist-col">${file.artist || '未知艺术家'}</td>
+                        <td class="album-col">${file.album || '未知专辑'}</td>
+                        <td class="duration-col">${file.duration || '00:00'}</td>
+                        <td class="size-col">${file.size || '未知大小'}</td>
+                        <td class="controls-col">
+                            <button class="play-btn" disabled>播放（无文件）</button>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                html += `
+                    <tr>
+                        <td class="index-col">${index + 1}</td>
+                        <td class="title-col">${file.name}</td>
+                        <td class="artist-col">未知艺术家</td>
+                        <td class="album-col">未知专辑</td>
+                        <td class="duration-col">00:00</td>
+                        <td class="size-col">${this.formatFileSize(file.size)}</td>
+                        <td class="controls-col">
+                            <button class="play-btn">播放</button>
+                        </td>
+                    </tr>
+                `;
+            }
         });
         
         musicTableBody.innerHTML = html;
+        
+        // 如果有只有元数据的文件，显示提示信息
+        const metadataOnlyFiles = files.some(file => file.onlyMetadata);
+        if (metadataOnlyFiles) {
+            const infoBar = document.createElement('div');
+            infoBar.className = 'metadata-info';
+            infoBar.textContent = '提示：列表中包含仅含元数据的文件（无实际音频文件）';
+            musicList.parentNode.insertBefore(infoBar, musicList.nextSibling);
+        }
     }
 
     // 格式化文件大小

@@ -1,38 +1,40 @@
+import DOMManager from '../../core/common/DOMManager.js';
+
 /**
  * 底部控制器模块
  * 负责管理底部控制器的所有功能，包括播放控制、展开/收起等
  */
 
-class BottomControllerModule {
-    constructor() {
-        this.eventBus = new EventBus();
+export default class BottomControllerModule {
+    constructor(eventBus) {
+        // 使用传入的EventBus实例或创建新的实例
+        this.eventBus = eventBus || new EventBus();
         this.isExpanded = false;
-        this.uiComponents = new UIComponents(); // 初始化 UIComponents
         this.initializeElements();
         this.bindEvents();
     }
     
     initializeElements() {
-        // 使用 UIComponents 获取底部控制器相关元素
-        this.bottomController = this.uiComponents.get('.bottom-controller');
-        this.expandBtn = this.uiComponents.get('.expand-btn');
-        this.expandContent = this.uiComponents.get('.expand-content');
+        // 使用 DOMManager 获取底部控制器相关元素
+        this.bottomController = DOMManager.querySelector('.bottom-controller');
+        this.expandBtn = DOMManager.querySelector('.expand-btn');
+        this.expandContent = DOMManager.querySelector('.expand-content');
         
         // 获取播放控制相关元素
-        this.playBtn = this.uiComponents.get('.play-btn');
-        this.prevBtn = this.uiComponents.get('.prev-btn');
-        this.nextBtn = this.uiComponents.get('.next-btn');
-        this.volumeSlider = this.uiComponents.get('.volume-slider');
-        this.progressContainer = this.uiComponents.get('.progress-container');
-        this.progress = this.uiComponents.get('.progress');
-        this.currentTimeDisplay = this.uiComponents.get('.current-time');
-        this.totalTimeDisplay = this.uiComponents.get('.total-time');
-        this.trackTitle = this.uiComponents.get('.track-title');
-        this.trackArtist = this.uiComponents.get('.track-artist');
+        this.playBtn = DOMManager.querySelector('.play-btn');
+        this.prevBtn = DOMManager.querySelector('.prev-btn');
+        this.nextBtn = DOMManager.querySelector('.next-btn');
+        this.volumeSlider = DOMManager.querySelector('.volume-slider');
+        this.progressContainer = DOMManager.querySelector('.progress-container');
+        this.progress = DOMManager.querySelector('.progress');
+        this.currentTimeDisplay = DOMManager.querySelector('.current-time');
+        this.totalTimeDisplay = DOMManager.querySelector('.total-time');
+        this.trackTitle = DOMManager.querySelector('.track-title');
+        this.trackArtist = DOMManager.querySelector('.track-artist');
         
         // 获取隐藏的音频元素
-        this.audioPlayer = this.uiComponents.get('#audioPlayer');
-        this.audioFile = this.uiComponents.get('#audioFile');
+        this.audioPlayer = DOMManager.querySelector('#audioPlayer');
+        this.audioFile = DOMManager.querySelector('#audioFile');
     }
     
     bindEvents() {
@@ -84,6 +86,23 @@ class BottomControllerModule {
                 this.handleFileSelect(e);
             });
         }
+        
+        // 监听本地音乐扫描完成事件
+        this.eventBus.on('localMusicScanned', (data) => {
+            console.log('底部控制器接收到本地音乐扫描完成事件:', data);
+            // 可以在这里处理本地音乐扫描完成后的逻辑
+            // 例如更新播放列表等
+        });
+        
+        // 监听本地音乐播放事件
+        this.eventBus.on('playLocalFile', (data) => {
+            console.log('接收到playLocalFile事件:', data);
+            if (data && data.file) {
+                this.playLocalFile(data.file);
+            } else {
+                console.log('playLocalFile事件数据无效:', data);
+            }
+        });
         
         // 拖拽上传事件
         this.setupDragAndDrop();
@@ -259,8 +278,6 @@ class BottomControllerModule {
         
         this.progress.style.width = percent + '%';
         this.currentTimeDisplay.textContent = this.formatTime(currentTime);
-        
-        this.eventBus.emit('progressUpdated', { percent, currentTime, duration });
     }
     
     // 更新总时长
@@ -269,14 +286,26 @@ class BottomControllerModule {
         
         const duration = this.audioPlayer.duration || 0;
         this.totalTimeDisplay.textContent = this.formatTime(duration);
-        
-        this.eventBus.emit('durationUpdated', { duration: this.formatTime(duration) });
     }
     
     // 处理音频播放结束
     handleAudioEnded() {
         this.updatePlayButtonState(false);
         this.eventBus.emit('audioEnded');
+    }
+    
+    // 播放本地文件
+    playLocalFile(file) {
+        if (!file || !file.url || !this.audioPlayer) return;
+        
+        // 设置音频源
+        this.audioPlayer.src = file.url;
+        
+        // 更新曲目信息
+        this.updateTrackInfo(file.name, '本地文件');
+        
+        // 播放音频
+        this.play();
     }
     
     // 格式化时间显示
@@ -306,9 +335,3 @@ class BottomControllerModule {
 
 // 将BottomControllerModule挂载到window对象上
 window.BottomControllerModule = BottomControllerModule;
-
-// 添加ES6默认导出以支持现代模块导入方式
-export default BottomControllerModule;
-
-// 添加命名导出以支持按需导入
-export { BottomControllerModule };

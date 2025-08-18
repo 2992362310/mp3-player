@@ -1,5 +1,5 @@
 // 本地资源管理器 - 用于处理本地文件和资源
-class LocalResourceManager {
+export default class LocalResourceManager {
     constructor() {
         this.localFiles = [];
         this.playlists = [];
@@ -7,8 +7,7 @@ class LocalResourceManager {
     }
     
     init() {
-        // 从本地存储加载已保存的文件信息
-        this.loadFromLocalStorage();
+        // 初始化在构造函数中已完成
     }
 
     // 处理文件选择
@@ -82,7 +81,8 @@ class LocalResourceManager {
 
     // 获取所有本地文件
     getFiles() {
-        return this.localFiles;
+        // 只返回有实际文件对象的文件，过滤掉只有元数据的文件
+        return this.localFiles.filter(file => file.file !== null);
     }
 
     // 根据ID获取文件
@@ -119,8 +119,18 @@ class LocalResourceManager {
             const data = localStorage.getItem('localAudioFiles');
             if (data) {
                 const fileMetadata = JSON.parse(data);
-                // 这里只加载元数据，实际文件需要重新添加
-                console.log('从本地存储加载了', fileMetadata.length, '个文件的元数据');
+                // 加载文件元数据到localFiles数组
+                this.localFiles = fileMetadata.map(meta => ({
+                    id: meta.id,
+                    name: meta.name,
+                    size: meta.size,
+                    type: meta.type,
+                    lastModified: meta.lastModified,
+                    // 注意：由于浏览器安全限制，我们无法恢复实际的文件对象和URL
+                    // 这些文件需要用户重新选择才能播放
+                    url: null,
+                    file: null
+                }));
             }
         } catch (e) {
             console.warn('无法从本地存储加载:', e);
@@ -142,12 +152,3 @@ class LocalResourceManager {
         this.saveToLocalStorage();
     }
 }
-
-// 将LocalResourceManager挂载到window对象上
-window.LocalResourceManager = LocalResourceManager;
-
-// 添加ES6默认导出以支持现代模块导入方式
-export default LocalResourceManager;
-
-// 添加命名导出以支持按需导入
-export { LocalResourceManager };
