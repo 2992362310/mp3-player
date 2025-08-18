@@ -117,13 +117,11 @@ class ModuleLoader {
     
     // 通用方法：加载JavaScript模块
     async loadJSModule(modulePath) {
-        console.log(modulePath);
         try {
             const module = await import(modulePath);
-            console.log(module);
             return module;
         } catch (error) {
-            console.log(error);
+            console.error(`加载模块失败: ${modulePath}`, error);
             return null;
         }
     }
@@ -187,28 +185,14 @@ class ModuleLoader {
         
         if (module) {
             // 实例化模块管理器
-            // 修复模块名称转换问题，对于带连字符的名称需要特殊处理
-            const moduleName = this.convertToModuleName(contentType);
+            const moduleInstance = new module.default();
+            // 缓存模块管理器实例
+            this.moduleManagers.set(contentType, moduleInstance);
             
-            // 首先检查模块是否通过ES6导出
-            if (module[moduleName]) {
-                const moduleInstance = new module[moduleName]();
-                
-                // 缓存模块管理器实例
-                this.moduleManagers.set(contentType, moduleInstance);
-                
-                return moduleInstance;
-            } 
-            // 如果ES6导出不存在，检查window对象
-            else if (window[moduleName]) {
-                const moduleInstance = new window[moduleName]();
-                
-                // 缓存模块管理器实例
-                this.moduleManagers.set(contentType, moduleInstance);
-                
-                return moduleInstance;
-            }
+            return moduleInstance;
         }
+
+        console.warn(`未找到内容：${contentType}`);
         
         return null;
     }

@@ -235,6 +235,30 @@ class FrameworkLoader {
         }
     }
     
+    // 初始化本地音乐内容功能
+    initLocalMusicContent() {
+        // 移除重复的事件绑定代码，让LocalMusicModule处理所有事件
+        console.log('初始化本地音乐内容UI');
+    }
+
+    // 初始化在线音乐内容功能
+    initOnlineMusicContent() {
+        // 移除重复的事件绑定代码，让OnlineMusicModule处理所有事件
+        console.log('初始化在线音乐内容UI');
+    }
+
+    // 初始化播放列表内容功能
+    initPlaylistsContent() {
+        // 移除重复的事件绑定代码，让PlaylistsModule处理所有事件
+        console.log('初始化播放列表内容UI');
+    }
+
+    // 初始化设置内容功能
+    initSettingsContent() {
+        // 移除重复的事件绑定代码，让SettingsModule处理所有事件
+        console.log('初始化设置内容UI');
+    }
+
     // 转换内容类型为模块名称
     convertToModuleName(contentType) {
         // 对于带连字符的名称，需要将连字符后的首字母大写
