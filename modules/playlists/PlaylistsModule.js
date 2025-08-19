@@ -4,11 +4,12 @@
  */
 
 import { EventBus } from '../../core/common/index.js';
+import { eventBus } from '../../core/common/index.js';
 
 export default class PlaylistsModule {
-    constructor(eventBus) {
-        // 使用传入的EventBus实例或创建新的实例
-        this.eventBus = eventBus || new EventBus();
+    constructor() {
+        // 使用全局EventBus实例
+        this.eventBus = eventBus;
         this.init();
     }
 

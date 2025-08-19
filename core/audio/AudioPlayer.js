@@ -1,10 +1,10 @@
-import { EventBus } from '../common/index.js';
-import LocalResourceManager from '../storage/LocalResourceManager.js';
+import { eventBus } from '../common/index.js';
+import LocalResourceManager from '../../modules/local-music/LocalResourceManager.js';
 
 class AudioPlayer {
     constructor() {
         // 初始化事件总线
-        this.eventBus = new EventBus();
+        this.eventBus = eventBus;
         
         this.audioPlayer = null;
         

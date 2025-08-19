@@ -3,11 +3,12 @@
  * 负责处理设置模块中的所有事件绑定和交互逻辑
  */
 
-import { EventBus } from '../../core/common/index.js';
+import { eventBus } from '../../core/common/index.js';
 
 export default class SettingsModule {
     constructor() {
-        this.eventBus = new EventBus();
+        // 使用全局EventBus实例
+        this.eventBus = eventBus;
         this.init();
     }
 
@@ -24,7 +25,6 @@ export default class SettingsModule {
         console.log('设置模块事件绑定完成');
     }
 
-    // UI初始化方法
     // UI初始化方法
     initializeUI() {
         console.log('设置模块UI初始化完成');
