@@ -1,5 +1,4 @@
-import DOMManager from '../../core/common/DOMManager.js';
-import { eventBus } from '../../core/common/index.js';
+import { eventBus, DOMManager } from '../../core/common/index.js';
 
 /**
  * 底部控制器模块
@@ -11,6 +10,8 @@ export default class BottomControllerModule {
         // 使用全局EventBus实例
         this.eventBus = eventBus;
         this.audioPlayer = null;
+        this.playlist = []; // 播放列表
+        this.currentTrackIndex = -1; // 当前播放曲目索引
         this.init();
     }
 
@@ -37,6 +38,10 @@ export default class BottomControllerModule {
         this.totalTimeDisplay = DOMManager.querySelector('.total-time');
         this.trackTitle = DOMManager.querySelector('.track-title');
         this.trackArtist = DOMManager.querySelector('.track-artist');
+        
+        // 获取播放列表相关元素
+        this.playlistContainer = DOMManager.querySelector('.playlist-items');
+        this.clearPlaylistBtn = DOMManager.querySelector('.clear-playlist-btn');
         
         // 获取隐藏的音频元素
         this.audioPlayer = DOMManager.querySelector('#audioPlayer');
@@ -93,6 +98,13 @@ export default class BottomControllerModule {
             });
         }
         
+        // 清空播放列表按钮事件
+        if (this.clearPlaylistBtn) {
+            this.clearPlaylistBtn.addEventListener('click', () => {
+                this.clearPlaylist();
+            });
+        }
+        
         // 监听本地音乐扫描完成事件
         this.eventBus.on('localMusicScanned', (data) => {
             console.log('底部控制器接收到本地音乐扫描完成事件:', data);
@@ -104,9 +116,31 @@ export default class BottomControllerModule {
         this.eventBus.on('playLocalFile', (data) => {
             console.log('接收到playLocalFile事件:', data);
             if (data && data.file) {
-                this.playLocalFile(data.file);
+                this.addToPlaylist({
+                    id: data.file.path || data.file.name,
+                    title: data.file.displayName || data.file.name.replace(/\.[^/.]+$/, ""),
+                    artist: data.file.artist || '未知艺术家',
+                    url: data.file.url || URL.createObjectURL(data.file),
+                    file: data.file
+                });
             } else {
                 console.log('playLocalFile事件数据无效:', data);
+            }
+        });
+        
+        // 监听在线音乐播放事件
+        this.eventBus.on('playOnlineSong', (data) => {
+            console.log('接收到playOnlineSong事件:', data);
+            if (data && data.url) {
+                this.addToPlaylist({
+                    id: data.songId,
+                    title: data.title || '未知歌曲',
+                    artist: data.artist || '未知艺术家',
+                    url: data.url,
+                    source: data.source
+                });
+            } else {
+                console.log('playOnlineSong事件数据无效:', data);
             }
         });
         
@@ -163,14 +197,23 @@ export default class BottomControllerModule {
     play() {
         if (!this.audioPlayer) return;
         
-        this.audioPlayer.play()
-            .then(() => {
-                this.updatePlayButtonState(true);
-                this.eventBus.emit('playbackStarted', { isPlaying: true });
-            })
-            .catch(error => {
-                console.error('播放失败:', error);
-            });
+        // 如果没有曲目在播放且播放列表不为空，播放第一首
+        if (this.currentTrackIndex === -1 && this.playlist.length > 0) {
+            this.currentTrackIndex = 0;
+            this.loadTrack(this.currentTrackIndex);
+        }
+        
+        // 只有在有曲目时才播放
+        if (this.currentTrackIndex >= 0 && this.currentTrackIndex < this.playlist.length) {
+            this.audioPlayer.play()
+                .then(() => {
+                    this.updatePlayButtonState(true);
+                    this.eventBus.emit('playbackStarted', { isPlaying: true });
+                })
+                .catch(error => {
+                    console.error('播放失败:', error);
+                });
+        }
     }
     
     // 暂停音频
@@ -194,14 +237,20 @@ export default class BottomControllerModule {
     
     // 播放上一首
     playPrev() {
-        // TODO: 实现播放上一首逻辑
-        this.eventBus.emit('playPrevious');
+        if (this.playlist.length === 0) return;
+        
+        this.currentTrackIndex = (this.currentTrackIndex - 1 + this.playlist.length) % this.playlist.length;
+        this.loadTrack(this.currentTrackIndex);
+        this.play();
     }
     
     // 播放下一首
     playNext() {
-        // TODO: 实现播放下一首逻辑
-        this.eventBus.emit('playNext');
+        if (this.playlist.length === 0) return;
+        
+        this.currentTrackIndex = (this.currentTrackIndex + 1) % this.playlist.length;
+        this.loadTrack(this.currentTrackIndex);
+        this.play();
     }
     
     // 设置音量
@@ -226,12 +275,28 @@ export default class BottomControllerModule {
         const file = e.target.files[0];
         if (!file || !this.audioPlayer) return;
         
-        const fileURL = URL.createObjectURL(file);
-        this.audioPlayer.src = fileURL;
-        this.trackTitle.textContent = file.name.replace(/\.[^/.]+$/, "");
-        this.trackArtist.textContent = '本地文件';
+        // 添加到播放列表而不是直接播放
+        this.addToPlaylist({
+            id: file.path || file.name,
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            artist: '本地文件',
+            url: URL.createObjectURL(file),
+            file: file
+        });
+    }
+    
+    // 播放本地文件
+    playLocalFile(file) {
+        if (!file || !this.audioPlayer) return;
         
-        this.play();
+        // 添加到播放列表而不是直接播放
+        this.addToPlaylist({
+            id: file.path || file.name,
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            artist: '本地文件',
+            url: URL.createObjectURL(file),
+            file: file
+        });
     }
     
     // 设置拖拽上传功能
@@ -251,13 +316,14 @@ export default class BottomControllerModule {
                 // 创建一个新的文件输入事件来处理文件
                 const file = files[0];
                 if (file.type.startsWith('audio/')) {
-                    const fileURL = URL.createObjectURL(file);
-                    if (this.audioPlayer) {
-                        this.audioPlayer.src = fileURL;
-                        this.trackTitle.textContent = file.name.replace(/\.[^/.]+$/, "");
-                        this.trackArtist.textContent = '本地文件';
-                        this.play();
-                    }
+                    // 添加到播放列表而不是直接播放
+                    this.addToPlaylist({
+                        id: file.path || file.name,
+                        title: file.name.replace(/\.[^/.]+$/, ""),
+                        artist: '本地文件',
+                        url: URL.createObjectURL(file),
+                        file: file
+                    });
                 }
             }
         });
@@ -298,29 +364,17 @@ export default class BottomControllerModule {
     handleAudioEnded() {
         this.updatePlayButtonState(false);
         this.eventBus.emit('audioEnded');
-    }
-    
-    // 播放本地文件
-    playLocalFile(file) {
-        if (!file || !file.url || !this.audioPlayer) return;
-        
-        // 设置音频源
-        this.audioPlayer.src = file.url;
-        
-        // 更新曲目信息
-        this.updateTrackInfo(file.name, '本地文件');
-        
-        // 播放音频
-        this.play();
+        // 自动播放下一首
+        this.playNext();
     }
     
     // 格式化时间显示
     formatTime(seconds) {
         if (isNaN(seconds)) return '00:00';
         
-        const min = Math.floor(seconds / 60);
-        const sec = Math.floor(seconds % 60);
-        return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
     // 更新当前播放曲目信息
@@ -336,6 +390,142 @@ export default class BottomControllerModule {
     // 检查模块是否已正确初始化
     isInitialized() {
         return !!this.bottomController;
+    }
+    
+    // 添加到播放列表
+    addToPlaylist(track) {
+        // 检查曲目是否已在播放列表中
+        const existingIndex = this.playlist.findIndex(item => item.id === track.id);
+        
+        if (existingIndex >= 0) {
+            // 如果已在播放列表中，直接播放该曲目
+            this.currentTrackIndex = existingIndex;
+            this.loadTrack(this.currentTrackIndex);
+            this.play();
+        } else {
+            // 添加到播放列表
+            this.playlist.push(track);
+            this.currentTrackIndex = this.playlist.length - 1;
+            this.loadTrack(this.currentTrackIndex);
+            this.play();
+        }
+        
+        // 更新播放列表显示
+        this.updatePlaylistDisplay();
+    }
+    
+    // 加载曲目
+    loadTrack(index) {
+        if (index < 0 || index >= this.playlist.length || !this.audioPlayer) return;
+        
+        const track = this.playlist[index];
+        this.audioPlayer.src = track.url;
+        this.updateTrackInfo(track.title, track.artist);
+        
+        // 更新播放列表高亮显示
+        this.highlightCurrentTrack();
+    }
+    
+    // 更新播放列表显示
+    updatePlaylistDisplay() {
+        if (!this.playlistContainer) return;
+        
+        // 清空现有列表
+        this.playlistContainer.innerHTML = '';
+        
+        // 添加所有曲目
+        this.playlist.forEach((track, index) => {
+            const li = document.createElement('li');
+            li.className = 'playlist-item';
+            li.dataset.index = index;
+            
+            if (index === this.currentTrackIndex) {
+                li.classList.add('active');
+            }
+            
+            li.innerHTML = `
+                <div class="playlist-item-info">
+                    <div class="playlist-item-title">${track.title}</div>
+                    <div class="playlist-item-artist">${track.artist}</div>
+                </div>
+                <div class="playlist-item-actions">
+                    <button class="playlist-item-remove" data-index="${index}">×</button>
+                </div>
+            `;
+            
+            // 添加点击事件
+            li.addEventListener('click', (e) => {
+                // 如果点击的是删除按钮，不播放曲目
+                if (e.target.classList.contains('playlist-item-remove')) {
+                    return;
+                }
+                
+                this.currentTrackIndex = parseInt(li.dataset.index);
+                this.loadTrack(this.currentTrackIndex);
+                this.play();
+            });
+            
+            this.playlistContainer.appendChild(li);
+        });
+        
+        // 为删除按钮添加事件
+        const removeButtons = this.playlistContainer.querySelectorAll('.playlist-item-remove');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                this.removeFromPlaylist(index);
+                e.stopPropagation();
+            });
+        });
+    }
+    
+    // 从播放列表中移除曲目
+    removeFromPlaylist(index) {
+        if (index < 0 || index >= this.playlist.length) return;
+        
+        // 如果正在播放被移除的曲目，先停止播放
+        if (index === this.currentTrackIndex) {
+            this.stop();
+        }
+        
+        // 从播放列表中移除
+        this.playlist.splice(index, 1);
+        
+        // 调整当前曲目索引
+        if (this.currentTrackIndex > index) {
+            this.currentTrackIndex--;
+        } else if (this.currentTrackIndex >= this.playlist.length) {
+            this.currentTrackIndex = this.playlist.length - 1;
+        }
+        
+        // 更新播放列表显示
+        this.updatePlaylistDisplay();
+    }
+    
+    // 清空播放列表
+    clearPlaylist() {
+        this.stop();
+        this.playlist = [];
+        this.currentTrackIndex = -1;
+        this.updateTrackInfo('暂无播放', '');
+        this.updatePlaylistDisplay();
+    }
+    
+    // 高亮显示当前播放曲目
+    highlightCurrentTrack() {
+        if (!this.playlistContainer) return;
+        
+        // 移除所有高亮
+        const items = this.playlistContainer.querySelectorAll('.playlist-item');
+        items.forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // 高亮当前曲目
+        const currentItem = this.playlistContainer.querySelector(`.playlist-item[data-index="${this.currentTrackIndex}"]`);
+        if (currentItem) {
+            currentItem.classList.add('active');
+        }
     }
 }
 

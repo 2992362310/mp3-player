@@ -1,3 +1,21 @@
+.expand-wrapper {
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.expand-btn:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}
+
+.player-info p {
+    padding: 0 15px 15px;
+    margin: 0;
+    color: #666;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
 /* 底部控制器 - 水墨风 (固定在底部) */
 .bottom-controller {
     background-color: rgba(255, 255, 255, 0.95);
@@ -8,9 +26,12 @@
     overflow: hidden;
     flex-shrink: 0; /* 防止底部控制器被压缩 */
     height: 120px; /* 固定高度 */
+    display: flex;
+    align-items: center;
 }
 
 .controller-container {
+    flex: 1;
     padding: 15px 20px;
     height: 100%;
     display: flex;
@@ -99,25 +120,10 @@
 
 .volume-icon {
     font-size: 18px;
-    color: #666;
 }
 
 .volume-slider {
     width: 100px;
-    height: 6px;
-    -webkit-appearance: none;
-    background: #e0e0e0;
-    border-radius: 3px;
-    outline: none;
-}
-
-.volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #4a90e2;
-    border-radius: 50%;
-    cursor: pointer;
 }
 
 .progress-section {
@@ -127,13 +133,12 @@
 .progress-times {
     display: flex;
     justify-content: space-between;
-    width: 100%;
+    font-size: 12px;
+    color: #666;
     margin-bottom: 5px;
 }
 
 .progress-times .time {
-    font-size: 14px;
-    color: #666;
     min-width: 40px;
 }
 
@@ -148,74 +153,166 @@
 
 .progress {
     height: 100%;
-    background: linear-gradient(to right, #4a90e2, #8e44ad);
+    background-color: #1db954;
     border-radius: 3px;
     width: 0%;
-    transition: width 0.1s linear;
+    transition: width 0.1s ease;
 }
 
 .expand-btn {
-    position: absolute;
-    top: -30px;
-    right: 20px;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid #d0d0d0;
-    width: 30px;
-    height: 30px;
-    border-radius: 50% 50% 0 0;
+    background: none;
+    border: 1px solid #ccc;
+    color: #333;
+    font-size: 16px;
     cursor: pointer;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
     transition: all 0.3s ease;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
 }
 
-.expand-btn:hover {
-    background-color: #f0f0f0;
-    transform: scale(1.1);
-}
 
 .expand-content {
     display: none;
-    padding: 15px 20px;
-    border-top: 1px solid #d0d0d0;
-    background-color: rgba(250, 250, 250, 0.9);
+    position: absolute;
+    bottom: 130px;
+    right: 10px;
+    width: 300px;
+    max-height: 300px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    overflow-y: auto;
 }
 
-.player-info {
-    text-align: center;
-    margin-bottom: 10px;
+.bottom-controller.expanded {
+    height: auto;
+}
+
+.bottom-controller.expanded .expand-content {
+    display: block;
 }
 
 .player-info h4 {
-    margin: 0 0 10px 0;
+    margin: 0;
+    padding: 15px;
     color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.player-info p {
+.playlist-controls {
+    padding: 10px 15px;
+    text-align: right;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.clear-playlist-btn {
+    padding: 6px 12px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    transition: all 0.3s ease;
+}
+
+.clear-playlist-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.playlist-container {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.playlist-items {
+    list-style: none;
+    padding: 0;
     margin: 0;
+}
+
+.playlist-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.playlist-item:hover {
+    background-color: #f0f0f0;
+}
+
+.playlist-item.active {
+    background-color: #e8f4fc;
+    font-weight: bold;
+}
+
+.playlist-item-info {
+    flex: 1;
+}
+
+.playlist-item-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.playlist-item-artist {
+    font-size: 12px;
     color: #666;
-    font-size: 14px;
+}
+
+.playlist-item-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.playlist-item-remove {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    cursor: pointer;
+    font-size: 16px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.playlist-item-remove:hover {
+    background-color: #ffebee;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
     .bottom-controller {
-        height: 100px; /* 移动端高度 */
-    }
-    
-    .bottom-controller.expanded {
-        height: 160px; /* 移动端展开时的高度 */
+        height: 100px;
     }
     
     .controller-container {
         padding: 10px 15px;
     }
     
-    .left-controls, .right-controls, .center-controls {
-        gap: 10px;
+    .track-title {
+        font-size: 16px;
+    }
+    
+    .track-artist {
+        font-size: 12px;
     }
     
     .control-btn {
@@ -230,20 +327,11 @@
         font-size: 20px;
     }
     
-    .progress-times .time {
-        font-size: 12px;
-        min-width: 35px;
-    }
-    
     .volume-slider {
-        width: 60px;
+        width: 70px;
     }
     
-    .track-title {
-        font-size: 16px;
-    }
-    
-    .track-artist {
-        font-size: 12px;
+    .expand-content {
+        padding: 15px;
     }
 }

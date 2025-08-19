@@ -41,15 +41,22 @@
         <audio id="audioPlayer"></audio>
         <input type="file" id="audioFile" accept="audio/*" style="display: none;">
     </div>
-    
-    <!-- 展开按钮 -->
-    <button class="expand-btn">⬆</button>
-    
+
+    <div class="expand-wrapper">
+        <!-- 展开按钮 -->
+        <button class="expand-btn">⬆</button>
+    </div>
+
     <!-- 展开内容 -->
     <div class="expand-content">
         <div class="player-info">
-            <h4>播放器控制</h4>
-            <p>在这里可以进行更多播放控制</p>
+            <h4>播放列表</h4>
+            <div class="playlist-controls">
+                <button class="clear-playlist-btn">清空列表</button>
+            </div>
+            <div class="playlist-container">
+                <ul class="playlist-items"></ul>
+            </div>
         </div>
     </div>
 </footer>

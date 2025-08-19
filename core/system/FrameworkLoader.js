@@ -7,7 +7,7 @@ class FrameworkLoader {
         this.eventBus = eventBus;
         
         this.initializeElements();
-        this.currentContent = 'local-music'; // 默认显示本地音乐
+        this.currentContent = 'online-music'; // 默认显示在线音乐
         this.contentCache = new Map(); // 添加内容缓存
         this.moduleManagers = new Map(); // 添加模块管理器缓存
     }
@@ -120,6 +120,14 @@ class FrameworkLoader {
                         const target = link.getAttribute('data-target');
                         this.switchContent(target);
                     });
+                    
+                    // 根据 currentContent 设置初始激活状态
+                    const target = link.getAttribute('data-target');
+                    if (target === this.currentContent) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
                 }
             });
         }
@@ -174,7 +182,7 @@ class FrameworkLoader {
         });
         
         // 使用ModuleLoader加载并显示新内容
-        const moduleLoader = new ModuleLoader(this.eventBus);
+        const moduleLoader = new ModuleLoader();
         // 复制必要的属性
         moduleLoader.mainContent = this.mainContent;
         moduleLoader.contentCache = this.contentCache;

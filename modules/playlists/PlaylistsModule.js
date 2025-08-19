@@ -3,7 +3,6 @@
  * 负责处理播放列表模块中的所有事件绑定和交互逻辑
  */
 
-import { EventBus } from '../../core/common/index.js';
 import { eventBus } from '../../core/common/index.js';
 
 export default class PlaylistsModule {
