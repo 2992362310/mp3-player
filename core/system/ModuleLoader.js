@@ -7,7 +7,7 @@ export default class ModuleLoader {
         this.eventBus = eventBus;
         
         this.initializeElements();
-        this.currentContent = 'local-music'; // 默认显示本地音乐
+        // 移除 currentContent 定义，因为它应该只在 FrameworkLoader 中管理
         this.contentCache = new Map(); // 添加内容缓存
         this.moduleManagers = new Map(); // 添加模块管理器缓存
     }
