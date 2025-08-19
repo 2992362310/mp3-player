@@ -59,7 +59,8 @@ export default class LocalResourceManager {
             type: file.type,
             lastModified: file.lastModified,
             url: URL.createObjectURL(file),
-            file: file // 保存原始文件对象
+            file: file, // 保存原始文件对象
+            path: file.path || null // 保存文件路径（如果可用）
         };
 
         this.localFiles.push(fileObj);
@@ -81,13 +82,45 @@ export default class LocalResourceManager {
 
     // 获取所有本地文件
     getFiles() {
-        // 只返回有实际文件对象的文件，过滤掉只有元数据的文件
-        return this.localFiles.filter(file => file.file !== null);
+        // 返回所有文件，包括从localStorage加载的只有元数据的文件
+        return this.localFiles.map(file => {
+            // 为从localStorage加载的文件添加标记
+            if (file.onlyMetadata) {
+                return {
+                    ...file,
+                    requiresLocalAccess: true // 标记需要本地读取权限
+                };
+            }
+            return file;
+        });
     }
 
     // 根据ID获取文件
     getFileById(fileId) {
         return this.localFiles.find(file => file.id === fileId);
+    }
+
+    // 更新文件
+    updateFile(fileId, newFile) {
+        const index = this.localFiles.findIndex(file => file.id === fileId);
+        if (index !== -1) {
+            // 更新文件对象
+            this.localFiles[index] = {
+                id: fileId,
+                name: newFile.name,
+                size: newFile.size,
+                type: newFile.type,
+                lastModified: newFile.lastModified,
+                url: URL.createObjectURL(newFile),
+                file: newFile, // 保存原始文件对象
+                path: newFile.path || null // 保存文件路径（如果可用）
+            };
+            
+            // 保存到本地存储
+            this.saveToLocalStorage();
+            return true;
+        }
+        return false;
     }
 
     // 生成唯一ID
@@ -104,7 +137,8 @@ export default class LocalResourceManager {
                 name: file.name,
                 size: file.size,
                 type: file.type,
-                lastModified: file.lastModified
+                lastModified: file.lastModified,
+                path: file.path || null // 保存文件路径（如果可用）
             }));
             
             localStorage.setItem('localAudioFiles', JSON.stringify(fileMetadata));
@@ -126,6 +160,9 @@ export default class LocalResourceManager {
                     size: meta.size,
                     type: meta.type,
                     lastModified: meta.lastModified,
+                    path: meta.path || null, // 加载文件路径（如果可用）
+                    // 添加onlyMetadata标志，用于UI区分从localStorage加载的文件
+                    onlyMetadata: true,
                     // 注意：由于浏览器安全限制，我们无法恢复实际的文件对象和URL
                     // 这些文件需要用户重新选择才能播放
                     url: null,
