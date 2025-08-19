@@ -17,6 +17,8 @@ export default class LocalMusicModule {
 
     init() {
         // 初始化在ModuleLoader中统一处理
+        // 从本地存储加载数据后，更新UI
+        this.updateMusicList();
     }
 
     bindEvents() {
@@ -28,15 +30,20 @@ export default class LocalMusicModule {
             const musicTableBody = document.getElementById('musicTableBody');
             if (musicTableBody) {
                 musicTableBody.addEventListener('click', (e) => {
+                    const row = e.target.closest('tr');
+                    if (!row) return;
+                    
                     // 检查是否点击了播放按钮
                     if (e.target.classList.contains('play-btn')) {
-                        const row = e.target.closest('tr');
-                        if (row) {
-                            const fileName = row.cells[1].textContent;
-                            // 修复：文件大小在第6列（索引为5），而不是第3列（索引为2）
-                            const fileSize = row.cells[5].textContent;
-                            this.playFile(fileName, fileSize);
-                        }
+                        const fileName = row.cells[1].textContent;
+                        // 修复：文件大小在第6列（索引为5），而不是第3列（索引为2）
+                        const fileSize = row.cells[5].textContent;
+                        this.playFile(fileName, fileSize);
+                    }
+                    // 检查是否点击了重新选择按钮
+                    else if (e.target.classList.contains('reselect-btn')) {
+                        const fileId = row.getAttribute('data-file-id');
+                        this.reselectFile(fileId);
                     }
                 });
             } else {
@@ -63,7 +70,22 @@ export default class LocalMusicModule {
     
     // UI初始化方法
     initializeUI() {
+        // 检查是否在支持文件路径的环境中（如Electron）
+        const isFilePathSupported = typeof process !== 'undefined' && process.versions && process.versions.electron;
+        
+        // 如果支持文件路径显示，则显示路径列
+        if (isFilePathSupported) {
+            const pathColumnHeader = document.getElementById('pathColumnHeader');
+            if (pathColumnHeader) {
+                pathColumnHeader.style.display = '';
+            }
+        }
         // 可以在这里添加更多UI初始化逻辑
+    }
+
+    // 检查是否在Electron环境中
+    isElectronEnvironment() {
+        return typeof process !== 'undefined' && process.versions && process.versions.electron;
     }
 
     // 扫描音乐文件
@@ -101,8 +123,37 @@ export default class LocalMusicModule {
         }
     }
 
+    // 重新选择文件
+    reselectFile(fileId) {
+        // 创建文件选择输入框
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'audio/*';
+
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // 更新文件资源管理器中的文件
+                this.localResourceManager.updateFile(fileId, file);
+                // 更新音乐列表显示
+                this.updateMusicList();
+                
+                // 发布事件通知其他组件
+                this.eventBus.emit('localMusicReselected', {
+                    fileId: fileId,
+                    file: file
+                });
+            }
+        };
+
+        input.click();
+    }
+
     // 更新音乐列表UI
     updateMusicList() {
+        // 先初始化UI（包括检查是否显示路径列）
+        this.initializeUI();
+        
         const files = this.localResourceManager.getFiles();
         const musicTableBody = document.getElementById('musicTableBody');
         const emptyState = document.getElementById('emptyState');
@@ -119,34 +170,39 @@ export default class LocalMusicModule {
         if (emptyState) emptyState.style.display = 'none';
         if (musicList) musicList.style.display = 'block';
         
+        // 检查是否在支持文件路径的环境中
+        const isFilePathSupported = this.isElectronEnvironment();
+        
         let html = '';
         files.forEach((file, index) => {
             // 如果文件只有元数据（从localStorage加载的情况）
             if (file.onlyMetadata) {
                 html += `
-                    <tr>
+                    <tr data-file-id="${file.id}">
                         <td class="index-col">${index + 1}</td>
                         <td class="title-col">${file.name}</td>
                         <td class="artist-col">${file.artist || '未知艺术家'}</td>
                         <td class="album-col">${file.album || '未知专辑'}</td>
                         <td class="duration-col">${file.duration || '00:00'}</td>
                         <td class="size-col">${file.size || '未知大小'}</td>
+                        ${isFilePathSupported ? `<td class="path-col">${file.path || '未知路径'}</td>` : ''}
                         <td class="controls-col">
-                            <button class="play-btn" disabled>播放（无文件）</button>
+                            <button class="reselect-btn" title="重新选择文件">🔄</button>
                         </td>
                     </tr>
                 `;
             } else {
                 html += `
-                    <tr>
+                    <tr data-file-id="${file.id}">
                         <td class="index-col">${index + 1}</td>
                         <td class="title-col">${file.name}</td>
                         <td class="artist-col">未知艺术家</td>
                         <td class="album-col">未知专辑</td>
                         <td class="duration-col">00:00</td>
                         <td class="size-col">${this.formatFileSize(file.size)}</td>
+                        ${isFilePathSupported ? `<td class="path-col">${file.path || '未知路径'}</td>` : ''}
                         <td class="controls-col">
-                            <button class="play-btn">播放</button>
+                            <button class="play-btn" title="播放">▶️</button>
                         </td>
                     </tr>
                 `;
@@ -154,15 +210,6 @@ export default class LocalMusicModule {
         });
         
         musicTableBody.innerHTML = html;
-        
-        // 如果有只有元数据的文件，显示提示信息
-        const metadataOnlyFiles = files.some(file => file.onlyMetadata);
-        if (metadataOnlyFiles) {
-            const infoBar = document.createElement('div');
-            infoBar.className = 'metadata-info';
-            infoBar.textContent = '提示：列表中包含仅含元数据的文件（无实际音频文件）';
-            musicList.parentNode.insertBefore(infoBar, musicList.nextSibling);
-        }
     }
 
     // 格式化文件大小
