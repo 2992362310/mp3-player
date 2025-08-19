@@ -12,18 +12,186 @@
     padding-left: 10px;
 }
 
-/* 
-  在这里添加在线音乐模块的特定样式
-  例如:
-  
-  .online-music-container {
-    padding: 20px;
-  }
-  
-  .online-music-header {
-    font-size: 24px;
+.search-results-section {
+    margin-bottom: 30px;
+}
+
+.search-results h3 {
+    font-size: 20px;
     margin-bottom: 15px;
-  }
-  
-  等等...
-*/
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.song-info {
+    flex: 1;
+}
+
+.song-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.song-artist, .song-album {
+    font-size: 14px;
+    color: #666;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.play-btn {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.play-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.loading, .error, .no-results {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.error {
+    color: #d32f2f;
+}
+
+/* 水墨风格卡片 */
+.card-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card-image {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.card-title {
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    font-size: 16px;
+    color: #333;
+}
+
+/* 水墨风格分类 */
+.category-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.category-item {
+    padding: 10px 20px;
+    background: #f8f8f8;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.category-item:hover {
+    background: #e8e8e8;
+    transform: scale(1.05);
+}
+
+.category-icon {
+    margin-right: 5px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.category-name {
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    color: #333;
+}
+
+/* 水墨风格排行榜 */
+.charts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chart-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.chart-rank {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e0e0e0;
+    border-radius: 50%;
+    font-weight: bold;
+    margin-right: 15px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.chart-info {
+    flex: 1;
+}
+
+.chart-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.chart-artist {
+    font-size: 14px;
+    color: #666;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.chart-play .play-btn {
+    padding: 5px 10px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}

@@ -84,7 +84,10 @@ class EventBus {
     }
 }
 
-// 将EventBus挂载到window对象上
-window.EventBus = EventBus;
+/**
+ * 全局EventBus实例
+ * 使用ES6模块静态特性确保全局单例
+ */
+const eventBus = new EventBus();
 
-export default EventBus;
+export default eventBus;

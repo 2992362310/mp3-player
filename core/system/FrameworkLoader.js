@@ -1,10 +1,10 @@
-import { EventBus, StringUtils, CSSLoader } from '../common/index.js';
+import { eventBus, CSSLoader } from '../common/index.js';
 import ModuleLoader from './ModuleLoader.js';
 
 class FrameworkLoader {
     constructor() {
-        // 初始化事件总线
-        this.eventBus = new EventBus();
+        // 使用全局EventBus实例
+        this.eventBus = eventBus;
         
         this.initializeElements();
         this.currentContent = 'local-music'; // 默认显示本地音乐
@@ -136,11 +136,11 @@ class FrameworkLoader {
         moduleLoader.mainContent = this.mainContent;
         moduleLoader.contentCache = this.contentCache;
         moduleLoader.moduleManagers = this.moduleManagers;
+        moduleLoader.currentContent = this.currentContent;
         
         // 如果已经有缓存内容，直接使用
         if (moduleLoader.contentCache && moduleLoader.contentCache.has(this.currentContent)) {
             moduleLoader.mainContent.innerHTML = moduleLoader.contentCache.get(this.currentContent);
-            // 注意：这里应该让ModuleLoader处理模块初始化
             await moduleLoader.initCurrentContent();
         } else {
             // 否则加载内容
@@ -179,6 +179,7 @@ class FrameworkLoader {
         moduleLoader.mainContent = this.mainContent;
         moduleLoader.contentCache = this.contentCache;
         moduleLoader.moduleManagers = this.moduleManagers;
+        moduleLoader.currentContent = target;
         
         await moduleLoader.loadContent(target);
         
@@ -207,77 +208,9 @@ class FrameworkLoader {
             const module = await import(modulePath);
             return module;
         } catch (error) {
+            console.error(`加载模块失败: ${modulePath}`, error);
             return null;
         }
-    }
-    
-    // 加载内容（框架层）
-    async loadContent(contentType) {
-        if (!this.mainContent) return;
-        
-        try {
-            // 显示加载状态
-            this.mainContent.innerHTML = '<div class="loading">加载中...</div>';
-            
-            // 使用ModuleLoader加载业务模块内容
-            const moduleLoader = new ModuleLoader(this.eventBus);
-            await moduleLoader.loadContent(contentType);
-            
-            // 将加载的内容从moduleLoader复制到当前实例
-            this.mainContent.innerHTML = moduleLoader.mainContent.innerHTML;
-            this.contentCache = moduleLoader.contentCache;
-            this.moduleManagers = moduleLoader.moduleManagers;
-        } catch (error) {
-            this.mainContent.innerHTML = '<div class="error">内容加载失败</div>';
-        }
-    }
-    
-    // 转换内容类型为模块名称
-    convertToModuleName(contentType) {
-        // 对于带连字符的名称，需要将连字符后的首字母大写
-        if (contentType.includes('-')) {
-            return contentType
-                .split('-')
-                .map((part, index) => {
-                    // 第一个部分首字母大写，其余部分首字母大写
-                    return StringUtils.capitalize(part);
-                })
-                .join('');
-        }
-        // 对于不带连字符的名称，直接首字母大写
-        return StringUtils.capitalize(contentType);
-    }
-    
-    // 获取业务模块配置
-    static getModuleConfig(contentType) {
-        const moduleConfigs = {
-            'local-music': {
-                css: 'modules/local-music/local-music.css',
-                js: '../../modules/local-music/LocalMusicModule.js',
-                html: 'modules/local-music/local-music.html'
-            },
-            'online-music': {
-                css: 'modules/online-music/online-music.css',
-                js: '../../modules/online-music/OnlineMusicModule.js',
-                html: 'modules/online-music/online-music.html'
-            },
-            'playlists': {
-                css: 'modules/playlists/playlists.css',
-                js: '../../modules/playlists/PlaylistsModule.js',
-                html: 'modules/playlists/playlists.html'
-            },
-            'settings': {
-                css: 'modules/settings/settings.css',
-                js: '../../modules/settings/SettingsModule.js',
-                html: 'modules/settings/settings.html'
-            }
-        };
-        return moduleConfigs[contentType];
-    }
-    
-    // 获取内容路径
-    getContentPath(contentType) {
-        return ModuleLoader.getContentPath(contentType);
     }
 }
 

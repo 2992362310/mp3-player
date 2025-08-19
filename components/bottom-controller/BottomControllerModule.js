@@ -1,4 +1,5 @@
 import DOMManager from '../../core/common/DOMManager.js';
+import { eventBus } from '../../core/common/index.js';
 
 /**
  * 底部控制器模块
@@ -6,9 +7,14 @@ import DOMManager from '../../core/common/DOMManager.js';
  */
 
 export default class BottomControllerModule {
-    constructor(eventBus) {
-        // 使用传入的EventBus实例或创建新的实例
-        this.eventBus = eventBus || new EventBus();
+    constructor() {
+        // 使用全局EventBus实例
+        this.eventBus = eventBus;
+        this.audioPlayer = null;
+        this.init();
+    }
+
+    init() {
         this.isExpanded = false;
         this.initializeElements();
         this.bindEvents();

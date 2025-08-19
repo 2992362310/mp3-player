@@ -1,15 +1,10 @@
-import { EventBus, StringUtils } from '../common/index.js';
+import { eventBus, StringUtils } from '../common/index.js';
 import CSSLoader from '../common/CSSLoader.js';
 
 export default class ModuleLoader {
-    constructor(eventBus) {
-        // 检查依赖项是否存在
-        if (typeof EventBus === 'undefined') {
-            throw new Error('EventBus is not defined. Please load EventBus.js before ModuleLoader.js');
-        }
-        
-        // 使用传入的事件总线或创建新的实例
-        this.eventBus = eventBus || new EventBus();
+    constructor() {
+        // 使用全局EventBus实例
+        this.eventBus = eventBus;
         
         this.initializeElements();
         this.currentContent = 'local-music'; // 默认显示本地音乐
@@ -18,15 +13,14 @@ export default class ModuleLoader {
     }
     
     initializeElements() {
-        // 获取侧边栏和主内容区域元素
-        this.sidebar = document.querySelector('.sidebar');
+        // 获取主内容区域元素
         this.mainContent = document.querySelector('.main-content');
     }
     
     // 检查必要的元素是否都存在
     elementsExist() {
         // 不再强制要求所有音频元素都存在，只检查必要的元素
-        return this.mainContent && this.sidebar;
+        return this.mainContent;
     }
     
     // 延迟初始化，确保DOM元素已加载
@@ -37,8 +31,6 @@ export default class ModuleLoader {
             throw new Error('必要的UI元素未找到');
         }
         
-        // 初始化侧边栏菜单功能
-        this.initSidebarMenu();
         return Promise.resolve(true);
     }
     
@@ -84,17 +76,6 @@ export default class ModuleLoader {
         
         // 更新当前内容标识
         this.currentContent = target;
-        
-        // 更新侧边栏活动状态
-        const menuItems = this.sidebar.querySelectorAll('.nav-item');
-        menuItems.forEach(item => {
-            const link = item.querySelector('a');
-            if (link && link.getAttribute('data-target') === target) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
         
         // 加载并显示新内容
         await this.loadContent(target);

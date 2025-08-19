@@ -3,14 +3,14 @@
  * 负责处理本地音乐模块中的所有事件绑定和交互逻辑
  */
 
-import { EventBus } from '../../core/common/index.js';
+import { eventBus } from '../../core/common/index.js';
 import LocalResourceManager from './LocalResourceManager.js';
 
 export default class LocalMusicModule {
-    constructor(eventBus) {
+    constructor() {
         this.localResourceManager = new LocalResourceManager();
-        // 使用传入的EventBus实例或创建新的实例
-        this.eventBus = eventBus || new EventBus();
+        // 使用全局EventBus实例
+        this.eventBus = eventBus;
         // 在构造函数中完成初始化，确保模块加载后能自动初始化
         this.init();
     }
