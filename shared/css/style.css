@@ -1,5 +1,5 @@
-@import url('/shared/css/global/variables.css');
-@import url('/shared/css/base/layout.css');
-@import url('/shared/css/base/layout-base.css');
-@import url('/shared/css/components/buttons.css');
-@import url('/shared/css/components/lists.css');
+@import url('./global/variables.css');
+@import url('./base/layout.css');
+@import url('./base/layout-base.css');
+@import url('./components/buttons.css');
+@import url('./components/lists.css');

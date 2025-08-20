@@ -1,5 +1,4 @@
-import { eventBus, StringUtils } from '../common/index.js';
-import CSSLoader from '../common/CSSLoader.js';
+import { eventBus, StringUtils, CSSLoader } from '../common/index.js';
 
 export default class ModuleLoader {
     constructor() {

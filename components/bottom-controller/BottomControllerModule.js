@@ -528,6 +528,3 @@ export default class BottomControllerModule {
         }
     }
 }
-
-// 将BottomControllerModule挂载到window对象上
-window.BottomControllerModule = BottomControllerModule;
