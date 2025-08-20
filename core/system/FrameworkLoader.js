@@ -58,7 +58,7 @@ class FrameworkLoader {
             'bottom-controller': {
                 html: 'components/bottom-controller/bottom-controller.html',
                 css: 'components/bottom-controller/bottom-controller.css',
-                js: '/components/bottom-controller/BottomControllerModule.js'
+                js: '../../components/bottom-controller/BottomControllerModule.js'
             }
         };
         
