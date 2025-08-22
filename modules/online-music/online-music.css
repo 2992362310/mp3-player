@@ -322,6 +322,109 @@
     margin: 0;
 }
 
+/* API播放列表样式 */
+.api-playlist-section h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    border-left: 3px solid #888;
+    padding-left: 10px;
+}
+
+.api-playlist-section p {
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.api-playlist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.api-playlist-card {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.api-playlist-card h3 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    border-left: 3px solid #888;
+    padding-left: 10px;
+}
+
+.playlist-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.playlist-controls button {
+    padding: 8px 16px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.playlist-controls button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.playlist-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.playlist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.playlist-item.playing {
+    background-color: #e8f4f8;
+}
+
+.playlist-song-info {
+    flex: 1;
+}
+
+.playlist-song-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.playlist-song-artist {
+    font-size: 14px;
+    color: #666;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.playlist-item .play-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.playlist-item .playing-indicator {
+    color: #4caf50;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .tab-list {
@@ -354,5 +457,9 @@
     .api-test-form select,
     .api-test-form button {
         width: 100%;
+    }
+    
+    .playlist-controls {
+        flex-direction: column;
     }
 }
