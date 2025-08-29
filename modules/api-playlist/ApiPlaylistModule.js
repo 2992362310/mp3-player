@@ -48,6 +48,22 @@ export default class ApiPlaylistModule {
                 this.playNextSong();
             }
         });
+        
+        // 监听音频开始播放事件
+        this.eventBus.on('playbackStarted', () => {
+            // 当音频开始播放时，预加载下一首歌曲
+            this.preloadNextSong();
+        });
+        
+        // 监听底部控制器的上一首按钮事件
+        this.eventBus.on('playPrevTrack', () => {
+            this.playPrevSong();
+        });
+        
+        // 监听底部控制器的下一首按钮事件
+        this.eventBus.on('playNextTrack', () => {
+            this.playNextSong();
+        });
     }
 
     bindEvents() {
@@ -253,7 +269,6 @@ export default class ApiPlaylistModule {
                 
                 // 更新播放列表
                 this.currentPlaylist = results;
-                this.currentPlayingIndex = -1;
                 
                 // 显示搜索结果
                 this.displayPlaylistResults(results);
@@ -320,7 +335,6 @@ export default class ApiPlaylistModule {
         
         // 更新播放列表
         this.currentPlaylist = results;
-        this.currentPlayingIndex = -1;
         
         // 显示播放列表（详细）
         let playlistHtml = '<div class="results-list">';
@@ -383,6 +397,61 @@ export default class ApiPlaylistModule {
             console.error('获取歌曲播放链接时出错:', error);
         }
     }
+    
+    // 预加载下一首歌曲
+    async preloadNextSong() {
+        // 计算下一首歌曲的索引
+        const nextIndex = this.currentPlayingIndex + 1;
+        
+        // 如果有下一首歌曲，则预加载
+        if (nextIndex < this.currentPlaylist.length) {
+            const nextSong = this.currentPlaylist[nextIndex];
+            try {
+                // 获取下一首歌曲的URL
+                const response = await fetch(
+                    `${this.apiBase}?types=url&source=${nextSong.source || this.defaultSource}&id=${nextSong.id}&br=320`
+                );
+                const songData = await response.json();
+                
+                if (songData.url) {
+                    // 创建一个隐藏的audio元素来预加载音频
+                    const preloadAudio = new Audio();
+                    preloadAudio.src = songData.url;
+                    preloadAudio.preload = 'auto';
+                    // 不播放，只预加载
+                }
+            } catch (error) {
+                console.error('预加载下一首歌曲时出错:', error);
+            }
+        } else if (this.isAutoPlayEnabled && this.currentPage < this.totalPages) {
+            // 如果是最后一首歌且启用了自动播放并且还有下一页，则预加载下一页的第一首歌
+            try {
+                // 获取下一页数据
+                const response = await fetch(
+                    `${this.apiBase}?types=search&source=${this.currentSource}&name=${encodeURIComponent(this.currentKeyword)}&count=${this.pageSize}&pages=${this.currentPage + 1}`
+                );
+                const results = await response.json();
+                
+                if (results && Array.isArray(results) && results.length > 0) {
+                    const nextSong = results[0];
+                    const songResponse = await fetch(
+                        `${this.apiBase}?types=url&source=${nextSong.source || this.defaultSource}&id=${nextSong.id}&br=320`
+                    );
+                    const songData = await songResponse.json();
+                    
+                    if (songData.url) {
+                        // 创建一个隐藏的audio元素来预加载音频
+                        const preloadAudio = new Audio();
+                        preloadAudio.src = songData.url;
+                        preloadAudio.preload = 'auto';
+                        // 不播放，只预加载
+                    }
+                }
+            } catch (error) {
+                console.error('预加载下一页第一首歌曲时出错:', error);
+            }
+        }
+    }
 
     // 播放全部歌曲
     playAllSongs() {
@@ -394,8 +463,39 @@ export default class ApiPlaylistModule {
     // 播放下一首歌曲
     playNextSong() {
         if (this.currentPlaylist.length > 0) {
-            const nextIndex = (this.currentPlayingIndex + 1) % this.currentPlaylist.length;
-            this.playSongFromPlaylist(nextIndex);
+            const nextIndex = this.currentPlayingIndex + 1;
+            
+            if (nextIndex < this.currentPlaylist.length) {
+                // 播放当前播放列表中的下一首歌曲
+                this.playSongFromPlaylist(nextIndex);
+            } else if (this.isAutoPlayEnabled) {
+                // 如果启用了自动播放并且当前是最后一首歌
+                if (this.currentPage < this.totalPages) {
+                    // 加载下一页
+                    this.goToPage(this.currentPage + 1);
+                } else {
+                    // 没有更多歌曲，重新从第一首开始播放
+                    this.playSongFromPlaylist(0);
+                }
+            } else {
+                // 没有启用自动播放，重新从第一首开始播放
+                this.playSongFromPlaylist(0);
+            }
+        }
+    }
+    
+    // 播放上一首歌曲
+    playPrevSong() {
+        if (this.currentPlaylist.length > 0) {
+            const prevIndex = this.currentPlayingIndex - 1;
+            
+            if (prevIndex >= 0) {
+                // 播放当前播放列表中的上一首歌曲
+                this.playSongFromPlaylist(prevIndex);
+            } else {
+                // 如果是第一首歌，则播放当前播放列表的最后一首歌
+                this.playSongFromPlaylist(this.currentPlaylist.length - 1);
+            }
         }
     }
 
