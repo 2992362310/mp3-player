@@ -1,0 +1,39 @@
+<!-- API播放列表内容 -->
+<div class="content-section" id="api-playlist-content">
+    <div class="content-header">
+        <h1>API播放列表</h1>
+         <p>该页面整合了搜索和播放功能，可以搜索歌曲并播放，支持自动连续播放。</p>
+    </div>
+    
+    <div class="content-area">
+        <section class="api-playlist-section">
+            <div class="api-playlist-container">
+                <!-- 搜索区域 -->
+                <div class="api-playlist-card">
+                    <h3>搜索歌曲</h3>
+                    <div class="api-test-form">
+                        <input type="text" class="api-search-input" placeholder="输入搜索关键词" />
+                        <select class="api-source-select">
+                            <option value="netease">网易云音乐</option>
+                            <option value="kuwo">酷我音乐</option>
+                            <option value="joox">JOOX</option>
+                            <option value="tencent">QQ音乐</option>
+                            <option value="kugou">酷狗音乐</option>
+                        </select>
+                        <button class="api-search-btn">搜索</button>
+                    </div>
+                    <div class="api-search-results"></div>
+                </div>
+                
+                <!-- 播放列表区域 -->
+                <div class="api-playlist-card">
+                    <h3>播放列表</h3>
+                    <div class="playlist-controls">
+                        <button class="playlist-auto-play-btn" disabled>🔁 自动播放</button>
+                    </div>
+                    <div class="api-playlist-results"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

@@ -10,12 +10,29 @@
     transform: scale(1.1);
 }
 
+/* 歌词按钮样式 */
+.lyrics-btn {
+    font-size: 18px;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.lyrics-btn:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}
+
 .player-info p {
     padding: 0 15px 15px;
     margin: 0;
     color: #666;
     font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
 }
+
 /* 底部控制器 - 水墨风 (固定在底部) */
 .bottom-controller {
     background-color: rgba(255, 255, 255, 0.95);
@@ -28,6 +45,7 @@
     height: 120px; /* 固定高度 */
     display: flex;
     align-items: center;
+    position: relative; /* 为歌词弹窗定位添加相对定位 */
 }
 
 .controller-container {
@@ -87,16 +105,12 @@
 
 .control-btn {
     background: none;
-    border: 1px solid #ccc;
+    border: none;
     color: #333;
-    font-size: 20px;
+    font-size: 16px;
     cursor: pointer;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 4px;
     transition: all 0.3s ease;
     font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
 }
@@ -107,9 +121,8 @@
 }
 
 .play-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
+    font-size: 18px;
+    padding: 8px 15px;
 }
 
 .volume-controls {
@@ -213,6 +226,7 @@
     border-bottom: 1px solid #e0e0e0;
 }
 
+.show-lyrics-btn,
 .clear-playlist-btn {
     padding: 6px 12px;
     background-color: #f0f0f0;
@@ -222,6 +236,12 @@
     cursor: pointer;
     font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
     transition: all 0.3s ease;
+    margin-left: 5px;
+}
+
+.show-lyrics-btn:hover,
+.clear-playlist-btn:hover {
+    background-color: #e0e0e0;
 }
 
 .clear-playlist-btn:hover {
@@ -295,6 +315,143 @@
 
 .playlist-item-remove:hover {
     background-color: #ffebee;
+}
+
+/* 歌词弹窗样式 */
+.lyrics-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lyrics-modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 600px;
+    max-height: 80%;
+    display: flex;
+    flex-direction: column;
+}
+
+.lyrics-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.lyrics-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.lyrics-modal-close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.lyrics-modal-close:hover,
+.lyrics-modal-close:focus {
+    color: #000;
+}
+
+.lyrics-modal-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.lyrics-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.lyrics-title {
+    font-size: 20px;
+    margin-bottom: 5px;
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.lyrics-artist {
+    font-size: 14px;
+    color: #666;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.lyrics-display {
+    height: 300px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.lyrics-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #999;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
+.lyrics-content {
+    padding: 10px 0;
+}
+
+.lyrics-line {
+    padding: 8px 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    color: #666;
+}
+
+.lyrics-line.active {
+    color: #1db954;
+    font-weight: bold;
+    font-size: 18px;
+    transform: scale(1.05);
+}
+
+.lyrics-line.passed {
+    color: #999;
+}
+
+/* 歌词区域样式 */
+.lyrics-section {
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.lyrics-section h4 {
+    margin: 0 0 15px 0;
+    padding: 0;
+    color: #333;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.lyrics-container {
+    height: 200px;
+    overflow-y: auto;
+    position: relative;
 }
 
 /* 响应式设计 */
