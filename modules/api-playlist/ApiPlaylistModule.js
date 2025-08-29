@@ -121,9 +121,11 @@ export default class ApiPlaylistModule {
         const historyContainer = document.querySelector('#api-playlist-content .search-history-tags');
         if (historyContainer) {
             this.eventHandlers.historyContainerClick = (e) => {
-                if (e.target.classList.contains('history-tag')) {
-                    const keyword = e.target.getAttribute('data-keyword');
-                    const source = e.target.getAttribute('data-source');
+                // 处理搜索历史标签点击（点击在.history-tag元素或其子元素上）
+                const historyTag = e.target.closest('.history-tag');
+                if (historyTag && !e.target.classList.contains('delete-history-btn')) {
+                    const keyword = historyTag.getAttribute('data-keyword');
+                    const source = historyTag.getAttribute('data-source');
                     
                     // 设置搜索框和源选择器的值
                     const searchInput = document.querySelector('#api-playlist-content .api-search-input');
@@ -134,6 +136,20 @@ export default class ApiPlaylistModule {
                     
                     // 执行搜索
                     this.searchInPlaylistTab();
+                }
+                // 处理删除按钮点击
+                else if (e.target.classList.contains('delete-history-btn')) {
+                    const tag = e.target.closest('.history-tag');
+                    if (tag) {
+                        const keyword = tag.getAttribute('data-keyword');
+                        const source = tag.getAttribute('data-source');
+                        
+                        // 删除历史记录
+                        this.removeSearchHistory(keyword, source);
+                        
+                        // 重新渲染搜索历史
+                        this.renderSearchHistory();
+                    }
                 }
             };
             historyContainer.addEventListener('click', this.eventHandlers.historyContainerClick);
@@ -410,10 +426,24 @@ export default class ApiPlaylistModule {
             timestamp: Date.now()
         });
         
-        // 限制历史记录数量
-        if (this.searchHistory.length > this.maxHistoryItems) {
-            this.searchHistory = this.searchHistory.slice(0, this.maxHistoryItems);
+        // 限制历史记录数量为10条
+        if (this.searchHistory.length > 10) {
+            this.searchHistory = this.searchHistory.slice(0, 10);
         }
+        
+        // 保存到localStorage
+        try {
+            localStorage.setItem('apiPlaylistSearchHistory', JSON.stringify(this.searchHistory));
+        } catch (e) {
+            console.error('保存搜索历史失败:', e);
+        }
+    }
+
+    // 删除指定的搜索历史记录
+    removeSearchHistory(keyword, source) {
+        // 过滤掉匹配的记录
+        this.searchHistory = this.searchHistory.filter(item => 
+            !(item.keyword === keyword && item.source === source));
         
         // 保存到localStorage
         try {
@@ -459,9 +489,13 @@ export default class ApiPlaylistModule {
             
             const sourceName = sourceNames[item.source] || item.source;
             
-            html += `<span class="history-tag" data-keyword="${item.keyword}" data-source="${item.source}">`;
-            html += `${item.keyword} (${sourceName})`;
-            html += `</span>`;
+            html += `<div class="history-tag" data-keyword="${item.keyword}" data-source="${item.source}">`;
+            html += `<div class="history-content">`;
+            html += `<span class="history-keyword">${item.keyword}</span>`;
+            html += `<span class="history-source">${sourceName}</span>`;
+            html += `</div>`;
+            html += '<span class="delete-history-btn" title="删除此记录">×</span>';
+            html += `</div>`;
         });
         
         historyContainer.innerHTML = html;
