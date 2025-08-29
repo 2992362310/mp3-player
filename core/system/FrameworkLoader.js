@@ -7,7 +7,7 @@ class FrameworkLoader {
         this.eventBus = eventBus;
         
         this.initializeElements();
-        this.currentContent = 'online-music'; // 默认显示在线音乐
+        this.currentContent = 'api-playlist'; // 默认显示API播放列表
         this.contentCache = new Map(); // 添加内容缓存
         this.moduleManagers = new Map(); // 添加模块管理器缓存
     }

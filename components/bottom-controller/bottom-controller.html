@@ -23,6 +23,8 @@
                     <span class="volume-icon">🔊</span>
                     <input type="range" class="volume-slider" min="0" max="100" value="80">
                 </div>
+                <!-- 歌词显示按钮 -->
+                <button class="control-btn lyrics-btn" title="显示歌词">🎵</button>
             </div>
         </div>
         
@@ -52,10 +54,48 @@
         <div class="player-info">
             <h4>播放列表</h4>
             <div class="playlist-controls">
+                <button class="show-lyrics-btn">歌词</button>
                 <button class="clear-playlist-btn">清空列表</button>
             </div>
             <div class="playlist-container">
                 <ul class="playlist-items"></ul>
+            </div>
+        </div>
+        
+        <!-- 歌词显示区域 -->
+        <div class="lyrics-section" style="display: none;">
+            <h4>歌词</h4>
+            <div class="lyrics-container">
+                <div class="lyrics-placeholder">
+                    <p>歌词将在此处显示</p>
+                </div>
+                <div class="lyrics-content">
+                    <!-- 歌词内容将通过JavaScript动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 歌词弹窗 -->
+    <div class="lyrics-modal" style="display: none;">
+        <div class="lyrics-modal-content">
+            <div class="lyrics-modal-header">
+                <h2>歌词显示</h2>
+                <span class="lyrics-modal-close">&times;</span>
+            </div>
+            <div class="lyrics-modal-body">
+                <div class="lyrics-info">
+                    <h3 class="lyrics-title">暂无歌曲播放</h3>
+                    <p class="lyrics-artist">未知艺术家</p>
+                </div>
+                <div class="lyrics-display">
+                    <div class="lyrics-placeholder">
+                        <p>歌词将在此处显示</p>
+                    </div>
+                    <div class="lyrics-content">
+                        <!-- 歌词内容将通过JavaScript动态加载 -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>

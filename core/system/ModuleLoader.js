@@ -198,6 +198,7 @@ export default class ModuleLoader {
     // 获取内容路径
     static getContentPath(contentType) {
         const modulePaths = {
+            'api-playlist': 'modules/api-playlist/api-playlist.html',
             'local-music': 'modules/local-music/local-music.html',
             'online-music': 'modules/online-music/online-music.html',
             'playlists': 'modules/playlists/playlists.html',
@@ -209,6 +210,11 @@ export default class ModuleLoader {
     // 获取业务模块配置
     static getModuleConfig(contentType) {
         const moduleConfigs = {
+            'api-playlist': {
+                css: 'modules/api-playlist/api-playlist.css',
+                js: '../../modules/api-playlist/ApiPlaylistModule.js',
+                html: 'modules/api-playlist/api-playlist.html'
+            },
             'local-music': {
                 css: 'modules/local-music/local-music.css',
                 js: '../../modules/local-music/LocalMusicModule.js',
