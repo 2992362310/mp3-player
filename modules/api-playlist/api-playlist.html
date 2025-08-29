@@ -2,9 +2,8 @@
 <div class="content-section" id="api-playlist-content">
     <div class="content-header">
         <h1>API播放列表</h1>
-         <p>该页面整合了搜索和播放功能，可以搜索歌曲并播放，支持自动连续播放。</p>
     </div>
-    
+
     <div class="content-area">
         <section class="api-playlist-section">
             <div class="api-playlist-container">
@@ -22,16 +21,22 @@
                         </select>
                         <button class="api-search-btn">搜索</button>
                     </div>
-                    <div class="api-search-results"></div>
-                </div>
-                
-                <!-- 播放列表区域 -->
-                <div class="api-playlist-card">
-                    <h3>播放列表</h3>
-                    <div class="playlist-controls">
-                        <button class="playlist-auto-play-btn" disabled>🔁 自动播放</button>
+
+                    <div class="search-controls">
+                        <button class="playlist-auto-play-btn">🔁 自动播放 (开)</button>
+                    </div>
+
+                    <div class="search-history-container">
+                        <h4>搜索历史</h4>
+                        <div class="search-history-tags"></div>
                     </div>
                     <div class="api-playlist-results"></div>
+                    <div class="pagination-container">
+                        <button class="pagination-btn prev-btn" disabled>上一页</button>
+                        <span class="pagination-info">第 <span class="current-page">1</span> 页，共 <span
+                                class="total-pages">1</span> 页</span>
+                        <button class="pagination-btn next-btn" disabled>下一页</button>
+                    </div>
                 </div>
             </div>
         </section>
