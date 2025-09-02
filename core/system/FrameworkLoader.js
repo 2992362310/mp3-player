@@ -182,14 +182,18 @@ class FrameworkLoader {
         });
         
         // 使用ModuleLoader加载并显示新内容
-        const moduleLoader = new ModuleLoader();
+        const moduleLoader = new ModuleLoader(this.eventBus);
         // 复制必要的属性
         moduleLoader.mainContent = this.mainContent;
         moduleLoader.contentCache = this.contentCache;
         moduleLoader.moduleManagers = this.moduleManagers;
-        moduleLoader.currentContent = target;
         
         await moduleLoader.loadContent(target);
+        
+        // 如果切换到api-playlist，触发激活事件
+        if (target === 'api-playlist') {
+            this.eventBus.emit('apiPlaylistActivated');
+        }
         
         // 更新缓存
         this.contentCache = moduleLoader.contentCache;

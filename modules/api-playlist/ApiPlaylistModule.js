@@ -64,6 +64,11 @@ export default class ApiPlaylistModule {
         this.eventBus.on('playNextTrack', () => {
             this.playNextSong();
         });
+        
+        // 监听模块激活事件，用于在页面切换回来时重新加载历史记录
+        this.eventBus.on('apiPlaylistActivated', () => {
+            this.refreshSearchHistory();
+        });
     }
 
     bindEvents() {
@@ -204,6 +209,8 @@ export default class ApiPlaylistModule {
     initializeUI() {
         console.log('API播放列表模块UI初始化完成');
         // 可以在这里添加更多UI初始化逻辑
+        // 确保每次UI初始化时都刷新搜索历史
+        this.refreshSearchHistory();
     }
 
     // 在播放列表标签页中搜索
@@ -347,7 +354,9 @@ export default class ApiPlaylistModule {
                 artistNames = song.artist || '未知艺术家';
             }
             
-            const isPlaying = this.currentPlayingIndex === index;
+            // 计算全局索引（考虑分页）
+            const globalIndex = (this.currentPage - 1) * this.pageSize + index;
+            const isPlaying = this.currentPlayingIndex === globalIndex;
             
             playlistHtml += `
                 <div class="playlist-item ${isPlaying ? 'playing' : ''}">
@@ -356,7 +365,7 @@ export default class ApiPlaylistModule {
                         <div class="playlist-song-artist">${artistNames}</div>
                     </div>
                     ${isPlaying ? '<span class="playing-indicator">▶</span>' : ''}
-                    <button class="play-btn" data-song-id="${song.id}" data-source="${song.source || this.defaultSource}" data-index="${index}">播放</button>
+                    <button class="play-btn" data-song-id="${song.id}" data-source="${song.source || this.defaultSource}" data-index="${globalIndex}">播放</button>
                 </div>
             `;
         });
@@ -366,35 +375,78 @@ export default class ApiPlaylistModule {
 
     // 播放播放列表中的歌曲
     async playSongFromPlaylist(index) {
-        if (index < 0 || index >= this.currentPlaylist.length) return;
+        // 计算歌曲在当前播放列表中的页码和索引
+        const pageIndex = index % this.pageSize;
+        const pageNum = Math.floor(index / this.pageSize) + 1;
         
-        const song = this.currentPlaylist[index];
-        this.currentPlayingIndex = index;
-        
-        try {
-            // 获取歌曲URL
-            const response = await fetch(
-                `${this.apiBase}?types=url&source=${song.source || this.defaultSource}&id=${song.id}&br=320`
-            );
-            const songData = await response.json();
+        // 如果请求的歌曲不在当前页，需要切换到对应页面
+        if (pageNum !== this.currentPage) {
+            this.currentPage = pageNum;
+            await this.performSearch(this.currentKeyword, this.currentSource, this.currentPage);
+            // 重新计算页面内索引
+            const newPageIndex = index % this.pageSize;
+            if (newPageIndex < 0 || newPageIndex >= this.currentPlaylist.length) return;
             
-            if (songData.url) {
-                // 发布事件通知播放器播放歌曲
-                this.eventBus.emit('playOnlineSong', { 
-                    songId: song.id,
-                    url: songData.url,
-                    source: song.source || this.defaultSource,
-                    title: song.name,
-                    artist: Array.isArray(song.artist) ? song.artist.map(a => a.name || a).join(', ') : song.artist
-                });
+            const song = this.currentPlaylist[newPageIndex];
+            this.currentPlayingIndex = index;
+            
+            try {
+                // 获取歌曲URL
+                const response = await fetch(
+                    `${this.apiBase}?types=url&source=${song.source || this.defaultSource}&id=${song.id}&br=320`
+                );
+                const songData = await response.json();
                 
-                // 更新播放列表显示
-                this.displayPlaylistResults(this.currentPlaylist);
-            } else {
-                console.error('无法获取歌曲播放链接');
+                if (songData.url) {
+                    // 发布事件通知播放器播放歌曲
+                    this.eventBus.emit('playOnlineSong', { 
+                        songId: song.id,
+                        url: songData.url,
+                        source: song.source || this.defaultSource,
+                        title: song.name,
+                        artist: Array.isArray(song.artist) ? song.artist.map(a => a.name || a).join(', ') : song.artist
+                    });
+                    
+                    // 更新播放列表显示
+                    this.displayPlaylistResults(this.currentPlaylist);
+                } else {
+                    console.error('无法获取歌曲播放链接');
+                }
+            } catch (error) {
+                console.error('获取歌曲播放链接时出错:', error);
             }
-        } catch (error) {
-            console.error('获取歌曲播放链接时出错:', error);
+        } else {
+            // 歌曲在当前页
+            if (pageIndex < 0 || pageIndex >= this.currentPlaylist.length) return;
+            
+            const song = this.currentPlaylist[pageIndex];
+            this.currentPlayingIndex = index;
+            
+            try {
+                // 获取歌曲URL
+                const response = await fetch(
+                    `${this.apiBase}?types=url&source=${song.source || this.defaultSource}&id=${song.id}&br=320`
+                );
+                const songData = await response.json();
+                
+                if (songData.url) {
+                    // 发布事件通知播放器播放歌曲
+                    this.eventBus.emit('playOnlineSong', { 
+                        songId: song.id,
+                        url: songData.url,
+                        source: song.source || this.defaultSource,
+                        title: song.name,
+                        artist: Array.isArray(song.artist) ? song.artist.map(a => a.name || a).join(', ') : song.artist
+                    });
+                    
+                    // 更新播放列表显示
+                    this.displayPlaylistResults(this.currentPlaylist);
+                } else {
+                    console.error('无法获取歌曲播放链接');
+                }
+            } catch (error) {
+                console.error('获取歌曲播放链接时出错:', error);
+            }
         }
     }
     
@@ -465,13 +517,20 @@ export default class ApiPlaylistModule {
         if (this.currentPlaylist.length > 0) {
             const nextIndex = this.currentPlayingIndex + 1;
             
-            if (nextIndex < this.currentPlaylist.length) {
-                // 播放当前播放列表中的下一首歌曲
+            // 计算下一首歌曲应在的页码
+            const nextPageNum = Math.floor(nextIndex / this.pageSize) + 1;
+            
+            if (nextPageNum === this.currentPage && 
+                nextIndex % this.pageSize < this.currentPlaylist.length) {
+                // 在当前页内播放下一首
                 this.playSongFromPlaylist(nextIndex);
             } else if (this.isAutoPlayEnabled) {
-                // 如果启用了自动播放并且当前是最后一首歌
-                if (this.currentPage < this.totalPages) {
-                    // 加载下一页
+                // 如果启用了自动播放并且需要切换页面
+                if (this.currentKeyword && nextPageNum <= this.totalPages) {
+                    // 加载对应页面
+                    this.goToPage(nextPageNum);
+                } else if (this.currentKeyword && this.currentPage < this.totalPages) {
+                    // 如果已经是最后一页但还有下一页
                     this.goToPage(this.currentPage + 1);
                 } else {
                     // 没有更多歌曲，重新从第一首开始播放
@@ -489,12 +548,21 @@ export default class ApiPlaylistModule {
         if (this.currentPlaylist.length > 0) {
             const prevIndex = this.currentPlayingIndex - 1;
             
-            if (prevIndex >= 0) {
-                // 播放当前播放列表中的上一首歌曲
+            // 计算上一首歌曲应在的页码
+            const prevPageNum = prevIndex >= 0 ? Math.floor(prevIndex / this.pageSize) + 1 : 1;
+            
+            if (prevIndex >= 0 && prevPageNum === this.currentPage) {
+                // 在当前页内播放上一首
                 this.playSongFromPlaylist(prevIndex);
+            } else if (prevIndex >= 0) {
+                // 需要切换到指定页面
+                this.goToPage(prevPageNum);
             } else {
                 // 如果是第一首歌，则播放当前播放列表的最后一首歌
-                this.playSongFromPlaylist(this.currentPlaylist.length - 1);
+                // 计算最后一首歌的索引
+                const lastPageIndex = this.currentPlaylist.length - 1;
+                const lastSongGlobalIndex = (this.currentPage - 1) * this.pageSize + lastPageIndex;
+                this.playSongFromPlaylist(lastSongGlobalIndex);
             }
         }
     }
@@ -599,5 +667,13 @@ export default class ApiPlaylistModule {
         });
         
         historyContainer.innerHTML = html;
+    }
+
+    // 刷新搜索历史记录显示
+    refreshSearchHistory() {
+        // 重新加载搜索历史
+        this.loadSearchHistory();
+        // 重新渲染搜索历史
+        this.renderSearchHistory();
     }
 }
