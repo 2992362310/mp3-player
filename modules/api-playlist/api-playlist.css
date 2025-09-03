@@ -273,6 +273,15 @@
     border-left: 3px solid #4caf50;
 }
 
+.playlist-song-index {
+    font-weight: bold;
+    color: #666;
+    margin-right: 15px;
+    min-width: 30px;
+    text-align: center;
+    font-family: 'KaiTi', '楷体', STKaiti, '华文楷体', serif;
+}
+
 .playlist-song-info {
     flex: 1;
 }
