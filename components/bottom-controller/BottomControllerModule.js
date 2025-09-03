@@ -685,8 +685,8 @@ export default class BottomControllerModule {
     handleAudioEnded() {
         this.eventBus.emit('audioEnded');
         
-        // 自动播放下一首
-        this.playNext();
+        // 注意：不再在这里调用 this.playNext()，因为 ApiPlaylistModule 已经在 audioEnded 事件监听器中处理了下一首播放逻辑
+        // 如果没有模块监听 audioEnded 事件，则可以在这里添加默认行为
     }
     
     // 处理文件选择
