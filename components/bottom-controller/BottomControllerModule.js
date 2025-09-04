@@ -561,8 +561,25 @@ export default class BottomControllerModule {
         // 设置音频源
         this.audioPlayer.src = track.url;
         
+        // 更新当前歌曲信息
+        this.currentSongInfo = {
+            title: track.title || '未知歌曲',
+            artist: track.artist || '未知艺术家',
+            id: track.id,
+            source: track.source // 如果有的话
+        };
+        
         // 更新歌曲信息显示
         this.updateTrackInfoForSong(track);
+        
+        // 更新歌词显示信息
+        this.updateLyricsInfo();
+        
+        // 重置当前歌词状态
+        this.currentLyrics = null;
+        
+        // 如果歌词弹窗或展开区域正在显示，则加载歌词
+        this.loadLyricsIfNeeded();
         
         // 播放音频
         this.audioPlayer.play()
@@ -684,6 +701,9 @@ export default class BottomControllerModule {
     // 处理音频播放结束
     handleAudioEnded() {
         this.eventBus.emit('audioEnded');
+        
+        // 重置当前歌词状态，确保下一首歌曲能正确加载歌词
+        this.currentLyrics = null;
         
         // 注意：不再在这里调用 this.playNext()，因为 ApiPlaylistModule 已经在 audioEnded 事件监听器中处理了下一首播放逻辑
         // 如果没有模块监听 audioEnded 事件，则可以在这里添加默认行为
