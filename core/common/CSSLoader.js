@@ -57,7 +57,4 @@ class CSSLoader {
     }
 }
 
-// 将CSSLoader挂载到window对象上
-window.CSSLoader = CSSLoader;
-
 export default CSSLoader;

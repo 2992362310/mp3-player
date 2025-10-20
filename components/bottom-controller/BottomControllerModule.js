@@ -1,31 +1,23 @@
 import { eventBus, DOMManager } from '../../core/common/index.js';
 
-/**
- * 底部控制器模块
- * 负责管理底部控制器的所有功能，包括播放控制、展开/收起等
- */
-
 export default class BottomControllerModule {
     constructor() {
-        // 使用全局EventBus实例
         this.eventBus = eventBus;
         this.audioPlayer = null;
-        this.playlist = []; // 播放列表
-        this.currentTrackIndex = -1; // 当前播放曲目索引
-        this.lyricsCache = {}; // 歌词缓存
-        this.currentLyrics = null; // 修改此处：将初始化值由 '' 改为 null
-        this.currentSongInfo = null; // 当前歌曲信息
+        this.playlist = [];
+        this.currentTrackIndex = -1;
+        this.lyricsCache = {};
+        this.currentLyrics = null;
+        this.currentSongInfo = null;
         this.init();
     }
 
-    // 初始化
     init() {
         this.initializeElements();
         this.bindEvents();
         this.initLyricsModal();
     }
     
-    // 初始化歌词弹窗
     initLyricsModal() {
         console.log('歌词弹窗初始化完成');
     }
@@ -631,9 +623,7 @@ export default class BottomControllerModule {
         console.log('加载指定曲目功能已禁用');
     }
     
-    // 更新播放列表高亮
     updatePlaylistHighlight() {
-        // 不再需要更新播放列表高亮
         console.log('更新播放列表高亮功能已禁用');
     }
     
@@ -698,15 +688,9 @@ export default class BottomControllerModule {
         return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
-    // 处理音频播放结束
     handleAudioEnded() {
         this.eventBus.emit('audioEnded');
-        
-        // 重置当前歌词状态，确保下一首歌曲能正确加载歌词
         this.currentLyrics = null;
-        
-        // 注意：不再在这里调用 this.playNext()，因为 ApiPlaylistModule 已经在 audioEnded 事件监听器中处理了下一首播放逻辑
-        // 如果没有模块监听 audioEnded 事件，则可以在这里添加默认行为
     }
     
     // 处理文件选择
@@ -730,27 +714,19 @@ export default class BottomControllerModule {
         }
     }
     
-    // 添加到播放列表
     addToPlaylist(track) {
-        // 不再维护播放列表，直接播放传入的歌曲
         this.playSong(track);
     }
     
-    // 渲染播放列表
     renderPlaylist() {
-        // 不再需要渲染播放列表
         console.log('渲染播放列表功能已禁用');
     }
     
-    // 从播放列表中移除
     removeFromPlaylist(index) {
-        // 不再维护播放列表
         console.log('从播放列表移除功能已禁用');
     }
     
-    // 清空播放列表
     clearPlaylist() {
-        // 不再维护播放列表
         console.log('清空播放列表功能已禁用');
     }
     
@@ -773,9 +749,7 @@ export default class BottomControllerModule {
         this.playBtn.textContent = isPlaying ? '⏸' : '▶';
     }
     
-    // 设置拖拽上传
     setupDragAndDrop() {
-        // 可以在这里实现拖拽上传功能
         console.log('拖拽上传功能初始化');
     }
 }
