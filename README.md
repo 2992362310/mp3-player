@@ -5,7 +5,6 @@
 ## 项目特点
 
 - 🎵 本地音乐播放支持
-- 🎵 在线音乐播放支持（第三方 API）
 - 🎵 歌词显示与同步功能
 - 🎨 中国风水墨设计风格
 - 📱 响应式布局，适配移动端
@@ -25,16 +24,12 @@
    - 分类浏览推荐
    - 第三方音乐源支持
 
-3. **播放列表**
-   - 创建和管理自定义播放列表
-   - 收藏喜欢的音乐
-
-4. **歌词显示**
+3. **歌词显示**
    - 在线获取歌词
    - 歌词同步高亮显示
    - 展开区域和弹窗两种显示模式
 
-5. **设置选项**
+4. **设置选项**
    - 音质选择
    - 播放模式设置
    - 界面主题配置
@@ -67,8 +62,6 @@ audio/
 │   └── system/         # 系统核心组件
 ├── modules/            # 业务功能模块
 │   ├── local-music/
-│   ├── online-music/
-│   ├── playlists/
 │   └── settings/
 ├── shared/             # 共享资源
 │   └── css/
@@ -78,7 +71,7 @@ audio/
 ### 核心组件
 
 1. **FrameworkLoader** - 负责加载框架级UI组件（顶部导航、侧边栏、底部控制器等）
-2. **ModuleLoader** - 负责加载业务功能模块（本地音乐、在线音乐、播放列表、设置等）
+2. **ModuleLoader** - 负责加载业务功能模块（本地音乐、设置等）
 3. **AudioPlayer** - 音频播放核心功能
 4. **EventBus** - 事件总线，用于模块间通信
 5. **LocalResourceManager** - 本地资源管理
@@ -111,32 +104,6 @@ audio/
    - `core/ui/` 重命名为 `core/system/`
    - `core/util/` 重命名为 `core/common/`
 
-## 第三方 API 使用说明
-
-本项目在线音乐功能使用了第三方音乐 API 服务：
-
-### GD音乐API
-- **API 提供方**: GD Studio (music-api.gdstudio.xyz)
-- **使用场景**: 
-  - 在线音乐搜索
-  - 获取歌曲播放链接
-  - 获取专辑图片
-  - 获取歌词信息
-- **支持的音乐源**:
-  - 多种主流音乐平台
-- **API 调用示例**:
-  ```javascript
-  // 搜索音乐
-  const response = await fetch(`${this.apiBase}?types=search&source=音乐源标识&name=歌曲名&count=20&pages=1`);
-  
-  // 获取歌曲链接
-  const response = await fetch(`${this.apiBase}?types=url&source=音乐源标识&id=歌曲ID&br=320`);
-  
-  // 获取歌词
-  const response = await fetch(`${this.apiBase}?types=lyric&source=音乐源标识&id=歌曲ID`);
-  ```
-
-> ⚠️ 注意：使用第三方 API 时请遵守 API 提供方的使用条款和限制。本项目仅用于学习和参考目的，不适用于商业用途。
 
 ## 使用说明
 

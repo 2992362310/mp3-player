@@ -200,8 +200,6 @@ export default class ModuleLoader {
         const modulePaths = {
             'api-playlist': 'modules/api-playlist/api-playlist.html',
             'local-music': 'modules/local-music/local-music.html',
-            'online-music': 'modules/online-music/online-music.html',
-            'playlists': 'modules/playlists/playlists.html',
             'settings': 'modules/settings/settings.html'
         };
         return modulePaths[contentType] || '';
@@ -219,16 +217,6 @@ export default class ModuleLoader {
                 css: 'modules/local-music/local-music.css',
                 js: '../../modules/local-music/LocalMusicModule.js',
                 html: 'modules/local-music/local-music.html'
-            },
-            'online-music': {
-                css: 'modules/online-music/online-music.css',
-                js: '../../modules/online-music/OnlineMusicModule.js',
-                html: 'modules/online-music/online-music.html'
-            },
-            'playlists': {
-                css: 'modules/playlists/playlists.css',
-                js: '../../modules/playlists/PlaylistsModule.js',
-                html: 'modules/playlists/playlists.html'
             },
             'settings': {
                 css: 'modules/settings/settings.css',
