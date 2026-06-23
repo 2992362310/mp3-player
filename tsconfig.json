@@ -23,13 +23,13 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path aliases */
+    /* Path aliases - used by IDE and type checking */
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@composables/*": ["src/composables/*"],
-      "@core/*": ["src/core/*"],
-      "@assets/*": ["src/assets/*"]
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@composables/*": ["./src/composables/*"],
+      "@core/*": ["./src/core/*"],
+      "@assets/*": ["./src/assets/*"]
     },
 
     "types": ["vite/client", "node"]
@@ -41,5 +41,5 @@
     "src/env.d.ts",
     "vite.config.ts"
   ],
-  "exclude": ["node_modules", "dist"],
+  "exclude": ["node_modules", "dist"]
 }

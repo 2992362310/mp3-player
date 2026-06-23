@@ -25,7 +25,7 @@
               v-model="searchInput" 
               @keyup.enter="handleSearch"
               @focus="showSearchHistory = true"
-              @blur="setTimeout(() => showSearchHistory = false, 200)"
+              @blur="hideSearchHistory"
               type="text" 
               placeholder="搜索歌曲..." 
               style="width: 100%; padding: 8px 36px 8px 12px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: rgba(255,255,255,0.8); color: #2d2d2d;"
@@ -37,8 +37,8 @@
               <div v-for="(item, idx) in searchHistory" :key="idx" 
                 @click="selectHistory(item.keyword)"
                 style="padding: 8px 12px; border-bottom: 1px solid #e8dcc8; cursor: pointer; font-family: 'Ma Shan Zheng', cursive; color: #666; font-size: 14px; display: flex; justify-content: space-between; align-items: center;"
-                @mouseenter="$event.currentTarget.style.background = 'rgba(200,180,160,0.1)'"
-                @mouseleave="$event.currentTarget.style.background = 'transparent'">
+                @mouseenter="onHistoryItemEnter"
+                @mouseleave="onHistoryItemLeave">
                 <span>{{ item.keyword }}</span>
                 <span style="font-size: 12px; color: #aaa;">{{ item.source }}</span>
               </div>
@@ -324,6 +324,22 @@ function selectHistory(keyword: string) {
   searchInput.value = keyword;
   showSearchHistory.value = false;
   handleSearch();
+}
+
+function hideSearchHistory() {
+  setTimeout(() => {
+    showSearchHistory.value = false;
+  }, 200);
+}
+
+function onHistoryItemEnter(e: MouseEvent) {
+  const target = e.currentTarget as HTMLElement;
+  if (target) target.style.background = 'rgba(200,180,160,0.1)';
+}
+
+function onHistoryItemLeave(e: MouseEvent) {
+  const target = e.currentTarget as HTMLElement;
+  if (target) target.style.background = 'transparent';
 }
 
 /* ========== 辅助函数 ========== */
