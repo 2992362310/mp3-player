@@ -61,8 +61,8 @@
               :value="player.muted ? 0 : player.volume"
               @input="player.setVolume(($event.target as HTMLInputElement).valueAsNumber)" />
           </div>
-          <!-- 歌词弹窗 -->
-          <button @click="openModalLyric" class="sketch-icon" title="歌词弹窗" :disabled="!player.currentSong">
+          <!-- 歌词 -->
+          <button @click="toggleLyricPanel" class="sketch-icon" title="歌词" :disabled="!player.currentSong">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 5L8 3L12 5L16 3L20 5V19"/>
               <line x1="4" y1="9" x2="20" y2="9"/>
@@ -70,29 +70,6 @@
               <line x1="4" y1="17" x2="18" y2="17"/>
               <circle cx="6" cy="21" r="2" fill="#4a4a4a"/>
               <circle cx="18" cy="19" r="2" fill="#4a4a4a"/>
-            </svg>
-          </button>
-          <!-- 侧栏歌词 -->
-          <button @click="openSidebarLyric" class="sketch-icon" title="侧栏歌词" :disabled="!player.currentSong">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="16" rx="2"/>
-              <line x1="14" y1="4" x2="14" y2="20"/>
-              <line x1="6" y1="8" x2="11" y2="8"/>
-              <line x1="6" y1="12" x2="11" y2="12"/>
-              <line x1="6" y1="16" x2="10" y2="16"/>
-              <line x1="16.5" y1="8" x2="19" y2="8"/>
-              <line x1="16.5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </button>
-          <!-- 全屏歌词 -->
-          <button @click="openFullscreenLyric" class="sketch-icon" title="全屏歌词" :disabled="!player.currentSong">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9V3H9"/>
-              <path d="M15 3H21V9"/>
-              <path d="M21 15V21H15"/>
-              <path d="M9 21H3V15"/>
-              <path d="M8 8L16 16"/>
-              <path d="M16 8L8 16"/>
             </svg>
           </button>
           <!-- 播放模式 -->
@@ -151,19 +128,7 @@ function seek(e: MouseEvent) {
   player.seekTo(pct * player.duration);
 }
 
-function openFullscreenLyric() {
-  ui.openLyricPanel('fullscreen');
-}
-
-function openModalLyric() {
-  ui.openLyricPanel('modal');
-}
-
-function openSidebarLyric() {
-  if (window.innerWidth <= 900) {
-    ui.openLyricPanel('modal');
-    return;
-  }
-  ui.openLyricPanel('sidebar');
+function toggleLyricPanel() {
+  ui.toggleLyricPanel();
 }
 </script>

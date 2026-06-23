@@ -38,7 +38,6 @@
         <main class="main-content">
           <div class="content-container">
             <DiscoverSection v-if="activeSection === 'discover'" />
-            <PlaylistSection v-if="activeSection === 'playlist'" />
             <FavoritesSection v-if="activeSection === 'favorites'" />
             <SettingsSection v-if="activeSection === 'settings'" />
           </div>
@@ -62,9 +61,6 @@
         <PlayerBar />
       </div>
     </div>
-
-    <!-- 歌词弹窗 -->
-    <LyricPanel :render-modes="['modal', 'fullscreen']" />
   </div>
 </template>
 
@@ -76,22 +72,20 @@ import { usePlaylistStore } from './stores/playlist';
 import { useAudio } from './composables/useAudio';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
-import { SketchMusicIcon, SketchPlaylistIcon, SketchHeartIcon, SketchSettingsIcon, SketchPencilIcon } from './components/icons/SketchIcons';
+import { SketchMusicIcon, SketchHeartIcon, SketchSettingsIcon, SketchPencilIcon } from './components/icons/SketchIcons';
 
 import SearchBar from './components/SearchBar.vue';
 import PlayerBar from './components/PlayerBar.vue';
-import LyricPanel from './components/LyricPanel.vue';
 import DiscoverSection from './components/sections/DiscoverSection.vue';
-import PlaylistSection from './components/sections/PlaylistSection.vue';
 import FavoritesSection from './components/sections/FavoritesSection.vue';
 import SettingsSection from './components/sections/SettingsSection.vue';
 
-type SectionId = 'discover' | 'playlist' | 'favorites' | 'settings';
+type SectionId = 'discover' | 'favorites' | 'settings';
 
 interface Section {
   id: SectionId;
   label: string;
-  iconId: 'music' | 'playlist' | 'heart' | 'settings';
+  iconId: 'music' | 'heart' | 'settings';
 }
 
 /* ========== 状态 ========== */
@@ -108,7 +102,6 @@ search.loadSources();
 /* ========== 导航配置 ========== */
 const sections = computed<Section[]>(() => [
   { id: 'discover', label: '发现音乐', iconId: 'music' },
-  { id: 'playlist', label: '播放列表', iconId: 'playlist' },
   { id: 'favorites', label: '我的收藏', iconId: 'heart' },
   { id: 'settings', label: '设置', iconId: 'settings' },
 ]);
@@ -163,7 +156,6 @@ function handleViewportResize() {
 function getIconHtml(iconId: string): string {
   const iconMap: Record<string, string> = {
     music: SketchMusicIcon,
-    playlist: SketchPlaylistIcon,
     heart: SketchHeartIcon,
     settings: SketchSettingsIcon,
   };

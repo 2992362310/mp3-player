@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <LyricPanel :render-modes="['sidebar']" />
+    <LyricPanel />
   </div>
 </template>
 

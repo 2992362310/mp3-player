@@ -1,92 +1,7 @@
 <template>
-  <!-- 全屏模式 -->
-  <Transition name="fade">
-    <div
-      v-if="canRenderMode('fullscreen') && ui.showLyricPanel && ui.lyricMode === 'fullscreen' && player.currentSong"
-      class="lyrics-fullscreen"
-      @click="ui.showLyricPanel = false"
-    >
-      <div class="lyrics-fullscreen-body" @click.stop>
-        <LyricHeader
-          :title="player.currentSong?.title || ''"
-          :artist="player.currentSong?.artist || ''"
-          :show-actions="true"
-        >
-          <template #actions>
-            <button class="mode-btn" @click="setLyricMode('sidebar')">侧栏</button>
-            <button class="mode-btn" @click="setLyricMode('modal')">弹窗</button>
-            <button class="lyrics-modal-close" @click="ui.showLyricPanel = false">&times;</button>
-          </template>
-        </LyricHeader>
-
-        <div class="lyrics-scroll" ref="fullscreenScroller">
-          <div v-if="lines.length === 0" class="lyrics-placeholder">
-            <p style="color: #999; font-size: 16px;">✏️ 暂无歌词</p>
-          </div>
-          <div v-else class="lyrics-content lyrics-content-center">
-            <div class="lyrics-edge-spacer"></div>
-            <LyricLine
-              v-for="(line, i) in lines"
-              :key="`full-${i}`"
-              :line="line"
-              :index="i"
-              :is-active="i === player.currentLyricIndex"
-              :is-passed="i < player.currentLyricIndex"
-              variant="fullscreen"
-              :line-ref-setter="addLineRef('fullscreen', i)"
-              @line-click="handleLineClick"
-            />
-            <div class="lyrics-edge-spacer"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Transition>
-
-  <!-- 弹窗模式 -->
-  <Transition name="fade">
-    <div v-if="canRenderMode('modal') && ui.showLyricPanel && ui.lyricMode === 'modal' && player.currentSong" class="lyrics-modal" @click="ui.showLyricPanel = false">
-      <div class="lyrics-modal-content" @click.stop>
-        <div class="lyrics-modal-header">
-          <h2>🎵 歌词</h2>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <button class="mode-btn" @click="setLyricMode('fullscreen')">全屏</button>
-            <button class="lyrics-modal-close" @click="ui.showLyricPanel = false">&times;</button>
-          </div>
-        </div>
-        <div class="lyrics-modal-body">
-          <div class="lyrics-info">
-            <h3 class="lyrics-title">{{ player.currentSong?.title }}</h3>
-            <p class="lyrics-artist">{{ player.currentSong?.artist }}</p>
-          </div>
-          <div class="lyrics-display lyrics-scroll" ref="modalScroller">
-            <div v-if="lines.length === 0" class="lyrics-placeholder">
-              <p style="color: #999; font-size: 16px;">✏️ 暂无歌词</p>
-            </div>
-            <div v-else class="lyrics-content">
-              <div class="lyrics-edge-spacer"></div>
-              <LyricLine
-                v-for="(line, i) in lines"
-                :key="`modal-${i}`"
-                :line="line"
-                :index="i"
-                :is-active="i === player.currentLyricIndex"
-                :is-passed="i < player.currentLyricIndex"
-                variant="modal"
-                :line-ref-setter="addLineRef('modal', i)"
-                @line-click="handleLineClick"
-              />
-              <div class="lyrics-edge-spacer"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Transition>
-
   <!-- 侧边栏模式 -->
   <div
-    v-if="canRenderMode('sidebar') && ui.showLyricPanel && ui.lyricMode === 'sidebar' && player.currentSong"
+    v-if="ui.showLyricPanel && player.currentSong"
     class="lyrics-sidebar"
     :style="{ width: `${sidebarWidth}px` }"
   >
@@ -94,14 +9,7 @@
     <div class="lyrics-sidebar-header">
       <h3 class="lyrics-sidebar-title">{{ player.currentSong?.title }}</h3>
       <p class="lyrics-sidebar-artist">{{ player.currentSong?.artist }}</p>
-      <div class="lyrics-sidebar-actions">
-        <button class="sidebar-btn" @click="setLyricMode('modal')">
-          弹窗模式
-        </button>
-        <button class="sidebar-btn" @click="setLyricMode('fullscreen')">
-          全屏模式
-        </button>
-      </div>
+      <button class="sidebar-close-btn" @click="ui.showLyricPanel = false">&times;</button>
     </div>
     <div class="lyrics-sidebar-content">
       <div v-if="lines.length === 0" class="lyrics-placeholder">
@@ -118,7 +26,7 @@
             :is-active="i === player.currentLyricIndex"
             :is-passed="i < player.currentLyricIndex"
             variant="sidebar"
-            :line-ref-setter="addLineRef('sidebar', i)"
+            :line-ref-setter="addLineRef(i)"
             @line-click="handleLineClick"
           />
           <div class="lyrics-edge-spacer"></div>
@@ -133,38 +41,14 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useUIStore } from '../stores/ui';
 import LyricLine from './LyricLine.vue';
-import LyricHeader from './LyricHeader.vue';
-
-type LyricMode = 'modal' | 'sidebar' | 'fullscreen';
-
-const props = defineProps<{
-  renderModes?: LyricMode[];
-}>();
 
 const player = usePlayerStore();
 const ui = useUIStore();
 const lines = computed(() => player.lyric?.lines || []);
 
-function canRenderMode(mode: LyricMode) {
-  return !props.renderModes || props.renderModes.includes(mode);
-}
-
-/* ========== Ref 管理统一化 ========== */
-const scrollerMap = new Map<LyricMode, HTMLElement | null>([
-  ['modal', null],
-  ['sidebar', null],
-  ['fullscreen', null],
-]);
-
-const lineRefsMap = new Map<LyricMode, HTMLElement[]>([
-  ['modal', []],
-  ['sidebar', []],
-  ['fullscreen', []],
-]);
-
-const modalScroller = ref<HTMLElement | null>(null);
+/* ========== Ref 管理 ========== */
 const sidebarScroller = ref<HTMLElement | null>(null);
-const fullscreenScroller = ref<HTMLElement | null>(null);
+const lineRefs = ref<HTMLElement[]>([]);
 const sidebarWidth = ref(350);
 
 const MIN_SIDEBAR_WIDTH = 280;
@@ -173,26 +57,13 @@ const MIN_MAIN_CONTENT_WIDTH = 420;
 
 const isResizing = ref(false);
 
-watch([() => modalScroller.value, () => sidebarScroller.value, () => fullscreenScroller.value], () => {
-  scrollerMap.set('modal', modalScroller.value);
-  scrollerMap.set('sidebar', sidebarScroller.value);
-  scrollerMap.set('fullscreen', fullscreenScroller.value);
-});
-
-function addLineRef(mode: LyricMode, index: number) {
+function addLineRef(index: number) {
   return (el: HTMLElement | null) => {
-    if (!lineRefsMap.get(mode)) {
-      lineRefsMap.set(mode, []);
-    }
-
-    const refs = lineRefsMap.get(mode)!;
     if (el) {
-      refs[index] = el;
+      lineRefs.value[index] = el;
       return;
     }
-
-    // line unmounted
-    refs[index] = undefined as unknown as HTMLElement;
+    lineRefs.value[index] = undefined as unknown as HTMLElement;
   };
 }
 
@@ -231,12 +102,6 @@ function startResize(event: MouseEvent) {
   window.addEventListener('mouseup', stopResize);
 }
 
-function clearLineRefs() {
-  lineRefsMap.set('modal', []);
-  lineRefsMap.set('sidebar', []);
-  lineRefsMap.set('fullscreen', []);
-}
-
 function centerActiveLine(scroller: HTMLElement | null, lineEl: HTMLElement | undefined) {
   if (!scroller || !lineEl) return;
   const top = lineEl.offsetTop - scroller.clientHeight / 2 + lineEl.clientHeight / 2;
@@ -247,15 +112,11 @@ async function autoScrollToActiveLine() {
   await nextTick();
   const index = player.currentLyricIndex;
   if (index < 0) return;
-
-  const mode = ui.lyricMode as LyricMode;
-  const scroller = scrollerMap.get(mode) ?? null;
-  const lineEls = lineRefsMap.get(mode) || [];
-  centerActiveLine(scroller, lineEls[index]);
+  centerActiveLine(sidebarScroller.value, lineRefs.value[index]);
 }
 
 watch(
-  () => [player.currentLyricIndex, ui.lyricMode, ui.showLyricPanel, lines.value.length],
+  () => [player.currentLyricIndex, ui.showLyricPanel, lines.value.length],
   () => {
     if (ui.showLyricPanel) autoScrollToActiveLine();
   },
@@ -265,7 +126,7 @@ watch(
 watch(
   () => lines.value,
   () => {
-    clearLineRefs();
+    lineRefs.value = [];
     if (ui.showLyricPanel) autoScrollToActiveLine();
   }
 );
@@ -274,163 +135,15 @@ onBeforeUnmount(() => {
   stopResize();
 });
 
-function setLyricMode(mode: LyricMode) {
-  ui.lyricMode = mode;
-  ui.showLyricPanel = true;
-}
-
 function handleLineClick(time: number) {
   player.seekTo(time);
 }
 </script>
 
 <style scoped>
-.mode-btn {
-  padding: 4px 10px;
-  font-family: 'Ma Shan Zheng', cursive;
-  border: 1px solid #c4b5a0;
-  background: rgba(200, 180, 160, 0.1);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  color: #666;
-  transition: all 0.2s;
-}
-
-.mode-btn:hover {
-  background: rgba(200, 180, 160, 0.2);
-}
-
-/* ========== 全屏模式 ========== */
-.lyrics-fullscreen {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  background: radial-gradient(circle at 20% 20%, rgba(240, 233, 220, 0.95), rgba(225, 214, 196, 0.96));
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-}
-
-.lyrics-fullscreen-body {
-  width: min(980px, 100%);
-  display: flex;
-  flex-direction: column;
-  padding: 28px 24px 20px;
-}
-
-.lyrics-content-center {
-  text-align: center;
-  padding: 36px 12px 80px;
-}
-
-/* ========== 弹窗模式 ========== */
-.lyrics-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lyrics-modal-content {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.lyrics-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.lyrics-modal-header h2 {
-  margin: 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 20px;
-  color: #333;
-}
-
-.lyrics-modal-body {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.lyrics-info {
-  padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.lyrics-title {
-  margin: 0 0 4px 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  color: #333;
-  font-size: 18px;
-}
-
-.lyrics-artist {
-  margin: 0;
-  color: #999;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 14px;
-}
-
-.lyrics-display {
-  flex: 1;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  height: 300px;
-}
-
-.lyrics-content {
-  text-align: center;
-  width: 100%;
-}
-
-.lyrics-edge-spacer {
-  height: 40%;
-  min-height: 72px;
-}
-
-.lyrics-modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.lyrics-modal-close:hover {
-  color: #333;
-}
-
 /* ========== 侧栏模式 ========== */
 .lyrics-sidebar {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 245, 240, 0.92) 100%);
+  background-color: #fdf6e3;
   border-left: 2px dashed #d4c5a0;
   display: flex;
   flex-direction: column;
@@ -464,48 +177,49 @@ function handleLineClick(time: number) {
 .lyrics-sidebar-header {
   padding: 16px;
   border-bottom: 2px dashed #d4c5a0;
-  background: rgba(250, 248, 245, 0.6);
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 8px;
 }
 
 .lyrics-sidebar-title {
-  margin: 0 0 4px 0;
-  color: #2e2a24;
+  margin: 0;
+  color: #2d2d2d;
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 18px;
   font-weight: 600;
+  flex: 1;
+  min-width: 0;
 }
 
 .lyrics-sidebar-artist {
   margin: 0;
-  color: #a99878;
+  color: #888;
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 14px;
+  width: 100%;
 }
 
-.lyrics-sidebar-actions {
-  margin-top: 8px;
-  display: flex;
-  gap: 8px;
-}
-
-.sidebar-btn {
-  padding: 4px 8px;
-  font-family: 'Ma Shan Zheng', cursive;
-  border: 1px solid #d4c5a0;
-  background: rgba(200, 180, 160, 0.08);
-  border-radius: 4px;
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
   cursor: pointer;
-  font-size: 12px;
-  color: #7f7568;
-  transition: all 0.2s;
-  flex: 1;
-  text-align: center;
+  color: #999;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
 }
 
-.sidebar-btn:hover {
-  background: rgba(200, 180, 160, 0.15);
-  border-color: #c4b5a0;
+.sidebar-close-btn:hover {
+  color: #333;
 }
 
 .lyrics-sidebar-content {
@@ -534,7 +248,7 @@ function handleLineClick(time: number) {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #a99878;
+  color: #999;
   font-size: 14px;
   font-family: 'Ma Shan Zheng', cursive;
   flex: 1;
@@ -549,49 +263,8 @@ function handleLineClick(time: number) {
   display: none;
 }
 
-.lyrics-scroll.modal-display {
-  overflow: auto;
-}
-
-.lyrics-scroll.sidebar-display {
-  overflow-y: auto;
-  padding: 12px;
-  overflow-x: hidden;
-}
-
-/* ========== 淡入淡出过渡 ========== */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 900px) {
-  .lyrics-sidebar {
-    width: 100% !important;
-    border-left: none;
-    border-top: 2px dashed #d4c5a0;
-    max-height: 44vh;
-  }
-
-  .lyrics-resizer {
-    display: none;
-  }
-
-  .lyrics-sidebar-header {
-    padding: 10px 12px;
-  }
-
-  .lyrics-sidebar-title {
-    font-size: 16px;
-  }
-
-  .lyrics-sidebar-artist {
-    font-size: 13px;
-  }
+.lyrics-edge-spacer {
+  height: 40%;
+  min-height: 72px;
 }
 </style>

@@ -8,7 +8,6 @@ import { ref } from 'vue';
 
 export const useUIStore = defineStore('ui', () => {
   const showLyricPanel = ref(false);
-  const lyricMode = ref<'modal' | 'sidebar' | 'fullscreen'>('modal'); // 歌词显示模式
   const showPlaylistPanel = ref(false);
   const showFavoritesPanel = ref(false);
   const showPlaylist = ref(false);
@@ -18,11 +17,6 @@ export const useUIStore = defineStore('ui', () => {
 
   function toggleLyricPanel() {
     showLyricPanel.value = !showLyricPanel.value;
-  }
-
-  function openLyricPanel(mode?: 'modal' | 'sidebar' | 'fullscreen') {
-    if (mode) lyricMode.value = mode;
-    showLyricPanel.value = true;
   }
 
   function togglePlaylistPanel() {
@@ -45,13 +39,11 @@ export const useUIStore = defineStore('ui', () => {
 
   return {
     showLyricPanel,
-    lyricMode,
     showPlaylistPanel,
     showFavoritesPanel,
     showPlaylist,
     activeSection,
     toggleLyricPanel,
-    openLyricPanel,
     togglePlaylistPanel,
     toggleFavoritesPanel,
     togglePlaylist,
