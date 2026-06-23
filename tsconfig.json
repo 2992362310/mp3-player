@@ -30,17 +30,17 @@
       "@components/*": ["src/components/*"],
       "@composables/*": ["src/composables/*"],
       "@core/*": ["src/core/*"],
-      "@assets/*": ["src/assets/*"],
+      "@assets/*": ["src/assets/*"]
     },
 
-    "types": ["vite/client", "node"],
+    "types": ["vite/client", "node"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/env.d.ts",
-    "vite.config.ts",
+    "vite.config.ts"
   ],
   "exclude": ["node_modules", "dist"],
 }
