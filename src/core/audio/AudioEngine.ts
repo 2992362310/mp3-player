@@ -10,6 +10,7 @@ class AudioEngine {
   private howl: Howl | null = null;
   private _fadeDuration = 1500; // 淡入淡出时长 ms
   private _rate = 1.0;
+  private endedListeners = new Set<() => void>();
 
   /** 加载并播放指定 URL */
   load(url: string): void {
@@ -49,6 +50,7 @@ class AudioEngine {
       },
       onend: () => {
         player.isPlaying = false;
+        this._emitEnded();
         this._handleEnded();
       },
       onloaderror: () => {
@@ -93,6 +95,23 @@ class AudioEngine {
       // 由外部通过 watch 触发 playNext
       // 这里只通知结束
     }
+  }
+
+  private _emitEnded(): void {
+    this.endedListeners.forEach((listener) => {
+      try {
+        listener();
+      } catch (e) {
+        console.error('[AudioEngine] ended listener error:', e);
+      }
+    });
+  }
+
+  onEnded(listener: () => void): () => void {
+    this.endedListeners.add(listener);
+    return () => {
+      this.endedListeners.delete(listener);
+    };
   }
 
   play(): void {
@@ -154,6 +173,7 @@ class AudioEngine {
     this._stopTimeUpdate();
     this.howl?.unload();
     this.howl = null;
+    this.endedListeners.clear();
   }
 }
 

@@ -52,23 +52,45 @@ export const useSearchStore = defineStore('search', () => {
       '华晨宇', '毛不易', '李荣浩', '五月天', '王菲',
       '周深', '张学友', '刘德华', '蔡依林', '孙燕姿',
     ];
-    const kw = pool[Math.floor(Math.random() * pool.length)];
-
     loading.value = true;
-    keyword.value = kw;
 
     try {
-      // 用第一个可用音源搜一次
-      const firstSource = sources.value.find((s) => s.enabled);
-      if (!firstSource) return;
+      const enabledSources = sources.value.filter((s) => s.enabled);
+      if (enabledSources.length === 0) return;
 
-      const result = await sourceManager.search(kw, firstSource.id, {
-        page: 1,
-        limit: 10,
-      });
-      results.value = result.songs;
-      sourceResults.value.set(firstSource.id, result.songs);
-      sourceHasMore.value.set(firstSource.id, false);
+      const shuffledKeywords = [...pool].sort(() => Math.random() - 0.5);
+      const shuffledSources = [...enabledSources].sort(() => Math.random() - 0.5);
+
+      let pickedKeyword = '';
+      let pickedSourceId = '';
+      let pickedSongs: Song[] = [];
+
+      for (const kw of shuffledKeywords.slice(0, 6)) {
+        for (const source of shuffledSources) {
+          const result = await sourceManager.search(kw, source.id, {
+            page: 1,
+            limit: 12,
+          });
+
+          if (result.songs.length > 0) {
+            pickedKeyword = kw;
+            pickedSourceId = source.id;
+            pickedSongs = result.songs;
+            break;
+          }
+        }
+
+        if (pickedSongs.length > 0) break;
+      }
+
+      keyword.value = pickedKeyword;
+      results.value = pickedSongs;
+      sourceResults.value.clear();
+      sourceHasMore.value.clear();
+      if (pickedSourceId) {
+        sourceResults.value.set(pickedSourceId, pickedSongs);
+        sourceHasMore.value.set(pickedSourceId, false);
+      }
       hasMore.value = false;
     } catch (e) {
       console.error('[Search] 推荐加载失败:', e);

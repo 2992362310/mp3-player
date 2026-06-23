@@ -8,9 +8,17 @@ import { usePlayerStore } from '../stores/player';
 import { usePlaylistStore } from '../stores/playlist';
 import audioEngine from '../core/audio/AudioEngine';
 
+let initialized = false;
+
 export function useAudio() {
   const player = usePlayerStore();
   const playlist = usePlaylistStore();
+
+  function playByIndex(index: number) {
+    if (index < 0 || index >= playlist.playlist.length) return;
+    playlist.setCurrentIndex(index);
+    player.playSong(playlist.playlist[index]);
+  }
 
   /** 播放指定歌曲（自动加入播放列表） */
   async function playSong(song: import('../core/sources/types').Song) {
@@ -48,8 +56,7 @@ export function useAudio() {
       return;
     }
 
-    playlist.setCurrentIndex(nextIdx);
-    player.playSong(playlist.playlist[nextIdx]);
+    playByIndex(nextIdx);
   }
 
   /** 播放上一首 */
@@ -70,8 +77,7 @@ export function useAudio() {
       return;
     }
 
-    playlist.setCurrentIndex(prevIdx);
-    player.playSong(playlist.playlist[prevIdx]);
+    playByIndex(prevIdx);
   }
 
   /** 随机播放 */
@@ -81,16 +87,12 @@ export function useAudio() {
     do {
       idx = Math.floor(Math.random() * playlist.playlist.length);
     } while (idx === playlist.currentIndex && playlist.playlist.length > 1);
-    playlist.setCurrentIndex(idx);
-    player.playSong(playlist.playlist[idx]);
+    playByIndex(idx);
   }
 
   /** 播放播放列表中指定位置 */
   function playAtIndex(index: number) {
-    if (index >= 0 && index < playlist.playlist.length) {
-      playlist.setCurrentIndex(index);
-      player.playSong(playlist.playlist[index]);
-    }
+    playByIndex(index);
   }
 
   /** 批量添加并播放 */
@@ -100,42 +102,58 @@ export function useAudio() {
     playSong(songs[0]);
   }
 
-  // 监听 playUrl 变化 → 加载音频
-  watch(
-    () => player.playUrl,
-    (url) => {
-      if (url) audioEngine.load(url);
-    },
-  );
+  if (!initialized) {
+    initialized = true;
 
-  // 监听播放状态 → 控制播放/暂停
-  watch(
-    () => player.isPlaying,
-    (playing) => {
-      if (playing) audioEngine.play();
-      else audioEngine.pause();
-    },
-  );
+    // 监听 playUrl 变化 → 加载音频
+    watch(
+      () => player.playUrl,
+      (url) => {
+        if (url) audioEngine.load(url);
+      },
+    );
 
-  // 监听音量变化
-  watch(
-    () => [player.volume, player.muted],
-    ([vol, muted]) => {
-      audioEngine.setVolume(muted ? 0 : (vol as number));
-    },
-  );
+    // 监听播放状态 → 控制播放/暂停
+    watch(
+      () => player.isPlaying,
+      (playing) => {
+        if (playing) audioEngine.play();
+        else audioEngine.pause();
+      },
+    );
 
-  // 监听 seek
-  watch(
-    () => player.currentTime,
-    (time) => {
-      // 仅当差异大于 0.5s 时 seek（避免循环触发）
-      const howl = audioEngine.getHowl();
-      if (howl && Math.abs(time - (howl.seek() as number)) > 0.5) {
-        audioEngine.seek(time);
+    // 监听音量变化
+    watch(
+      () => [player.volume, player.muted],
+      ([vol, muted]) => {
+        audioEngine.setVolume(muted ? 0 : (vol as number));
+      },
+    );
+
+    // 监听 seek
+    watch(
+      () => player.currentTime,
+      (time) => {
+        // 仅当差异大于 0.5s 时 seek（避免循环触发）
+        const howl = audioEngine.getHowl();
+        if (howl && Math.abs(time - (howl.seek() as number)) > 0.5) {
+          audioEngine.seek(time);
+        }
+      },
+    );
+
+    // 播放结束后按模式处理
+    audioEngine.onEnded(() => {
+      if (playlist.playlist.length === 0) return;
+
+      if (player.playMode === 'single') {
+        // 单曲循环由 AudioEngine 内部处理
+        return;
       }
-    },
-  );
+
+      playNext();
+    });
+  }
 
   return {
     playSong,
