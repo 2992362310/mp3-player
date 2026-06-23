@@ -249,7 +249,7 @@ async function autoScrollToActiveLine() {
   if (index < 0) return;
 
   const mode = ui.lyricMode as LyricMode;
-  const scroller = scrollerMap.get(mode);
+  const scroller = scrollerMap.get(mode) ?? null;
   const lineEls = lineRefsMap.get(mode) || [];
   centerActiveLine(scroller, lineEls[index]);
 }

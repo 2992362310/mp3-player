@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type ComponentPublicInstance } from 'vue';
 import type { LyricLine } from '../core/sources/types';
 
 interface Props {
@@ -76,8 +76,8 @@ function handleClick() {
   emit('lineClick', props.line.time);
 }
 
-function setLineRef(el: Element | null) {
-  props.lineRefSetter?.(el as HTMLElement | null);
+function setLineRef(el: Element | ComponentPublicInstance | null) {
+  props.lineRefSetter?.(el instanceof Element ? (el as HTMLElement) : null);
 }
 </script>
 
