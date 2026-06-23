@@ -3,3 +3,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+dist/
+.DS_Store
+*.local
+.env
+.env.local
+.env.*.local

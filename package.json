@@ -1,0 +1,32 @@
+{
+  "name": "mp3-player",
+  "version": "2.0.0",
+  "description": "MP3 Player built with Vue 3 + Vite",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "serve": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "howler": "^2.2.4",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.17",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@iconify/vue": "^5.0.0",
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/howler": "^2.2.13",
+    "@types/node": "^24.1.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "daisyui": "^5.0.35",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3",
+    "vite": "^8.0.3",
+    "vue-tsc": "^3.0.3"
+  }
+}

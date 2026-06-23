@@ -1,31 +1,30 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Player</title>
-    <link rel="stylesheet" href="shared/css/style.css">
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw">
-</head>
-<body>
-    <!-- 顶部导航 -->
-    <header data-module="top-nav"></header>
-    
-    <div class="main-container">
-        <!-- 侧边栏 -->
-        <aside data-module="sidebar"></aside>
-        
-        <!-- 右侧主要内容区域 -->
-        <div class="content-wrapper">
-            <!-- 主内容区域 -->
-            <main class="main-content" data-module="main-content"></main>
-            
-            <!-- 底部控制器 -->
-            <footer data-module="bottom-controller"></footer>
-        </div>
-    </div>
-    
-    <!-- 应用主入口 -->
-    <script type="module" src="core/app.js"></script>
-</body>
+<!doctype html>
+<html lang="zh-CN" data-theme="moyun">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#333333" />
+        <meta name="keywords" content="音乐播放器，云听，Vue3，在线音乐，水墨风格" />
+        <meta name="description" content="云听 - 水墨风格多音源在线音乐播放器" />
+        <title>Audio Player</title>
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div id="app"></div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
 </html>
