@@ -1,179 +1,100 @@
-/**
- * 音频引擎 — 基于 Howler.js
- * 统一管理音频播放、淡入淡出、播放速率、均衡器连接
- */
-
 import { Howl } from 'howler';
-import { usePlayerStore } from '../../stores/player';
+
+export interface AudioCallbacks {
+  onPlay: () => void;
+  onPause: () => void;
+  onEnd: () => void;
+  onTimeUpdate: (currentTime: number, duration: number) => void;
+  onError: (message: string) => void;
+}
 
 class AudioEngine {
   private howl: Howl | null = null;
-  private _fadeDuration = 1500; // 淡入淡出时长 ms
-  private _rate = 1.0;
-  private endedListeners = new Set<() => void>();
+  private rafId: number | null = null;
+  private callbacks: AudioCallbacks | null = null;
 
-  /** 加载并播放指定 URL */
-  load(url: string): void {
-    // 淡出当前播放
-    if (this.howl && this.howl.playing()) {
-      this.howl.fade(this.howl.volume(), 0, this._fadeDuration);
-      setTimeout(() => {
-        this.howl?.unload();
-        this._createAndPlay(url);
-      }, this._fadeDuration);
-    } else {
-      this.howl?.unload();
-      this._createAndPlay(url);
-    }
+  /** 注册回调（由 useAudio 调用） */
+  setCallbacks(cb: AudioCallbacks): void {
+    this.callbacks = cb;
   }
 
-  private _createAndPlay(url: string): void {
-    const player = usePlayerStore();
-
+  /** 加载并播放 */
+  load(url: string): void {
+    this.stopInternal();
     this.howl = new Howl({
       src: [url],
       html5: true,
-      volume: player.muted ? 0 : player.volume,
-      rate: this._rate,
       onplay: () => {
-        player.isPlaying = true;
-        player.clearError();
-        // 淡入
-        if (this._fadeDuration > 0) {
-          this.howl?.volume(0);
-          this.howl?.fade(0, player.muted ? 0 : player.volume, this._fadeDuration);
-        }
-        this._startTimeUpdate();
+        this.startRaf();
+        this.callbacks?.onPlay();
       },
       onpause: () => {
-        player.isPlaying = false;
+        this.stopRaf();
+        this.callbacks?.onPause();
       },
       onend: () => {
-        player.isPlaying = false;
-        this._emitEnded();
-        this._handleEnded();
+        this.stopRaf();
+        this.callbacks?.onEnd();
       },
-      onloaderror: () => {
-        player.error = '音频加载失败';
-        player.isPlaying = false;
-      },
-      onplayerror: () => {
-        player.error = '播放失败';
-        player.isPlaying = false;
-      },
+      onloaderror: () => this.callbacks?.onError('音频加载失败'),
+      onplayerror: () => this.callbacks?.onError('播放失败'),
     });
-
     this.howl.play();
   }
 
-  private _updateTimer: number | null = null;
-
-  private _startTimeUpdate(): void {
-    this._stopTimeUpdate();
-    const tick = () => {
-      if (!this.howl) return;
-      const player = usePlayerStore();
-      player.updateTime(this.howl.seek() as number, this.howl.duration());
-      this._updateTimer = requestAnimationFrame(tick);
-    };
-    this._updateTimer = requestAnimationFrame(tick);
-  }
-
-  private _stopTimeUpdate(): void {
-    if (this._updateTimer !== null) {
-      cancelAnimationFrame(this._updateTimer);
-      this._updateTimer = null;
-    }
-  }
-
-  private _handleEnded(): void {
-    const player = usePlayerStore();
-    if (player.playMode === 'single') {
-      this.seek(0);
-      this.play();
-    } else {
-      // 由外部通过 watch 触发 playNext
-      // 这里只通知结束
-    }
-  }
-
-  private _emitEnded(): void {
-    this.endedListeners.forEach((listener) => {
-      try {
-        listener();
-      } catch (e) {
-        console.error('[AudioEngine] ended listener error:', e);
-      }
-    });
-  }
-
-  onEnded(listener: () => void): () => void {
-    this.endedListeners.add(listener);
-    return () => {
-      this.endedListeners.delete(listener);
-    };
-  }
-
   play(): void {
-    if (this.howl && !this.howl.playing()) {
-      this.howl.play();
-    }
+    if (this.howl && !this.howl.playing()) this.howl.play();
   }
 
   pause(): void {
     this.howl?.pause();
   }
 
-  toggle(): void {
-    if (this.howl?.playing()) this.pause();
-    else this.play();
-  }
-
-  stop(): void {
-    this.howl?.stop();
-  }
-
   seek(time: number): void {
-    if (this.howl) {
-      this.howl.seek(time);
-      const player = usePlayerStore();
-      player.updateTime(time, this.howl.duration());
-    }
+    if (!this.howl) return;
+    this.howl.seek(time);
+    this.callbacks?.onTimeUpdate(time, this.howl.duration());
   }
 
   setVolume(v: number): void {
     this.howl?.volume(v);
   }
 
-  setRate(rate: number): void {
-    this._rate = Math.max(0.5, Math.min(4, rate));
-    this.howl?.rate(this._rate);
+  isPlaying(): boolean {
+    return this.howl?.playing() ?? false;
   }
 
-  getRate(): number {
-    return this._rate;
+  private stopInternal(): void {
+    this.stopRaf();
+    if (this.howl) {
+      this.howl.unload();
+      this.howl = null;
+    }
   }
 
-  setFadeDuration(ms: number): void {
-    this._fadeDuration = Math.max(0, ms);
+  private startRaf(): void {
+    this.stopRaf();
+    const tick = () => {
+      if (!this.howl) return;
+      this.callbacks?.onTimeUpdate(
+        this.howl.seek() as number,
+        this.howl.duration(),
+      );
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
   }
 
-  /** 获取 Howler 实例（供均衡器连接 Web Audio 节点） */
-  getHowl(): Howl | null {
-    return this.howl;
-  }
-
-  /** 获取底层 AudioContext（供 Equalizer 使用） */
-  getAudioContext(): AudioContext | null {
-    // Howler 内部管理 AudioContext
-    return (Howler as any)._ctx ?? null;
+  private stopRaf(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   destroy(): void {
-    this._stopTimeUpdate();
-    this.howl?.unload();
-    this.howl = null;
-    this.endedListeners.clear();
+    this.stopInternal();
+    this.callbacks = null;
   }
 }
 

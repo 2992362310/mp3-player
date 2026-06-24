@@ -29,8 +29,8 @@ export function useMediaSession() {
   function setupActions() {
     if (!('mediaSession' in navigator)) return;
 
-    navigator.mediaSession.setActionHandler('play', () => player.resume());
-    navigator.mediaSession.setActionHandler('pause', () => player.pause());
+    navigator.mediaSession.setActionHandler('play', () => player.togglePlay());
+    navigator.mediaSession.setActionHandler('pause', () => player.togglePlay());
     navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
     navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
     navigator.mediaSession.setActionHandler('seekto', (details) => {

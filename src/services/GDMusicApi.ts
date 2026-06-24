@@ -36,7 +36,6 @@ export interface GDSong {
   artist: string[];
   album: string;
   pic_id: string;
-  url_id: string;
   lyric_id: string;
   source: MusicSource;
 }
@@ -95,14 +94,11 @@ class GDMusicApiService {
   private cache: Map<string, CacheItem<any>> = new Map();
   private requestTimestamps: number[] = [];
 
-  // 稳定音乐源列表
-  public readonly stableSources: MusicSource[] = ['netease', 'kuwo', 'joox', 'bilibili'];
+  public readonly stableSources: MusicSource[] = ['netease', 'kuwo', 'joox'];
 
-  // 所有支持的音乐源
   public readonly allSources: MusicSource[] = [
-    'netease', 'tencent', 'kuwo', 'kugou', 'migu',
-    'bilibili', 'joox', 'spotify', 'ytmusic', 'apple',
-    'deezer', 'tidal', 'qobuz', 'ximalaya'
+    'netease', 'kuwo', 'joox', 'tencent', 'bilibili',
+    'spotify', 'ytmusic', 'apple', 'tidal', 'qobuz',
   ];
 
   /**
@@ -217,7 +213,7 @@ class GDMusicApiService {
   async getPlayUrl(
     source: MusicSource,
     id: string,
-    br: MusicQuality = 320
+    br: MusicQuality = 999
   ): Promise<GDPlayUrlResponse> {
     return this.request<GDPlayUrlResponse>({
       types: 'url',

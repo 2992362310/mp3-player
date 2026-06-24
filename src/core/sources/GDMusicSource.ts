@@ -114,51 +114,29 @@ export class GDMusicSource implements ISourcePlugin {
    * 获取播放地址
    */
   async getPlayUrl(song: Song, quality?: string): Promise<PlayUrl> {
-    const raw = song.raw as GDSong;
     const br = this.parseQuality(quality);
-
-    try {
-      const response = await gdMusicApi.getPlayUrl(
-        this.source,
-        raw.url_id || String(song.id),
-        br,
-      );
-
-      return {
-        url: response.url,
-        quality: this.getQualityLabel(br),
-        size: response.size * 1024, // KB -> Bytes
-        format: "mp3",
-      };
-    } catch (error) {
-      console.error(`[${this.id}] 获取播放地址失败:`, error);
-      throw error;
-    }
+    const response = await gdMusicApi.getPlayUrl(this.source, String(song.id), br);
+    return {
+      url: response.url,
+      quality: this.getQualityLabel(br),
+      size: response.size * 1024,
+      format: "mp3",
+    };
   }
 
   /**
    * 获取歌词
    */
   async getLyric(song: Song): Promise<Lyric> {
-    const raw = song.raw as GDSong;
-
     try {
-      const response = await gdMusicApi.getLyric(
-        this.source,
-        raw.lyric_id || String(song.id),
-      );
-
+      const response = await gdMusicApi.getLyric(this.source, String(song.id));
       return {
         text: response.lyric || "",
         translation: response.tlyric || "",
         lines: this.parseLyric(response.lyric, response.tlyric),
       };
-    } catch (error) {
-      console.error(`[${this.id}] 获取歌词失败:`, error);
-      return {
-        text: "",
-        lines: [],
-      };
+    } catch {
+      return { text: "", lines: [] };
     }
   }
 
@@ -248,7 +226,7 @@ export class GDMusicSource implements ISourcePlugin {
       "999": 999,
       flac: 999,
     };
-    return qualityMap[quality || "high"] || 320;
+    return qualityMap[quality || "lossless"] || 999;
   }
 
   /**
@@ -369,8 +347,7 @@ export function createGDMusicSources(): ISourcePlugin[] {
     },
   ];
 
-  // 只创建稳定音源
-  const stableSources = ["netease", "kuwo", "joox", "bilibili"];
+  const stableSources = ["netease", "kuwo", "joox"];
 
   return configs
     .filter((config) => stableSources.includes(config.source))

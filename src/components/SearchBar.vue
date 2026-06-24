@@ -3,7 +3,7 @@
     <!-- 平台选择 -->
     <select
       v-model="search.currentSource"
-      style="padding: 8px 10px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d; flex-shrink: 0; cursor: pointer;"
+      style="padding: 8px 10px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d; flex-shrink: 0; cursor: pointer; position: relative; z-index: 1100;"
     >
       <option value="">全部音源</option>
       <option v-for="s in search.sources" :key="s.id" :value="s.id">
@@ -32,13 +32,13 @@
       <!-- 搜索历史下拉 -->
       <div
         v-if="showSearchHistory && searchHistory.length > 0"
-        style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(255,255,255,0.95); border: 2px solid #c4b5a0; border-top: none; border-radius: 0 0 8px 12px; max-height: 200px; overflow-y: auto; margin-top: -2px; z-index: 10;"
+        style="position: absolute; top: 100%; left: 0; right: 0; background: transparent; border: 2px solid #c4b5a0; border-top: none; border-radius: 0 0 8px 12px; max-height: 200px; overflow-y: auto; margin-top: -2px; z-index: 1200;"
       >
         <div
           v-for="(item, idx) in searchHistory"
           :key="idx"
           @click="selectHistory(item.keyword)"
-          style="padding: 8px 12px; border-bottom: 1px solid #e8dcc8; cursor: pointer; font-family: 'Ma Shan Zheng', cursive; color: #666; font-size: 14px; display: flex; justify-content: space-between; align-items: center;"
+          style="padding: 8px 12px; border-bottom: 1px dashed #e8dcc8; cursor: pointer; font-family: 'Ma Shan Zheng', cursive; color: #666; font-size: 14px; display: flex; justify-content: space-between; align-items: center;"
           @mouseenter="onHistoryItemEnter"
           @mouseleave="onHistoryItemLeave"
         >
@@ -111,6 +111,15 @@ function onHistoryItemLeave(e: MouseEvent) {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+select {
+  background: transparent !important;
+}
+
+select option {
+  background: #fdf6e3;
+  color: #2d2d2d;
 }
 
 .search-input-wrap {

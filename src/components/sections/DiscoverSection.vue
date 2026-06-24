@@ -31,7 +31,7 @@
             >
               {{ player.isFavorite(track) ? '♥' : '♡' }}
             </button>
-            <button class="play-btn" @click.stop="isCurrent(track) && player.isPlaying ? player.pause() : playSong(track)">
+            <button class="play-btn" @click.stop="isCurrent(track) ? player.togglePlay() : playSong(track)">
               <svg v-if="isCurrent(track) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
                 <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
               </svg>

@@ -122,9 +122,11 @@ export const useSearchStore = defineStore('search', () => {
     return Array.from(merged.values());
   }
 
-  /** 搜索单个音源 */
+  /** 搜索单个音源（空 sourceId 时搜索全部音源） */
   async function searchSongs(kw: string, sourceId?: string) {
     if (!kw.trim()) return;
+    const source = sourceId || currentSource.value;
+    if (!source) { await searchAllSources(kw); return; }
 
     keyword.value = kw;
     loading.value = true;
@@ -136,17 +138,12 @@ export const useSearchStore = defineStore('search', () => {
     hasMore.value = false;
 
     try {
-      const source = sourceId || currentSource.value;
       const result = await sourceManager.search(kw, source, {
         page: page.value,
         limit: pageSize,
       });
-
       sourceResults.value.set(source, result.songs);
-      sourceHasMore.value.set(
-        source,
-        result.hasMore || result.songs.length === pageSize,
-      );
+      sourceHasMore.value.set(source, result.hasMore || result.songs.length === pageSize);
       results.value = mergeResults();
       syncToPlayer();
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);

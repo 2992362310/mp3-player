@@ -248,7 +248,8 @@ function handleLineClick(time: number) {
     left: 0;
     right: 0;
     width: 100% !important;
-    max-height: 80vh;
+    height: calc(100vh - 64px - 100px);
+    max-height: none;
     border-left: none;
     border-top: 2px dashed #d4c5a0;
     background-color: #fdf6e3;
