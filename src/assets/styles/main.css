@@ -406,11 +406,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .playlist-item .play-btn:hover {
   color: #2d2d2d;
+  background-color: rgba(200, 180, 160, 0.15);
 }
 
 .playlist-item.playing .play-btn {
@@ -828,9 +830,10 @@ body {
   color: #b0a080;
   font-size: 18px;
   padding: 4px;
+  border-radius: 6px;
 }
 
-.btn-favorite:hover { color: #e74c3c; transform: scale(1.2); }
+.btn-favorite:hover { color: #e74c3c; transform: scale(1.2); background-color: rgba(231, 76, 60, 0.08); }
 .btn-favorite.active { color: #e74c3c; }
 
 /* ========== 手绘卡片 ========== */
