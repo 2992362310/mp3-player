@@ -244,11 +244,11 @@ function handleLineClick(time: number) {
 @media (max-width: 768px) {
   .lyrics-sidebar {
     position: fixed;
-    bottom: 0;
+    bottom: 64px;
     left: 0;
     right: 0;
     width: 100% !important;
-    max-height: 60vh;
+    max-height: 80vh;
     border-left: none;
     border-top: 2px dashed #d4c5a0;
     background-color: #fdf6e3;
