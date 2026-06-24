@@ -243,11 +243,17 @@ function handleLineClick(time: number) {
 
 @media (max-width: 768px) {
   .lyrics-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100% !important;
+    max-height: 60vh;
     border-left: none;
     border-top: 2px dashed #d4c5a0;
-    max-height: 60vh;
-    background-color: transparent;
+    background-color: #fdf6e3;
+    z-index: 500;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
   }
 
   .lyrics-resizer {

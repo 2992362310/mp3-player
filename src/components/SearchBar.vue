@@ -106,8 +106,7 @@ function onHistoryItemLeave(e: MouseEvent) {
 <style scoped>
 .search-box {
   position: relative;
-  width: 70%;
-  min-width: 400px;
+  width: 100%;
   max-width: 800px;
   display: flex;
   gap: 8px;

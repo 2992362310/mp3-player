@@ -888,10 +888,16 @@ body {
   .top-nav .nav-center {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
   }
 
   .top-nav .nav-right {
     flex-shrink: 0;
+    gap: 2px;
+  }
+
+  .nav-icon-btn {
+    padding: 4px;
   }
 
   .top-nav .nav-right span {
