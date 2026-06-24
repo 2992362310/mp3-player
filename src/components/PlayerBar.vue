@@ -4,32 +4,26 @@
       <div class="main-controls">
         <!-- 左侧：手绘控制按钮 -->
         <div class="left-controls">
-          <!-- 上一首 -->
           <button @click="playPrevious()" class="sketch-icon" title="上一首" :disabled="!player.currentSong">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 5V19M18 6L9 12L18 18V6Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="20" height="20" viewBox="0 0 16 16" stroke="#4a4a4a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <polyline points="10,2 10,14"/><polyline points="10,8 4,2 4,14 10,8"/>
             </svg>
           </button>
           <!-- 播放/暂停 -->
           <button @click="player.togglePlay()" class="sketch-icon sketch-icon-play" title="播放/暂停" :disabled="!player.currentSong">
-            <!-- 加载中 -->
-            <svg v-if="player.loading" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.5" stroke-linecap="round">
-              <circle cx="12" cy="12" r="9" fill="none" stroke-dasharray="3,2"/>
+            <svg v-if="player.loading" width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="#4a4a4a" stroke-width="1.2" stroke-linecap="round">
+              <circle cx="8" cy="8" r="6" stroke-dasharray="3,2"/>
             </svg>
-            <!-- 播放中：暂停（描边竖线） -->
-            <svg v-else-if="player.isPlaying" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.8" stroke-linecap="round">
-              <line x1="8" y1="5" x2="8" y2="19"/>
-              <line x1="16" y1="5" x2="16" y2="19"/>
+            <svg v-else-if="player.isPlaying" width="26" height="26" viewBox="0 0 16 16" stroke="#4a4a4a" stroke-width="1.6" stroke-linecap="round" fill="none">
+              <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
             </svg>
-            <!-- 未播放：三角（描边） -->
-            <svg v-else width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 5L8 19L20 12L8 5Z"/>
+            <svg v-else width="26" height="26" viewBox="0 0 16 16" stroke="#4a4a4a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <polyline points="4,2 4,14 13,8 4,2"/>
             </svg>
           </button>
-          <!-- 下一首 -->
           <button @click="playNext()" class="sketch-icon" title="下一首" :disabled="!player.currentSong">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 5V19M6 6L15 12L6 18V6Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="20" height="20" viewBox="0 0 16 16" stroke="#4a4a4a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <polyline points="6,2 6,14"/><polyline points="6,8 12,2 12,14 6,8"/>
             </svg>
           </button>
         </div>
