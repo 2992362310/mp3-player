@@ -107,9 +107,9 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 8px 20px;
-  background-color: #fdf6e3;
   border-bottom: 2px dashed #c4b5a0;
   flex-shrink: 0;
+  gap: 12px;
 }
 
 .top-nav .nav-left .logo {
@@ -419,7 +419,6 @@ body {
 
 /* ========== 底部控制器 ========== */
 .bottom-controller {
-  background-color: rgba(253, 246, 227, 0.97);
   border-top: 2px dashed #c4b5a0;
   z-index: 1000;
   flex-shrink: 0;
@@ -886,6 +885,10 @@ body {
   .top-nav .nav-center {
     flex: 1;
     min-width: 0;
+  }
+
+  .top-nav .nav-right {
+    flex-shrink: 0;
   }
 
   .top-nav .nav-right span {

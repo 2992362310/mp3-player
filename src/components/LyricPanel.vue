@@ -142,7 +142,6 @@ function handleLineClick(time: number) {
 <style scoped>
 /* ========== 侧栏模式 ========== */
 .lyrics-sidebar {
-  background-color: #fdf6e3;
   border-left: 2px dashed #d4c5a0;
   display: flex;
   flex-direction: column;
@@ -240,5 +239,19 @@ function handleLineClick(time: number) {
   font-size: 13px;
   color: #999;
   margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .lyrics-sidebar {
+    width: 100% !important;
+    border-left: none;
+    border-top: 2px dashed #d4c5a0;
+    max-height: 60vh;
+    background-color: transparent;
+  }
+
+  .lyrics-resizer {
+    display: none;
+  }
 }
 </style>
