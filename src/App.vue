@@ -3,63 +3,50 @@
     <!-- 顶部导航栏 -->
     <header class="top-nav">
       <div class="nav-left">
-        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 28px; height: 28px;" v-html="SketchMusicIcon"></div>
-          <span>手绘播放器</span>
-        </div>
+        <div style="width: 28px; height: 28px;" v-html="SketchMusicIcon"></div>
       </div>
       <div class="nav-center">
         <SearchBar />
       </div>
-      <div class="nav-right" style="display: flex; align-items: center; gap: 8px;">
-        <div style="width: 20px; height: 20px;" v-html="SketchPencilIcon"></div>
-        <span>云听</span>
+      <div class="nav-right">
+        <button
+          v-for="section in sections"
+          :key="section.id"
+          :class="['nav-icon-btn', activeSection === section.id ? 'active' : '']"
+          @click="activeSection = section.id"
+          :title="section.label"
+        >
+          <span style="width: 20px; height: 20px;" v-html="getIconHtml(section.iconId)"></span>
+        </button>
       </div>
     </header>
 
     <!-- 主体 -->
-    <div class="flex flex-1 overflow-hidden">
-      <!-- 侧边栏 -->
-      <aside class="sidebar">
-        <nav class="nav-menu">
-          <ul>
-            <li v-for="section in sections" :key="section.id" :class="['nav-item', activeSection === section.id ? 'active' : '']">
-              <a @click.prevent="activeSection = section.id" href="#">
-                <span class="icon" style="width: 24px; height: 24px;" v-html="getIconHtml(section.iconId)"></span>
-                <span class="text">{{ section.label }}</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+    <div class="flex flex-col flex-1 overflow-hidden">
+      <main class="main-content">
+        <div class="content-container">
+          <DiscoverSection v-if="activeSection === 'discover'" />
+          <FavoritesSection v-if="activeSection === 'favorites'" />
+          <SettingsSection v-if="activeSection === 'settings'" />
+        </div>
+      </main>
 
-      <!-- 右侧内容区域 -->
-      <div class="flex flex-col flex-1 overflow-hidden" style="min-width: 0;">
-        <main class="main-content">
-          <div class="content-container">
-            <DiscoverSection v-if="activeSection === 'discover'" />
-            <FavoritesSection v-if="activeSection === 'favorites'" />
-            <SettingsSection v-if="activeSection === 'settings'" />
-          </div>
-        </main>
+      <!-- 移动端底部 Tab 导航 -->
+      <nav class="mobile-tabbar" aria-label="移动端页面导航">
+        <button
+          v-for="section in sections"
+          :key="`mobile-${section.id}`"
+          :class="['mobile-tab-item', activeSection === section.id ? 'active' : '']"
+          @click="activeSection = section.id"
+          type="button"
+        >
+          <span class="mobile-tab-icon" v-html="getIconHtml(section.iconId)"></span>
+          <span class="mobile-tab-text">{{ section.label }}</span>
+        </button>
+      </nav>
 
-        <!-- 移动端底部 Tab 导航 -->
-        <nav class="mobile-tabbar" aria-label="移动端页面导航">
-          <button
-            v-for="section in sections"
-            :key="`mobile-${section.id}`"
-            :class="['mobile-tab-item', activeSection === section.id ? 'active' : '']"
-            @click="activeSection = section.id"
-            type="button"
-          >
-            <span class="mobile-tab-icon" v-html="getIconHtml(section.iconId)"></span>
-            <span class="mobile-tab-text">{{ section.label }}</span>
-          </button>
-        </nav>
-
-        <!-- 底部控制器 -->
-        <PlayerBar />
-      </div>
+      <!-- 底部控制器 -->
+      <PlayerBar />
     </div>
   </div>
 </template>
@@ -69,7 +56,7 @@ import { ref, onBeforeUnmount, onMounted, computed } from 'vue';
 import { useSearchStore } from './stores/search';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
-import { SketchMusicIcon, SketchHeartIcon, SketchSettingsIcon, SketchPencilIcon } from './components/icons/SketchIcons';
+import { SketchMusicIcon, SketchHeartIcon, SketchSettingsIcon } from './components/icons/SketchIcons';
 
 import SearchBar from './components/SearchBar.vue';
 import PlayerBar from './components/PlayerBar.vue';

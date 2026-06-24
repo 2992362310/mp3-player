@@ -6,11 +6,6 @@
     :style="{ width: `${sidebarWidth}px` }"
   >
     <div class="lyrics-resizer" @mousedown="startResize" title="拖动调整歌词宽度"></div>
-    <div class="lyrics-sidebar-header">
-      <h3 class="lyrics-sidebar-title">{{ player.currentSong?.title }}</h3>
-      <p class="lyrics-sidebar-artist">{{ player.currentSong?.artist }}</p>
-      <button class="sidebar-close-btn" @click="ui.showLyricPanel = false">&times;</button>
-    </div>
     <div class="lyrics-sidebar-content">
       <div v-if="lines.length === 0" class="lyrics-placeholder">
         ✏️ 暂无歌词
@@ -32,6 +27,10 @@
           <div class="lyrics-edge-spacer"></div>
         </div>
       </div>
+    </div>
+    <div class="lyrics-signature">
+      <span class="lyrics-signature-title">{{ player.currentSong?.title }}</span>
+      <span class="lyrics-signature-artist">{{ player.currentSong?.artist }}</span>
     </div>
   </div>
 </template>
@@ -174,54 +173,6 @@ function handleLineClick(time: number) {
   background: rgba(196, 181, 160, 0.9);
 }
 
-.lyrics-sidebar-header {
-  padding: 16px;
-  border-bottom: 2px dashed #d4c5a0;
-  flex-shrink: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 4px 8px;
-}
-
-.lyrics-sidebar-title {
-  margin: 0;
-  color: #2d2d2d;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 18px;
-  font-weight: 600;
-  flex: 1;
-  min-width: 0;
-}
-
-.lyrics-sidebar-artist {
-  margin: 0;
-  color: #888;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 14px;
-  width: 100%;
-}
-
-.sidebar-close-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: color 0.2s;
-}
-
-.sidebar-close-btn:hover {
-  color: #333;
-}
-
 .lyrics-sidebar-content {
   flex: 1;
   overflow: hidden;
@@ -266,5 +217,28 @@ function handleLineClick(time: number) {
 .lyrics-edge-spacer {
   height: 40%;
   min-height: 72px;
+}
+
+/* ========== 右下角签名 ========== */
+.lyrics-signature {
+  padding: 12px 16px;
+  text-align: right;
+  border-top: 1px dashed #d4c5a0;
+  flex-shrink: 0;
+}
+
+.lyrics-signature-title {
+  display: block;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 15px;
+  color: #2d2d2d;
+}
+
+.lyrics-signature-artist {
+  display: block;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+  color: #999;
+  margin-top: 2px;
 }
 </style>
