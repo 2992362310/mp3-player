@@ -34,8 +34,8 @@
         <!-- 中间歌曲信息 -->
         <div class="center-controls">
           <div class="track-info">
-            <div class="track-title">{{ player.currentSong?.title || '请先搜索并播放歌曲' }}</div>
-            <div class="track-artist">{{ player.currentSong?.artist || '点击上方搜索，双击歌曲即可开始播放' }}</div>
+            <div class="track-title">{{ player.currentSong?.title || '' }}</div>
+            <div class="track-artist">{{ player.currentSong?.artist || '' }}</div>
           </div>
         </div>
 

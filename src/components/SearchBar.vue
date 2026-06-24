@@ -3,7 +3,7 @@
     <!-- 平台选择 -->
     <select
       v-model="search.currentSource"
-      style="padding: 8px 10px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: rgba(255,255,255,0.8); color: #2d2d2d; flex-shrink: 0; cursor: pointer;"
+      style="padding: 8px 10px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d; flex-shrink: 0; cursor: pointer;"
     >
       <option value="">全部音源</option>
       <option v-for="s in search.sources" :key="s.id" :value="s.id">
@@ -20,7 +20,7 @@
         @blur="hideSearchHistory"
         type="text"
         placeholder="搜索歌曲..."
-        style="width: 100%; padding: 8px 36px 8px 12px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: rgba(255,255,255,0.8); color: #2d2d2d;"
+        style="width: 100%; padding: 8px 36px 8px 12px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d;"
       />
       <button
         @click="handleSearch"
