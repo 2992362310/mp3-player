@@ -24,7 +24,6 @@
               <div class="song-title">{{ track.title }}</div>
               <div class="song-artist">{{ track.artist }}</div>
             </div>
-            <span v-if="isCurrent(track)" class="playing-indicator">▶</span>
             <button
               @click.stop="player.toggleFavorite(track)"
               :class="['btn-favorite', player.isFavorite(track) ? 'active' : '']"
@@ -32,7 +31,25 @@
             >
               {{ player.isFavorite(track) ? '♥' : '♡' }}
             </button>
-            <button class="play-btn" @click.stop="playSong(track)">播放</button>
+            <!-- 播放按钮：当前歌曲且播放中显示暂停，否则显示播放 -->
+            <button class="play-btn" @click.stop="isCurrent(track) && player.isPlaying ? player.pause() : playSong(track)">
+              <template v-if="isCurrent(track) && player.isPlaying">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                  <rect x="6" y="5" width="3" height="14" rx="0.5"/>
+                  <rect x="15" y="5" width="3" height="14" rx="0.5"/>
+                </svg>
+              </template>
+              <template v-else-if="isCurrent(track)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                  <path d="M8 5.5C7.9 5.4 7.8 5.5 7.8 5.6L7.8 18.4C7.8 18.5 7.9 18.6 8 18.5L18.5 12C18.6 12 18.6 11.9 18.5 11.8L8 5.5Z"/>
+                </svg>
+              </template>
+              <template v-else>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </template>
+            </button>
           </div>
         </div>
 
