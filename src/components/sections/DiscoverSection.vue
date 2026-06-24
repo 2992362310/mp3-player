@@ -31,24 +31,21 @@
             >
               {{ player.isFavorite(track) ? '♥' : '♡' }}
             </button>
-            <!-- 播放按钮：当前歌曲且播放中显示暂停，否则显示播放 -->
+            <!-- 播放按钮 -->
             <button class="play-btn" @click.stop="isCurrent(track) && player.isPlaying ? player.pause() : playSong(track)">
-              <template v-if="isCurrent(track) && player.isPlaying">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
-                  <rect x="6" y="5" width="3" height="14" rx="0.5"/>
-                  <rect x="15" y="5" width="3" height="14" rx="0.5"/>
-                </svg>
-              </template>
-              <template v-else-if="isCurrent(track)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
-                  <path d="M8 5.5C7.9 5.4 7.8 5.5 7.8 5.6L7.8 18.4C7.8 18.5 7.9 18.6 8 18.5L18.5 12C18.6 12 18.6 11.9 18.5 11.8L8 5.5Z"/>
-                </svg>
-              </template>
-              <template v-else>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              </template>
+              <!-- 播放中：暂停图标（手绘两条竖线） -->
+              <svg v-if="isCurrent(track) && player.isPlaying" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <line x1="8" y1="6" x2="8" y2="18"/>
+                <line x1="16" y1="6" x2="16" y2="18"/>
+              </svg>
+              <!-- 当前歌曲未播放：实心三角 -->
+              <svg v-else-if="isCurrent(track)" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M7.5 4.2C7.1 3.9 6.6 4.1 6.6 4.6L6.6 19.4C6.6 19.9 7.1 20.1 7.5 19.8L19.5 12.3C19.9 12 19.9 11.5 19.5 11.2L7.5 4.2Z"/>
+              </svg>
+              <!-- 非当前歌曲：手绘三角（描边） -->
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 4.5L7 19.5L19 12L7 4.5Z"/>
+              </svg>
             </button>
           </div>
         </div>

@@ -12,15 +12,18 @@
           </button>
           <!-- 播放/暂停 -->
           <button @click="player.togglePlay()" class="sketch-icon sketch-icon-play" title="播放/暂停" :disabled="!player.currentSong">
+            <!-- 加载中 -->
             <svg v-if="player.loading" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.5" stroke-linecap="round">
               <circle cx="12" cy="12" r="9" fill="none" stroke-dasharray="3,2"/>
             </svg>
-            <svg v-else-if="player.isPlaying" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.5" stroke-linecap="round">
-              <rect x="6" y="5" width="3" height="14" rx="0.5" fill="#4a4a4a"/>
-              <rect x="15" y="5" width="3" height="14" rx="0.5" fill="#4a4a4a"/>
+            <!-- 播放中：暂停（描边竖线） -->
+            <svg v-else-if="player.isPlaying" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.8" stroke-linecap="round">
+              <line x1="8" y1="5" x2="8" y2="19"/>
+              <line x1="16" y1="5" x2="16" y2="19"/>
             </svg>
-            <svg v-else width="26" height="26" viewBox="0 0 24 24" fill="#4a4a4a" stroke="#4a4a4a" stroke-width="1">
-              <path d="M8 5.5C7.9 5.4 7.8 5.5 7.8 5.6L7.8 18.4C7.8 18.5 7.9 18.6 8 18.5L18.5 12C18.6 12 18.6 11.9 18.5 11.8L8 5.5Z"/>
+            <!-- 未播放：三角（描边） -->
+            <svg v-else width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 5L8 19L20 12L8 5Z"/>
             </svg>
           </button>
           <!-- 下一首 -->
