@@ -37,8 +37,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useSearchStore } from './stores/search';
-import { usePlayerStore } from './stores/player';
-import { useAudio } from './composables/useAudio';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
 import { SketchMusicIcon, SketchHeartIcon, SketchSettingsIcon } from './components/icons/SketchIcons';
@@ -59,8 +57,6 @@ interface Section {
 
 /* ========== 状态 ========== */
 const search = useSearchStore();
-const player = usePlayerStore();
-const { playSong } = useAudio();
 const activeSection = ref<SectionId>('discover');
 
 const sections = computed<Section[]>(() => [
@@ -83,11 +79,7 @@ useKeyboard();
 useMediaSession();
 search.loadSources();
 
-// 加载推荐后自动播放第一首
 onMounted(async () => {
   await search.loadRecommendations();
-  if (!player.currentSong && player.searchResults.length > 0) {
-    await playSong(player.searchResults[0]);
-  }
 });
 </script>
