@@ -1,6 +1,6 @@
 /**
  * 播放器状态管理
- * 管理当前播放歌曲、播放状态、进度、音量等
+ * 管理当前播放歌曲、播放状态、进度、音量、收藏、搜索结果索引
  */
 
 import { defineStore } from 'pinia';
@@ -12,7 +12,7 @@ import storage from '../core/storage';
 export type PlayMode = 'order' | 'random' | 'loop' | 'single';
 
 export const usePlayerStore = defineStore('player', () => {
-  // ==================== 状态 ====================
+  // ==================== 播放状态 ====================
   const currentSong = ref<Song | null>(null);
   const isPlaying = ref(false);
   const playMode = ref<PlayMode>(storage.get<PlayMode>('playMode', 'order'));
@@ -25,6 +25,37 @@ export const usePlayerStore = defineStore('player', () => {
   const error = ref('');
   const lyric = ref<Lyric | null>(null);
   const currentLyricIndex = ref(-1);
+
+  // ==================== 搜索结果（作为播放上下文） ====================
+  const searchResults = ref<Song[]>([]);
+  const currentIndex = ref(-1);
+
+  // ==================== 收藏 ====================
+  function safeGetSongs(key: string): Song[] {
+    const val = storage.get<Song[]>(key, []);
+    return Array.isArray(val) ? val : [];
+  }
+
+  const favorites = ref<Song[]>(safeGetSongs('favorites'));
+  const favoriteCount = computed(() => favorites.value.length);
+
+  function isFavorite(song: Song): boolean {
+    return favorites.value.some(
+      (s) => s.id === song.id && s.sourceId === song.sourceId,
+    );
+  }
+
+  function toggleFavorite(song: Song) {
+    const idx = favorites.value.findIndex(
+      (s) => s.id === song.id && s.sourceId === song.sourceId,
+    );
+    if (idx !== -1) {
+      favorites.value.splice(idx, 1);
+    } else {
+      favorites.value.push(song);
+    }
+    storage.set('favorites', favorites.value);
+  }
 
   // ==================== 计算属性 ====================
   const progress = computed(() =>
@@ -72,6 +103,12 @@ export const usePlayerStore = defineStore('player', () => {
 
       playUrl.value = url;
       currentSong.value = song;
+
+      // 更新搜索结果中的索引
+      const idx = searchResults.value.findIndex(
+        (s) => s.id === song.id && s.sourceId === song.sourceId,
+      );
+      if (idx !== -1) currentIndex.value = idx;
 
       // 加载歌词
       loadLyric(song);
@@ -167,7 +204,7 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   return {
-    // 状态
+    // 播放状态
     currentSong,
     isPlaying,
     playMode,
@@ -180,6 +217,16 @@ export const usePlayerStore = defineStore('player', () => {
     error,
     lyric,
     currentLyricIndex,
+
+    // 搜索结果
+    searchResults,
+    currentIndex,
+
+    // 收藏
+    favorites,
+    favoriteCount,
+    isFavorite,
+    toggleFavorite,
 
     // 计算属性
     progress,

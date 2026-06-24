@@ -7,6 +7,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Song } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
+import { usePlayerStore } from './player';
 
 export interface SourceInfo {
   id: string;
@@ -29,6 +30,13 @@ export const useSearchStore = defineStore('search', () => {
   const pageSize = 20;
   const hasMore = ref(false);
   const sourceHasMore = ref<Map<string, boolean>>(new Map());
+
+  // ==================== 同步到播放器 ====================
+
+  function syncToPlayer() {
+    const player = usePlayerStore();
+    player.searchResults = results.value;
+  }
 
   // ==================== 初始化 ====================
 
@@ -85,6 +93,7 @@ export const useSearchStore = defineStore('search', () => {
 
       keyword.value = pickedKeyword;
       results.value = pickedSongs;
+      syncToPlayer();
       sourceResults.value.clear();
       sourceHasMore.value.clear();
       if (pickedSourceId) {
@@ -139,6 +148,7 @@ export const useSearchStore = defineStore('search', () => {
         result.hasMore || result.songs.length === pageSize,
       );
       results.value = mergeResults();
+      syncToPlayer();
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
     } catch (e) {
       console.error('[Search] 搜索失败:', e);
@@ -188,6 +198,7 @@ export const useSearchStore = defineStore('search', () => {
           );
           // 每完成一个音源就立即合并展示，让用户看到逐步增加的结果
           results.value = mergeResults();
+          syncToPlayer();
         } catch {
           sourceResults.value.set(sid, []);
           sourceHasMore.value.set(sid, false);
@@ -235,6 +246,7 @@ export const useSearchStore = defineStore('search', () => {
               results.value.push(song);
             }
           });
+          syncToPlayer();
         } catch {
           sourceHasMore.value.set(sid, false);
         }

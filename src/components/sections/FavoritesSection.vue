@@ -9,9 +9,9 @@
       </div>
       <div class="content-area main-scroll">
         <section>
-          <h2>收藏歌曲 <span style="font-size: 16px; color: #888;">({{ playlist.favoriteCount }})</span></h2>
+          <h2>收藏歌曲 <span style="font-size: 16px; color: #888;">({{ player.favoriteCount }})</span></h2>
 
-          <div v-if="playlist.favorites.length === 0" class="empty-state">
+          <div v-if="player.favorites.length === 0" class="empty-state">
             <div class="empty-icon" v-html="SketchHeartIcon" style="width: 64px; height: 64px;"></div>
             <p>还没有收藏歌曲~</p>
             <p class="hint">点击 ♡ 收藏喜欢的歌</p>
@@ -19,7 +19,7 @@
 
           <div v-else class="sketch-card" style="padding: 0; overflow: hidden;">
             <div
-              v-for="(song, idx) in playlist.favorites"
+              v-for="(song, idx) in player.favorites"
               :key="`${song.sourceId}-${song.id}`"
               :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
               @dblclick="playSong(song)"
@@ -30,7 +30,7 @@
                 <div class="song-artist">{{ song.artist }}</div>
               </div>
               <span v-if="isCurrent(song)" class="playing-indicator">▶</span>
-              <button class="btn-favorite active" @click.stop="playlist.toggleFavorite(song)" style="margin-right: 8px;">♥</button>
+              <button class="btn-favorite active" @click.stop="player.toggleFavorite(song)" style="margin-right: 8px;">♥</button>
               <button class="play-btn" @click.stop="playSong(song)">播放</button>
             </div>
           </div>
@@ -48,10 +48,8 @@ import { SketchHeartIcon } from '../icons/SketchIcons';
 import { useAudio } from '../../composables/useAudio';
 import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
-import { usePlaylistStore } from '../../stores/playlist';
 
 const player = usePlayerStore();
-const playlist = usePlaylistStore();
 const { playSong } = useAudio();
 
 function isCurrent(track: Song) {

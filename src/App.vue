@@ -66,10 +66,7 @@
 
 <script setup lang="ts">
 import { ref, onBeforeUnmount, onMounted, computed } from 'vue';
-import { usePlayerStore } from './stores/player';
 import { useSearchStore } from './stores/search';
-import { usePlaylistStore } from './stores/playlist';
-import { useAudio } from './composables/useAudio';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
 import { SketchMusicIcon, SketchHeartIcon, SketchSettingsIcon, SketchPencilIcon } from './components/icons/SketchIcons';
@@ -89,10 +86,7 @@ interface Section {
 }
 
 /* ========== 状态 ========== */
-const player = usePlayerStore();
 const search = useSearchStore();
-const playlist = usePlaylistStore();
-const { playAtIndex } = useAudio();
 
 /* ========== 初始化 ========== */
 useKeyboard();
@@ -171,9 +165,6 @@ onMounted(async () => {
   window.addEventListener('resize', handleViewportResize);
 
   await search.loadRecommendations();
-  if (playlist.playlist.length > 0 && !player.currentSong) {
-    await playAtIndex(0);
-  }
 });
 
 onBeforeUnmount(() => {
