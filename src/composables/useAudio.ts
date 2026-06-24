@@ -3,12 +3,11 @@
  * 连接 Pinia store 和 AudioEngine，提供播放控制逻辑
  */
 
-import { watch, effectScope } from 'vue';
+import { watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import audioEngine from '../core/audio/AudioEngine';
 
 let initialized = false;
-const scope = effectScope(true);
 
 export function useAudio() {
   const player = usePlayerStore();
@@ -90,40 +89,37 @@ export function useAudio() {
   if (!initialized) {
     initialized = true;
 
-    // 使用独立 scope，不随组件销毁而清理
-    scope.run(() => {
-      watch(
-        () => player.playUrl,
-        (url) => {
-          if (url) audioEngine.load(url);
-        },
-      );
+    watch(
+      () => player.playUrl,
+      (url) => {
+        if (url) audioEngine.load(url);
+      },
+    );
 
-      watch(
-        () => player.isPlaying,
-        (playing) => {
-          if (playing) audioEngine.play();
-          else audioEngine.pause();
-        },
-      );
+    watch(
+      () => player.isPlaying,
+      (playing) => {
+        if (playing) audioEngine.play();
+        else audioEngine.pause();
+      },
+    );
 
-      watch(
-        () => [player.volume, player.muted],
-        ([vol, muted]) => {
-          audioEngine.setVolume(muted ? 0 : (vol as number));
-        },
-      );
+    watch(
+      () => [player.volume, player.muted],
+      ([vol, muted]) => {
+        audioEngine.setVolume(muted ? 0 : (vol as number));
+      },
+    );
 
-      watch(
-        () => player.currentTime,
-        (time) => {
-          const howl = audioEngine.getHowl();
-          if (howl && Math.abs(time - (howl.seek() as number)) > 0.5) {
-            audioEngine.seek(time);
-          }
-        },
-      );
-    });
+    watch(
+      () => player.currentTime,
+      (time) => {
+        const howl = audioEngine.getHowl();
+        if (howl && Math.abs(time - (howl.seek() as number)) > 0.5) {
+          audioEngine.seek(time);
+        }
+      },
+    );
 
     audioEngine.onEnded(() => {
       if (player.searchResults.length === 0) return;

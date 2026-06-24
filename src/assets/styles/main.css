@@ -998,53 +998,41 @@ body {
   }
 
   .bottom-controller {
-    height: auto;
-    min-height: 92px;
-    align-items: stretch;
+    height: 64px;
   }
 
   .controller-container {
-    padding: 6px 10px;
-    gap: 6px;
+    padding: 4px 10px;
+    gap: 4px;
   }
 
   .main-controls {
-    display: grid;
-    grid-template-columns: 1fr;
     gap: 6px;
   }
 
-  .left-controls,
-  .right-controls,
   .center-controls {
-    width: 100%;
+    min-width: 0;
   }
 
-  .center-controls {
-    order: -1;
-    justify-content: flex-start;
-    padding: 0;
+  .track-title {
+    font-size: 13px;
+  }
+
+  .track-artist {
+    display: none;
   }
 
   .right-controls {
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 4px;
+    flex-wrap: nowrap;
+    gap: 2px;
   }
 
   .track-info {
     text-align: left;
-    width: 100%;
+    min-width: 0;
   }
 
-  .track-title,
-  .track-artist {
-    max-width: 100%;
-  }
-
-  .track-title { font-size: 14px; }
-  .track-artist { font-size: 11px; }
-  .volume-slider { width: 60px; }
+  .volume-slider { width: 50px; }
 
   .sketch-icon {
     padding: 3px;
