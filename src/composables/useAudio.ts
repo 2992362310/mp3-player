@@ -15,10 +15,6 @@ export function useAudio() {
   /** 播放指定歌曲 */
   async function playSong(song: import('../core/sources/types').Song) {
     await player.playSong(song);
-    // 直接加载音频，不依赖 watcher
-    if (player.playUrl) {
-      audioEngine.load(player.playUrl);
-    }
   }
 
   /** 播放下一首（在搜索结果中切换） */

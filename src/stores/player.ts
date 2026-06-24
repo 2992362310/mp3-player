@@ -7,6 +7,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Song, Lyric } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
+import audioEngine from '../core/audio/AudioEngine';
 import storage from '../core/storage';
 
 export type PlayMode = 'order' | 'random' | 'loop' | 'single';
@@ -103,6 +104,9 @@ export const usePlayerStore = defineStore('player', () => {
 
       playUrl.value = url;
       currentSong.value = song;
+
+      // 直接加载音频
+      audioEngine.load(url);
 
       // 更新搜索结果中的索引
       const idx = searchResults.value.findIndex(
