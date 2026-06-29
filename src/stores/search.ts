@@ -23,7 +23,7 @@ export const useSearchStore = defineStore('search', () => {
   const keyword = ref('');
   const results = ref<Song[]>([]);
   const sourceResults = ref<Map<string, Song[]>>(new Map());
-  const currentSource = ref(storage.get<string>('searchCurrentSource', ''));
+  const currentSource = ref(storage.get<string>('searchCurrentSource', 'netease'));
   const sources = ref<SourceInfo[]>([]);
   const loading = ref(false);
   const isLoadingMore = ref(false);
@@ -40,6 +40,25 @@ export const useSearchStore = defineStore('search', () => {
   );
 
   const enabledSources = computed(() => sources.value.filter((s) => s.enabled));
+  const recommendationSourceLimit = 1;
+
+  function pickRecommendationSources(list: SourceInfo[]): SourceInfo[] {
+    if (list.length <= recommendationSourceLimit) return list;
+
+    const picked: SourceInfo[] = [];
+    const preferredId = currentSource.value || 'netease';
+    const preferred = list.find((s) => s.id === preferredId);
+    if (preferred) picked.push(preferred);
+
+    const rest = list.filter((s) => !picked.some((p) => p.id === s.id));
+    while (picked.length < recommendationSourceLimit && rest.length > 0) {
+      const idx = Math.floor(Math.random() * rest.length);
+      picked.push(rest[idx]);
+      rest.splice(idx, 1);
+    }
+
+    return picked;
+  }
 
   // ==================== 同步到播放器 ====================
 
@@ -60,16 +79,24 @@ export const useSearchStore = defineStore('search', () => {
       enabled: sourceEnabledMap.value[s.id] ?? s.enabled !== false,
     }));
 
+    if (!currentSource.value) {
+      const defaultSource = sources.value.find((s) => s.id === 'netease' && s.enabled);
+      currentSource.value = defaultSource?.id || enabledSources.value[0]?.id || '';
+      storage.set('searchCurrentSource', currentSource.value);
+      return;
+    }
+
     if (
       currentSource.value &&
       !sources.value.some((s) => s.id === currentSource.value && s.enabled)
     ) {
-      currentSource.value = enabledSources.value[0]?.id || '';
+      const defaultSource = sources.value.find((s) => s.id === 'netease' && s.enabled);
+      currentSource.value = defaultSource?.id || enabledSources.value[0]?.id || '';
       storage.set('searchCurrentSource', currentSource.value);
     }
   }
 
-  /** 默认推荐：随机搜一个关键词，取前 12 首 */
+  /** 默认推荐：随机搜一个关键词，取前 24 首 */
   async function loadRecommendations() {
     if (results.value.length > 0 || loading.value) return;
 
@@ -94,16 +121,17 @@ export const useSearchStore = defineStore('search', () => {
 
       const kw = keywordCandidates[Math.floor(Math.random() * keywordCandidates.length)];
 
+      const sampledSources = pickRecommendationSources(enabledSources);
       const aggregate: Song[] = [];
 
-      for (let i = 0; i < enabledSources.length; i++) {
-        const source = enabledSources[i];
+      for (let i = 0; i < sampledSources.length; i++) {
+        const source = sampledSources[i];
         if (i > 0) await new Promise((r) => setTimeout(r, 300));
 
         try {
           const result = await sourceManager.search(kw, source.id, {
             page: 1,
-            limit: 8,
+            limit: 12,
           });
           if (result.songs.length) aggregate.push(...result.songs);
         } catch {
@@ -126,7 +154,7 @@ export const useSearchStore = defineStore('search', () => {
         .map((song) => ({ song, sort: Math.random() }))
         .sort((a, b) => a.sort - b.sort)
         .map((item) => item.song)
-        .slice(0, 12);
+        .slice(0, 24);
 
       keyword.value = kw;
       results.value = shuffled;
