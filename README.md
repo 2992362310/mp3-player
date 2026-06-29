@@ -16,6 +16,19 @@ pnpm run build
 pnpm run preview
 ```
 
+### PWA 安装（iOS/Android）
+
+本项目已支持 PWA，可在移动端“添加到主屏幕”后像 App 一样打开。
+
+1. 先部署站点（推荐 HTTPS，GitHub Pages 也可）。
+2. iPhone Safari 打开站点，点击分享按钮，选择“添加到主屏幕”。
+3. Android Chrome 打开站点，按提示“安装应用”或在菜单里选择“安装应用”。
+
+已包含：
+- Web App Manifest（应用名称、图标、启动模式）
+- Service Worker（自动更新与基础缓存）
+- 离线提示页 [public/offline.html](public/offline.html)
+
 ## 🔧 核心模块说明
 
 ### 1. 音频引擎 (`AudioEngine.ts`)

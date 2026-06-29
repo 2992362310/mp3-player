@@ -1,6 +1,30 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+:root {
+  --paper-bg: #fdf6e3;
+  --paper-grid: rgba(200, 180, 140, 0.12);
+  --ink: #2d2d2d;
+}
+
+html[data-theme='paper'] {
+  --paper-bg: #fdf6e3;
+  --paper-grid: rgba(200, 180, 140, 0.12);
+  --ink: #2d2d2d;
+}
+
+html[data-theme='sand'] {
+  --paper-bg: #f8ecd2;
+  --paper-grid: rgba(191, 153, 84, 0.14);
+  --ink: #3f3429;
+}
+
+html[data-theme='mint'] {
+  --paper-bg: #eaf4ec;
+  --paper-grid: rgba(126, 166, 143, 0.14);
+  --ink: #1f3b30;
+}
+
 /* ========== 手绘风格主题 ========== */
 @theme {
   --color-ink: #2d2d2d;
@@ -62,13 +86,13 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: "Ma Shan Zheng", "Caveat", "Patrick Hand", cursive;
-  background-color: #fdf6e3;
+  font-family: "KaiTi", "STKaiti", "Ma Shan Zheng", "Noto Serif SC", serif;
+  background-color: var(--paper-bg);
   background-image:
-    linear-gradient(rgba(200, 180, 140, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200, 180, 140, 0.12) 1px, transparent 1px);
+    linear-gradient(var(--paper-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
   background-size: 28px 28px;
-  color: #2d2d2d;
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
   height: 100vh;

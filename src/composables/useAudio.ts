@@ -13,6 +13,11 @@ export function useAudio() {
     if (url) audioEngine.load(url);
   }
 
+  function playFromList(songs: Song[], song: Song) {
+    player.searchResults = songs;
+    playSong(song);
+  }
+
   function playNext() {
     const list = player.searchResults;
     if (list.length === 0) return;
@@ -56,10 +61,14 @@ export function useAudio() {
     playSong(songs[0]);
   }
 
+  function seekTo(time: number) {
+    const t = Math.max(0, Math.min(time, player.duration || 0));
+    audioEngine.seek(t);
+  }
+
   if (!initialized) {
     initialized = true;
 
-    // audioEngine 回调 → 更新 player store
     audioEngine.setCallbacks({
       onPlay: () => { player.isPlaying = true; },
       onPause: () => { player.isPlaying = false; },
@@ -76,24 +85,21 @@ export function useAudio() {
       onError: (msg) => { player.error = msg; player.isPlaying = false; },
     });
 
-    // player store 变化 → 控制 audioEngine
     watch(() => player.isPlaying, (playing) => {
       if (playing) audioEngine.play();
       else audioEngine.pause();
     });
 
-    watch(() => [player.volume, player.muted], ([vol, muted]) => {
-      audioEngine.setVolume(muted ? 0 : (vol as number));
-    });
-
-    // 用户拖动进度条 → seek
-    let seekLock = false;
-    watch(() => player.currentTime, (time) => {
-      if (seekLock) return;
-      // 仅当差距大于 1s 时视为用户 seek
-      // （正常播放时 time 变化是连续的，不会跳变）
-    });
+    watch(
+      () => [player.volume, player.muted] as const,
+      ([vol, muted]) => {
+        audioEngine.setVolume(muted ? 0 : vol);
+      },
+      { immediate: true },
+    );
   }
 
-  return { playSong, playNext, playPrevious, playRandom, playAtIndex, playAll };
+  return {
+    playSong, playFromList, playNext, playPrevious, playRandom, playAtIndex, playAll, seekTo,
+  };
 }

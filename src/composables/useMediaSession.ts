@@ -9,7 +9,7 @@ import { useAudio } from './useAudio';
 
 export function useMediaSession() {
   const player = usePlayerStore();
-  const { playNext, playPrevious } = useAudio();
+  const { playNext, playPrevious, seekTo } = useAudio();
 
   function updateMetadata() {
     if (!('mediaSession' in navigator)) return;
@@ -34,7 +34,7 @@ export function useMediaSession() {
     navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
     navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
     navigator.mediaSession.setActionHandler('seekto', (details) => {
-      if (details.seekTime != null) player.seekTo(details.seekTime);
+      if (details.seekTime != null) seekTo(details.seekTime);
     });
   }
 

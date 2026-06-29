@@ -146,10 +146,6 @@ class GDMusicApiService {
    * 发起 API 请求
    */
   private async request<T>(params: Record<string, string | number>): Promise<T> {
-    if (!this.checkRateLimit()) {
-      throw new Error('请求频率超限，请稍后再试');
-    }
-
     const url = new URL(API_BASE_URL);
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, String(value));
@@ -158,8 +154,11 @@ class GDMusicApiService {
     const cacheKey = url.toString();
     const cached = this.getFromCache<T>(cacheKey);
     if (cached) {
-      console.log('[GDMusicApi] 命中缓存:', cacheKey);
       return cached;
+    }
+
+    if (!this.checkRateLimit()) {
+      throw new Error('请求频率超限，请稍后再试');
     }
 
     console.log('[GDMusicApi] 请求:', url.toString());

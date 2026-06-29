@@ -129,7 +129,9 @@ export class GDMusicSource implements ISourcePlugin {
    */
   async getLyric(song: Song): Promise<Lyric> {
     try {
-      const response = await gdMusicApi.getLyric(this.source, String(song.id));
+      const raw = song.raw as GDSong | undefined;
+      const lyricId = raw?.lyric_id || String(song.id);
+      const response = await gdMusicApi.getLyric(this.source, lyricId);
       return {
         text: response.lyric || "",
         translation: response.tlyric || "",

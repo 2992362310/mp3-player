@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="MoYun icon">
+  <rect width="192" height="192" rx="36" fill="#fdf6e3"/>
+  <circle cx="96" cy="96" r="74" fill="none" stroke="#c4b5a0" stroke-width="6" stroke-dasharray="7 5"/>
+  <text x="96" y="118" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="84" font-weight="700" fill="#2d2d2d">M</text>
+  <circle cx="132" cy="124" r="12" fill="#e74c3c"/>
+</svg>

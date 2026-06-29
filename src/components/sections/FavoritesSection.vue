@@ -50,9 +50,13 @@ import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
 
 const player = usePlayerStore();
-const { playSong } = useAudio();
+const { playFromList } = useAudio();
 
 function isCurrent(track: Song) {
   return player.currentSong?.id === track.id && player.currentSong?.sourceId === track.sourceId;
+}
+
+function playSong(song: Song) {
+  playFromList(player.favorites, song);
 }
 </script>

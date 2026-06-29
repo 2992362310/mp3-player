@@ -39,10 +39,12 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useUIStore } from '../stores/ui';
+import { useAudio } from '../composables/useAudio';
 import LyricLine from './LyricLine.vue';
 
 const player = usePlayerStore();
 const ui = useUIStore();
+const { seekTo } = useAudio();
 const lines = computed(() => player.lyric?.lines || []);
 
 /* ========== Ref 管理 ========== */
@@ -135,7 +137,7 @@ onBeforeUnmount(() => {
 });
 
 function handleLineClick(time: number) {
-  player.seekTo(time);
+  seekTo(time);
 }
 </script>
 

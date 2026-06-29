@@ -3,10 +3,11 @@
     <!-- 平台选择 -->
     <select
       v-model="search.currentSource"
+      @change="onSourceChanged"
       style="padding: 8px 10px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d; flex-shrink: 0; cursor: pointer; position: relative; z-index: 1100;"
     >
       <option value="">全部音源</option>
-      <option v-for="s in search.sources" :key="s.id" :value="s.id">
+      <option v-for="s in search.enabledSources" :key="s.id" :value="s.id">
         {{ s.name }}
       </option>
     </select>
@@ -51,9 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { SketchSearchIcon } from './icons/SketchIcons';
 import { useSearchStore } from '../stores/search';
+import storage from '../core/storage';
 
 interface SearchHistoryItem {
   keyword: string;
@@ -63,7 +65,20 @@ interface SearchHistoryItem {
 const search = useSearchStore();
 const searchInput = ref('');
 const showSearchHistory = ref(false);
-const searchHistory = ref<SearchHistoryItem[]>([]);
+const searchHistory = ref<SearchHistoryItem[]>(
+  storage.get<SearchHistoryItem[]>('searchHistory', []),
+);
+
+onMounted(() => {
+  if (search.keyword) searchInput.value = search.keyword;
+  if (search.currentSource && !search.enabledSources.some((s) => s.id === search.currentSource)) {
+    search.switchSource('');
+  }
+});
+
+function saveHistory() {
+  storage.set('searchHistory', searchHistory.value);
+}
 
 async function handleSearch() {
   if (!searchInput.value.trim()) return;
@@ -75,9 +90,15 @@ async function handleSearch() {
   if (exists !== -1) searchHistory.value.splice(exists, 1);
   searchHistory.value.unshift({ keyword: kw, source: search.currentSource });
   if (searchHistory.value.length > 15) searchHistory.value = searchHistory.value.slice(0, 15);
+  saveHistory();
 
   // 执行搜索
   await search.searchSongs(kw, search.currentSource);
+}
+
+function onSourceChanged(e: Event) {
+  const sourceId = (e.target as HTMLSelectElement).value;
+  search.switchSource(sourceId);
 }
 
 function selectHistory(keyword: string) {

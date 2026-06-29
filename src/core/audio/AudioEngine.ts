@@ -12,6 +12,8 @@ class AudioEngine {
   private howl: Howl | null = null;
   private rafId: number | null = null;
   private callbacks: AudioCallbacks | null = null;
+  private lastTimeUpdate = 0;
+  private readonly timeUpdateInterval = 250;
 
   /** 注册回调（由 useAudio 调用） */
   setCallbacks(cb: AudioCallbacks): void {
@@ -53,7 +55,7 @@ class AudioEngine {
   seek(time: number): void {
     if (!this.howl) return;
     this.howl.seek(time);
-    this.callbacks?.onTimeUpdate(time, this.howl.duration());
+    this.emitTimeUpdate();
   }
 
   setVolume(v: number): void {
@@ -72,14 +74,24 @@ class AudioEngine {
     }
   }
 
+  private emitTimeUpdate(): void {
+    if (!this.howl) return;
+    this.callbacks?.onTimeUpdate(
+      this.howl.seek() as number,
+      this.howl.duration(),
+    );
+    this.lastTimeUpdate = performance.now();
+  }
+
   private startRaf(): void {
     this.stopRaf();
+    this.lastTimeUpdate = 0;
     const tick = () => {
       if (!this.howl) return;
-      this.callbacks?.onTimeUpdate(
-        this.howl.seek() as number,
-        this.howl.duration(),
-      );
+      const now = performance.now();
+      if (now - this.lastTimeUpdate >= this.timeUpdateInterval) {
+        this.emitTimeUpdate();
+      }
       this.rafId = requestAnimationFrame(tick);
     };
     this.rafId = requestAnimationFrame(tick);

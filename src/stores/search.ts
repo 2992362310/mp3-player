@@ -8,6 +8,7 @@ import { ref, computed } from 'vue';
 import type { Song } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
 import { usePlayerStore } from './player';
+import storage from '../core/storage';
 
 export interface SourceInfo {
   id: string;
@@ -22,14 +23,23 @@ export const useSearchStore = defineStore('search', () => {
   const keyword = ref('');
   const results = ref<Song[]>([]);
   const sourceResults = ref<Map<string, Song[]>>(new Map());
-  const currentSource = ref('netease');
+  const currentSource = ref(storage.get<string>('searchCurrentSource', ''));
   const sources = ref<SourceInfo[]>([]);
   const loading = ref(false);
   const isLoadingMore = ref(false);
+  const error = ref('');
   const page = ref(1);
   const pageSize = 20;
   const hasMore = ref(false);
   const sourceHasMore = ref<Map<string, boolean>>(new Map());
+  const sourceEnabledMap = ref<Record<string, boolean>>(
+    storage.get<Record<string, boolean>>('searchSourceEnabled', {}),
+  );
+  const lastRecommendation = ref<{ keyword: string; sourceId: string } | null>(
+    storage.get<{ keyword: string; sourceId: string } | null>('lastRecommendation', null),
+  );
+
+  const enabledSources = computed(() => sources.value.filter((s) => s.enabled));
 
   // ==================== 同步到播放器 ====================
 
@@ -47,11 +57,19 @@ export const useSearchStore = defineStore('search', () => {
       name: s.name,
       icon: s.icon,
       color: s.color || '#666666',
-      enabled: s.enabled !== false,
+      enabled: sourceEnabledMap.value[s.id] ?? s.enabled !== false,
     }));
+
+    if (
+      currentSource.value &&
+      !sources.value.some((s) => s.id === currentSource.value && s.enabled)
+    ) {
+      currentSource.value = enabledSources.value[0]?.id || '';
+      storage.set('searchCurrentSource', currentSource.value);
+    }
   }
 
-  /** 默认推荐：随机搜一个关键词，取前 10 首 */
+  /** 默认推荐：随机搜一个关键词，取前 12 首 */
   async function loadRecommendations() {
     if (results.value.length > 0 || loading.value) return;
 
@@ -61,48 +79,47 @@ export const useSearchStore = defineStore('search', () => {
       '周深', '张学友', '刘德华', '蔡依林', '孙燕姿',
     ];
     loading.value = true;
+    error.value = '';
 
     try {
       const enabledSources = sources.value.filter((s) => s.enabled);
       if (enabledSources.length === 0) return;
 
-      const shuffledKeywords = [...pool].sort(() => Math.random() - 0.5);
-      const shuffledSources = [...enabledSources].sort(() => Math.random() - 0.5);
+      const lastKw = lastRecommendation.value?.keyword;
+      const lastSourceId = lastRecommendation.value?.sourceId;
 
-      let pickedKeyword = '';
-      let pickedSourceId = '';
-      let pickedSongs: Song[] = [];
+      const keywordCandidates =
+        pool.length > 1 && lastKw
+          ? pool.filter((k) => k !== lastKw)
+          : pool;
+      const sourceCandidates =
+        enabledSources.length > 1 && lastSourceId
+          ? enabledSources.filter((s) => s.id !== lastSourceId)
+          : enabledSources;
 
-      for (const kw of shuffledKeywords.slice(0, 6)) {
-        for (const source of shuffledSources) {
-          const result = await sourceManager.search(kw, source.id, {
-            page: 1,
-            limit: 12,
-          });
+      const kw = keywordCandidates[Math.floor(Math.random() * keywordCandidates.length)];
+      const source = sourceCandidates[Math.floor(Math.random() * sourceCandidates.length)];
 
-          if (result.songs.length > 0) {
-            pickedKeyword = kw;
-            pickedSourceId = source.id;
-            pickedSongs = result.songs;
-            break;
-          }
-        }
+      const result = await sourceManager.search(kw, source.id, {
+        page: 1,
+        limit: 12,
+      });
 
-        if (pickedSongs.length > 0) break;
-      }
+      if (result.songs.length === 0) return;
 
-      keyword.value = pickedKeyword;
-      results.value = pickedSongs;
+      keyword.value = kw;
+      results.value = result.songs;
       syncToPlayer();
       sourceResults.value.clear();
       sourceHasMore.value.clear();
-      if (pickedSourceId) {
-        sourceResults.value.set(pickedSourceId, pickedSongs);
-        sourceHasMore.value.set(pickedSourceId, false);
-      }
+      sourceResults.value.set(source.id, result.songs);
+      sourceHasMore.value.set(source.id, false);
       hasMore.value = false;
+      lastRecommendation.value = { keyword: kw, sourceId: source.id };
+      storage.set('lastRecommendation', lastRecommendation.value);
     } catch (e) {
       console.error('[Search] 推荐加载失败:', e);
+      error.value = e instanceof Error ? e.message : '推荐加载失败';
     } finally {
       loading.value = false;
     }
@@ -128,9 +145,16 @@ export const useSearchStore = defineStore('search', () => {
     const source = sourceId || currentSource.value;
     if (!source) { await searchAllSources(kw); return; }
 
+    const sourceInfo = sources.value.find((s) => s.id === source);
+    if (sourceInfo && !sourceInfo.enabled) {
+      error.value = `音源 ${sourceInfo.name} 已禁用，请先启用或切换音源`;
+      return;
+    }
+
     keyword.value = kw;
     loading.value = true;
     isLoadingMore.value = false;
+    error.value = '';
     page.value = 1;
     sourceResults.value.clear();
     sourceHasMore.value.clear();
@@ -149,6 +173,7 @@ export const useSearchStore = defineStore('search', () => {
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
     } catch (e) {
       console.error('[Search] 搜索失败:', e);
+      error.value = e instanceof Error ? e.message : '搜索失败，请稍后再试';
     } finally {
       loading.value = false;
     }
@@ -167,6 +192,7 @@ export const useSearchStore = defineStore('search', () => {
     keyword.value = kw;
     loading.value = true;
     isLoadingMore.value = false;
+    error.value = '';
     page.value = 1;
     sourceResults.value.clear();
     sourceHasMore.value.clear();
@@ -176,6 +202,11 @@ export const useSearchStore = defineStore('search', () => {
       const enabledIds = sources.value
         .filter((s) => s.enabled)
         .map((s) => s.id);
+
+      if (enabledIds.length === 0) {
+        error.value = '没有可用音源，请在设置中启用至少一个音源';
+        return;
+      }
 
       // 逐个音源顺序请求，每个请求间隔 400ms
       for (let i = 0; i < enabledIds.length; i++) {
@@ -205,6 +236,7 @@ export const useSearchStore = defineStore('search', () => {
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
     } catch (e) {
       console.error('[Search] 多源搜索失败:', e);
+      error.value = e instanceof Error ? e.message : '搜索失败，请稍后再试';
     } finally {
       loading.value = false;
     }
@@ -259,9 +291,34 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   function switchSource(sourceId: string) {
+    if (!sourceId) {
+      currentSource.value = '';
+      storage.set('searchCurrentSource', '');
+      return;
+    }
+    const sourceInfo = sources.value.find((s) => s.id === sourceId);
+    if (!sourceInfo?.enabled) return;
     currentSource.value = sourceId;
+    storage.set('searchCurrentSource', sourceId);
     if (keyword.value && sourceResults.value.size > 0) {
       results.value = mergeResults();
+    }
+  }
+
+  function setSourceEnabled(sourceId: string, enabled: boolean) {
+    const idx = sources.value.findIndex((s) => s.id === sourceId);
+    if (idx === -1) return;
+
+    sources.value[idx] = { ...sources.value[idx], enabled };
+    sourceEnabledMap.value = {
+      ...sourceEnabledMap.value,
+      [sourceId]: enabled,
+    };
+    storage.set('searchSourceEnabled', sourceEnabledMap.value);
+
+    if (!enabled && currentSource.value === sourceId) {
+      currentSource.value = enabledSources.value[0]?.id || '';
+      storage.set('searchCurrentSource', currentSource.value);
     }
   }
 
@@ -273,14 +330,17 @@ export const useSearchStore = defineStore('search', () => {
     sources,
     loading,
     isLoadingMore,
+    error,
     page,
     hasMore,
     sourceHasMore,
+    enabledSources,
     loadSources,
     loadRecommendations,
     searchSongs,
     searchAllSources,
     loadMore,
     switchSource,
+    setSourceEnabled,
   };
 });

@@ -2,6 +2,7 @@
   <div class="content-section" style="display: flex; flex-direction: row; gap: 0; flex: 1; min-width: 0;">
     <div class="content-area main-scroll" style="flex: 1; min-width: 0;">
       <!-- 搜索结果 -->
+      <div v-if="search.error" class="search-error" role="alert">{{ search.error }}</div>
       <div v-if="search.results.length > 0 || search.loading" class="sketch-card" style="padding: 0; overflow: hidden;">
         <div
           v-if="search.loading && search.results.length === 0"
@@ -82,3 +83,16 @@ function isCurrent(track: Song) {
   return player.currentSong?.id === track.id && player.currentSong?.sourceId === track.sourceId;
 }
 </script>
+
+<style scoped>
+.search-error {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px dashed #e74c3c;
+  border-radius: 8px;
+  background: rgba(231, 76, 60, 0.08);
+  color: #c0392b;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 14px;
+}
+</style>

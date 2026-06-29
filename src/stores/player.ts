@@ -32,10 +32,12 @@ export const usePlayerStore = defineStore('player', () => {
   const favorites = ref<Song[]>(safeGetSongs('favorites'));
   const favoriteCount = computed(() => favorites.value.length);
 
+  const favoriteKeys = computed(
+    () => new Set(favorites.value.map((s) => `${s.sourceId}-${s.id}`)),
+  );
+
   function isFavorite(song: Song): boolean {
-    return favorites.value.some(
-      (s) => s.id === song.id && s.sourceId === song.sourceId,
-    );
+    return favoriteKeys.value.has(`${song.sourceId}-${song.id}`);
   }
 
   function toggleFavorite(song: Song) {
@@ -103,8 +105,8 @@ export const usePlayerStore = defineStore('player', () => {
     isPlaying.value = !isPlaying.value;
   }
 
-  function seekTo(time: number) {
-    currentTime.value = Math.max(0, Math.min(time, duration.value));
+  function clearError() {
+    error.value = '';
   }
 
   function setVolume(v: number) {
@@ -143,13 +145,24 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   function updateCurrentLyric() {
-    if (!lyric.value?.lines?.length) return;
+    const lines = lyric.value?.lines;
+    if (!lines?.length) return;
+
     const time = currentTime.value;
+    let lo = 0;
+    let hi = lines.length - 1;
     let index = -1;
-    for (let i = 0; i < lyric.value.lines.length; i++) {
-      if (lyric.value.lines[i].time <= time) index = i;
-      else break;
+
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (lines[mid].time <= time) {
+        index = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
     }
+
     if (index !== currentLyricIndex.value) currentLyricIndex.value = index;
   }
 
@@ -166,7 +179,7 @@ export const usePlayerStore = defineStore('player', () => {
     favorites, favoriteCount, isFavorite, toggleFavorite,
     progress, formattedCurrentTime, formattedDuration, currentLyricText,
     playModeIcon, playModeLabel,
-    playSong, togglePlay, seekTo, setVolume, toggleMute, togglePlayMode,
+    playSong, togglePlay, clearError, setVolume, toggleMute, togglePlayMode,
     updateTime, loadLyric, formatTime,
   };
 });

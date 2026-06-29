@@ -106,6 +106,10 @@
 
       <!-- 进度条 -->
       <div class="progress-section">
+        <div v-if="player.error" class="player-error" role="alert">
+          <span>{{ player.error }}</span>
+          <button type="button" class="player-error-close" @click="player.clearError()" aria-label="关闭">×</button>
+        </div>
         <div class="progress-times">
           <span class="time">{{ player.formattedCurrentTime }}</span>
           <span class="time">{{ player.formattedDuration }}</span>
@@ -119,23 +123,62 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useUIStore } from '../stores/ui';
 import { useAudio } from '../composables/useAudio';
 
 const player = usePlayerStore();
 const ui = useUIStore();
-const { playNext, playPrevious } = useAudio();
+const { playNext, playPrevious, seekTo } = useAudio();
+
+let errorTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => player.error,
+  (msg) => {
+    if (errorTimer) clearTimeout(errorTimer);
+    if (!msg) return;
+    errorTimer = setTimeout(() => player.clearError(), 5000);
+  },
+);
 
 function seek(e: MouseEvent) {
   if (!player.currentSong || !player.duration) return;
   const t = e.currentTarget as HTMLElement;
   const rect = t.getBoundingClientRect();
   const pct = (e.clientX - rect.left) / rect.width;
-  player.seekTo(pct * player.duration);
+  seekTo(pct * player.duration);
 }
 
 function toggleLyricPanel() {
   ui.toggleLyricPanel();
 }
 </script>
+
+<style scoped>
+.player-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  border: 1px dashed #e74c3c;
+  border-radius: 6px;
+  background: rgba(231, 76, 60, 0.08);
+  color: #c0392b;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+}
+
+.player-error-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+}
+</style>

@@ -8,7 +8,7 @@ import { useAudio } from './useAudio';
 
 export function useKeyboard() {
   const player = usePlayerStore();
-  const { playNext, playPrevious } = useAudio();
+  const { playNext, playPrevious, seekTo } = useAudio();
 
   function handleKeydown(e: KeyboardEvent) {
     // 忽略输入框中的按键
@@ -22,11 +22,11 @@ export function useKeyboard() {
         break;
       case 'ArrowRight':
         if (e.shiftKey) playNext();
-        else player.seekTo(player.currentTime + 5);
+        else seekTo(player.currentTime + 5);
         break;
       case 'ArrowLeft':
         if (e.shiftKey) playPrevious();
-        else player.seekTo(player.currentTime - 5);
+        else seekTo(player.currentTime - 5);
         break;
       case 'ArrowUp':
         e.preventDefault();
