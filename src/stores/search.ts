@@ -86,36 +86,57 @@ export const useSearchStore = defineStore('search', () => {
       if (enabledSources.length === 0) return;
 
       const lastKw = lastRecommendation.value?.keyword;
-      const lastSourceId = lastRecommendation.value?.sourceId;
 
       const keywordCandidates =
         pool.length > 1 && lastKw
           ? pool.filter((k) => k !== lastKw)
           : pool;
-      const sourceCandidates =
-        enabledSources.length > 1 && lastSourceId
-          ? enabledSources.filter((s) => s.id !== lastSourceId)
-          : enabledSources;
 
       const kw = keywordCandidates[Math.floor(Math.random() * keywordCandidates.length)];
-      const source = sourceCandidates[Math.floor(Math.random() * sourceCandidates.length)];
 
-      const result = await sourceManager.search(kw, source.id, {
-        page: 1,
-        limit: 12,
+      const aggregate: Song[] = [];
+
+      for (let i = 0; i < enabledSources.length; i++) {
+        const source = enabledSources[i];
+        if (i > 0) await new Promise((r) => setTimeout(r, 300));
+
+        try {
+          const result = await sourceManager.search(kw, source.id, {
+            page: 1,
+            limit: 8,
+          });
+          if (result.songs.length) aggregate.push(...result.songs);
+        } catch {
+          // 单音源失败不影响推荐整体
+        }
+      }
+
+      if (aggregate.length === 0) return;
+
+      const unique = new Map<string, Song>();
+      aggregate.forEach((song) => {
+        const key = `${song.sourceId}-${song.id}`;
+        if (!unique.has(key)) unique.set(key, song);
       });
 
-      if (result.songs.length === 0) return;
+      const merged = Array.from(unique.values());
+
+      // 洗牌后截断，保证是随机推荐且来源覆盖更广
+      const shuffled = merged
+        .map((song) => ({ song, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map((item) => item.song)
+        .slice(0, 12);
 
       keyword.value = kw;
-      results.value = result.songs;
+      results.value = shuffled;
       syncToPlayer();
       sourceResults.value.clear();
       sourceHasMore.value.clear();
-      sourceResults.value.set(source.id, result.songs);
-      sourceHasMore.value.set(source.id, false);
       hasMore.value = false;
-      lastRecommendation.value = { keyword: kw, sourceId: source.id };
+
+      const firstSourceId = shuffled[0]?.sourceId || enabledSources[0].id;
+      lastRecommendation.value = { keyword: kw, sourceId: firstSourceId };
       storage.set('lastRecommendation', lastRecommendation.value);
     } catch (e) {
       console.error('[Search] 推荐加载失败:', e);

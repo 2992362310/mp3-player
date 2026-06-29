@@ -246,11 +246,11 @@ function handleLineClick(time: number) {
 @media (max-width: 768px) {
   .lyrics-sidebar {
     position: fixed;
-    bottom: 64px;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
     width: 100% !important;
-    height: calc(100vh - 64px - 100px);
+    height: calc(100dvh - 64px - 100px - env(safe-area-inset-bottom, 0px));
     max-height: none;
     border-left: none;
     border-top: 2px dashed #d4c5a0;

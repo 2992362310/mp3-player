@@ -8,9 +8,40 @@ let initialized = false;
 export function useAudio() {
   const player = usePlayerStore();
 
+  function normalizeText(value?: string): string {
+    return (value || '')
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[()（）\[\]【】\-_.]/g, '');
+  }
+
+  function getFallbackCandidates(song: Song): Song[] {
+    const title = normalizeText(song.title);
+    const artist = normalizeText(song.artist);
+
+    return player.searchResults.filter((item) => {
+      if (item.id === song.id && item.sourceId === song.sourceId) return false;
+      if (normalizeText(item.title) !== title) return false;
+      // 艺术家字段为空时放宽匹配，否则优先同艺人
+      return !artist || normalizeText(item.artist).includes(artist) || artist.includes(normalizeText(item.artist));
+    });
+  }
+
   async function playSong(song: Song) {
     const url = await player.playSong(song);
-    if (url) audioEngine.load(url);
+    if (url) {
+      audioEngine.load(url);
+      return;
+    }
+
+    const fallbacks = getFallbackCandidates(song);
+    for (const candidate of fallbacks) {
+      const fallbackUrl = await player.playSong(candidate);
+      if (fallbackUrl) {
+        audioEngine.load(fallbackUrl);
+        return;
+      }
+    }
   }
 
   function playFromList(songs: Song[], song: Song) {
