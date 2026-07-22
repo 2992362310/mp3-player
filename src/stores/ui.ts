@@ -20,6 +20,10 @@ export const useUIStore = defineStore('ui', () => {
     showLyricPanel.value = !showLyricPanel.value;
   }
 
+  function closeLyricPanel() {
+    showLyricPanel.value = false;
+  }
+
   function setTheme(nextTheme: AppTheme) {
     theme.value = nextTheme;
     storage.set('appTheme', nextTheme);
@@ -41,6 +45,7 @@ export const useUIStore = defineStore('ui', () => {
     theme,
     showOnboarding,
     toggleLyricPanel,
+    closeLyricPanel,
     setTheme,
     closeOnboarding,
     openOnboarding,

@@ -20,17 +20,15 @@ export function useMediaSession() {
       title: song.title,
       artist: song.artist,
       album: song.album || '',
-      artwork: song.cover
-        ? [{ src: song.cover, sizes: '300x300', type: 'image/jpeg' }]
-        : [],
+      artwork: [],
     });
   }
 
   function setupActions() {
     if (!('mediaSession' in navigator)) return;
 
-    navigator.mediaSession.setActionHandler('play', () => player.togglePlay());
-    navigator.mediaSession.setActionHandler('pause', () => player.togglePlay());
+    navigator.mediaSession.setActionHandler('play', () => player.setPlaying(true));
+    navigator.mediaSession.setActionHandler('pause', () => player.setPlaying(false));
     navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
     navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
     navigator.mediaSession.setActionHandler('seekto', (details) => {

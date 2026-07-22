@@ -8,24 +8,35 @@ export interface AudioCallbacks {
   onError: (message: string) => void;
 }
 
+export interface LoadOptions {
+  volume?: number;
+  /** 默认 true；恢复会话时设为 false */
+  autoplay?: boolean;
+}
+
 class AudioEngine {
   private howl: Howl | null = null;
   private rafId: number | null = null;
   private callbacks: AudioCallbacks | null = null;
   private lastTimeUpdate = 0;
   private readonly timeUpdateInterval = 250;
+  private volume = 1;
 
   /** 注册回调（由 useAudio 调用） */
   setCallbacks(cb: AudioCallbacks): void {
     this.callbacks = cb;
   }
 
-  /** 加载并播放 */
-  load(url: string): void {
+  /** 加载音频；默认加载后立即播放 */
+  load(url: string, options: LoadOptions = {}): void {
     this.stopInternal();
+    if (options.volume != null) this.volume = options.volume;
+    const autoplay = options.autoplay !== false;
+
     this.howl = new Howl({
       src: [url],
       html5: true,
+      volume: this.volume,
       onplay: () => {
         this.startRaf();
         this.callbacks?.onPlay();
@@ -38,10 +49,14 @@ class AudioEngine {
         this.stopRaf();
         this.callbacks?.onEnd();
       },
+      onload: () => {
+        if (!autoplay) this.emitTimeUpdate();
+      },
       onloaderror: () => this.callbacks?.onError('音频加载失败'),
       onplayerror: () => this.callbacks?.onError('播放失败'),
     });
-    this.howl.play();
+
+    if (autoplay) this.howl.play();
   }
 
   play(): void {
@@ -59,6 +74,7 @@ class AudioEngine {
   }
 
   setVolume(v: number): void {
+    this.volume = v;
     this.howl?.volume(v);
   }
 

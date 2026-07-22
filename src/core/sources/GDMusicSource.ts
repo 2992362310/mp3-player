@@ -10,8 +10,6 @@ import type {
   PlayUrl,
   SearchResult,
   SearchParams,
-  Recommend,
-  Ranking,
 } from "./types";
 import gdMusicApi, {
   type MusicSource,
@@ -65,7 +63,6 @@ export class GDMusicSource implements ISourcePlugin {
   };
 
   private source: MusicSource;
-  private picSize: 300 | 500 = 300;
 
   constructor(config: GDMusicSourceConfig) {
     this.id = config.source;
@@ -116,6 +113,7 @@ export class GDMusicSource implements ISourcePlugin {
   async getPlayUrl(song: Song, quality?: string): Promise<PlayUrl> {
     const br = this.parseQuality(quality);
     const response = await gdMusicApi.getPlayUrl(this.source, String(song.id), br);
+    if (!response?.url) throw new Error(`无可用地址 (${quality || 'high'})`);
     return {
       url: response.url,
       quality: this.getQualityLabel(br),
@@ -228,7 +226,7 @@ export class GDMusicSource implements ISourcePlugin {
       "999": 999,
       flac: 999,
     };
-    return qualityMap[quality || "lossless"] || 999;
+    return qualityMap[quality || "high"] || 320;
   }
 
   /**
@@ -349,7 +347,8 @@ export function createGDMusicSources(): ISourcePlugin[] {
     },
   ];
 
-  const stableSources = ["netease", "kuwo", "joox"];
+  // 文档标注较稳定的音源；bilibili 用于扩展插件验证
+  const stableSources = ["netease", "kuwo", "joox", "bilibili"];
 
   return configs
     .filter((config) => stableSources.includes(config.source))

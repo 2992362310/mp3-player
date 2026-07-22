@@ -4,6 +4,9 @@ import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
 
 let initialized = false;
+let playGeneration = 0;
+let consecutiveFailures = 0;
+let restoring = false;
 
 export function useAudio() {
   const player = usePlayerStore();
@@ -12,45 +15,68 @@ export function useAudio() {
     return (value || '')
       .toLowerCase()
       .replace(/\s+/g, '')
-      .replace(/[()（）\[\]【】\-_.]/g, '');
+      .replace(/[()（）\[\]【】\-_.']/g, '');
   }
 
   function getFallbackCandidates(song: Song): Song[] {
     const title = normalizeText(song.title);
     const artist = normalizeText(song.artist);
 
-    return player.searchResults.filter((item) => {
+    return player.queue.filter((item) => {
       if (item.id === song.id && item.sourceId === song.sourceId) return false;
       if (normalizeText(item.title) !== title) return false;
-      // 艺术家字段为空时放宽匹配，否则优先同艺人
       return !artist || normalizeText(item.artist).includes(artist) || artist.includes(normalizeText(item.artist));
     });
   }
 
+  function effectiveVolume(): number {
+    return player.muted ? 0 : player.volume;
+  }
+
+  function skipAfterFailure() {
+    consecutiveFailures += 1;
+    const limit = Math.max(1, Math.min(player.queue.length, 5));
+    if (consecutiveFailures >= limit) {
+      consecutiveFailures = 0;
+      return;
+    }
+    playNext();
+  }
+
   async function playSong(song: Song) {
+    const generation = ++playGeneration;
+
     const url = await player.playSong(song);
+    if (generation !== playGeneration) return;
+
     if (url) {
-      audioEngine.load(url);
+      consecutiveFailures = 0;
+      audioEngine.load(url, { volume: effectiveVolume() });
       return;
     }
 
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
+      if (generation !== playGeneration) return;
       const fallbackUrl = await player.playSong(candidate);
+      if (generation !== playGeneration) return;
       if (fallbackUrl) {
-        audioEngine.load(fallbackUrl);
+        consecutiveFailures = 0;
+        audioEngine.load(fallbackUrl, { volume: effectiveVolume() });
         return;
       }
     }
+
+    if (generation === playGeneration) skipAfterFailure();
   }
 
   function playFromList(songs: Song[], song: Song) {
-    player.searchResults = songs;
+    player.setQueue(songs);
     playSong(song);
   }
 
   function playNext() {
-    const list = player.searchResults;
+    const list = player.queue;
     if (list.length === 0) return;
     if (player.playMode === 'random') { playRandom(); return; }
     let idx: number;
@@ -61,7 +87,7 @@ export function useAudio() {
   }
 
   function playPrevious() {
-    const list = player.searchResults;
+    const list = player.queue;
     if (list.length === 0) return;
     if (player.playMode === 'random') { playRandom(); return; }
     let idx: number;
@@ -72,7 +98,7 @@ export function useAudio() {
   }
 
   function playRandom() {
-    const list = player.searchResults;
+    const list = player.queue;
     if (list.length === 0) return;
     let idx: number;
     do { idx = Math.floor(Math.random() * list.length); }
@@ -81,20 +107,49 @@ export function useAudio() {
   }
 
   function playAtIndex(index: number) {
-    const list = player.searchResults;
+    const list = player.queue;
     if (index < 0 || index >= list.length) return;
     playSong(list[index]);
   }
 
   function playAll(songs: Song[]) {
     if (songs.length === 0) return;
-    player.searchResults = songs;
+    player.setQueue(songs);
     playSong(songs[0]);
   }
 
   function seekTo(time: number) {
     const t = Math.max(0, Math.min(time, player.duration || 0));
     audioEngine.seek(t);
+    player.persistSession();
+  }
+
+  /** 恢复上次播放（不自动播放，符合浏览器策略） */
+  async function restoreLastSession() {
+    if (restoring) return;
+    const session = player.restoreSession();
+    if (!session) return;
+
+    restoring = true;
+    const generation = ++playGeneration;
+    try {
+      const url = await player.resolvePlayUrl(session.song);
+      if (generation !== playGeneration || !url) return;
+
+      audioEngine.load(url, { volume: effectiveVolume(), autoplay: false });
+      player.isPlaying = false;
+      if (session.time > 0) {
+        // 等 howl onload 后再 seek 更稳，这里短延迟兜底
+        setTimeout(() => {
+          if (generation !== playGeneration) return;
+          audioEngine.seek(session.time);
+          player.persistSession();
+        }, 300);
+      }
+      player.loadLyric(session.song);
+    } finally {
+      restoring = false;
+    }
   }
 
   if (!initialized) {
@@ -113,7 +168,13 @@ export function useAudio() {
         }
       },
       onTimeUpdate: (ct, dur) => player.updateTime(ct, dur),
-      onError: (msg) => { player.error = msg; player.isPlaying = false; },
+      onError: (msg) => {
+        player.error = msg.includes('失败')
+          ? '音频加载失败，可能是网络或版权限制'
+          : msg;
+        player.isPlaying = false;
+        skipAfterFailure();
+      },
     });
 
     watch(() => player.isPlaying, (playing) => {
@@ -131,6 +192,14 @@ export function useAudio() {
   }
 
   return {
-    playSong, playFromList, playNext, playPrevious, playRandom, playAtIndex, playAll, seekTo,
+    playSong,
+    playFromList,
+    playNext,
+    playPrevious,
+    playRandom,
+    playAtIndex,
+    playAll,
+    seekTo,
+    restoreLastSession,
   };
 }

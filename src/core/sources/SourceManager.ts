@@ -76,18 +76,29 @@ class SourceManager {
     return results;
   }
 
-  /** 获取播放地址 */
-  async getPlayUrl(song: Song): Promise<string | null> {
+  /** 获取播放地址：从首选音质向下降级 */
+  async getPlayUrl(
+    song: Song,
+    qualities: Array<'low' | 'medium' | 'high' | 'lossless'> = ['high', 'medium', 'low'],
+  ): Promise<string | null> {
     const source = this.sources.get(song.sourceId);
-    if (!source) return null;
+    if (!source) throw new Error(`音源不可用：${song.sourceId}`);
 
-    try {
-      const playUrl = await source.getPlayUrl(song);
-      return playUrl.url;
-    } catch (error) {
-      console.error(`[SourceManager] 获取播放地址失败:`, error);
-      return null;
+    let lastError: unknown = new Error('无法获取播放地址');
+
+    for (const quality of qualities) {
+      try {
+        const playUrl = await source.getPlayUrl(song, quality);
+        if (playUrl?.url) return playUrl.url;
+        lastError = new Error(`无可用地址 (${quality})`);
+      } catch (error) {
+        lastError = error;
+        console.warn(`[SourceManager] 音质 ${quality} 失败，尝试降级:`, error);
+      }
     }
+
+    console.error(`[SourceManager] 获取播放地址失败: ${song.title}`);
+    throw lastError instanceof Error ? lastError : new Error('无法获取播放地址');
   }
 
   /** 获取歌词 */

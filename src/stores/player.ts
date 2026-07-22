@@ -1,10 +1,22 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { Song, Lyric } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
+import { serializeSong } from '../core/song';
 import storage from '../core/storage';
+import { formatUserError } from '../utils/errors';
 
 export type PlayMode = 'order' | 'random' | 'loop' | 'single';
+export type AudioQuality = 'low' | 'medium' | 'high' | 'lossless';
+
+const QUALITY_ORDER: AudioQuality[] = ['lossless', 'high', 'medium', 'low'];
+const HISTORY_LIMIT = 50;
+const SESSION_SAVE_INTERVAL = 4000;
+
+function safeGetSongs(key: string): Song[] {
+  const val = storage.get<Song[]>(key, []);
+  return Array.isArray(val) ? val : [];
+}
 
 export const usePlayerStore = defineStore('player', () => {
   const currentSong = ref<Song | null>(null);
@@ -12,6 +24,9 @@ export const usePlayerStore = defineStore('player', () => {
   const playMode = ref<PlayMode>(storage.get<PlayMode>('playMode', 'order'));
   const volume = ref(storage.get<number>('volume', 0.8));
   const muted = ref(storage.get<boolean>('muted', false));
+  const preferredQuality = ref<AudioQuality>(
+    storage.get<AudioQuality>('preferredQuality', 'high'),
+  );
   const currentTime = ref(0);
   const duration = ref(0);
   const loading = ref(false);
@@ -19,15 +34,9 @@ export const usePlayerStore = defineStore('player', () => {
   const lyric = ref<Lyric | null>(null);
   const currentLyricIndex = ref(-1);
 
-  // 搜索结果（作为播放上下文）
-  const searchResults = ref<Song[]>([]);
+  const queue = ref<Song[]>([]);
   const currentIndex = ref(-1);
-
-  // 收藏
-  function safeGetSongs(key: string): Song[] {
-    const val = storage.get<Song[]>(key, []);
-    return Array.isArray(val) ? val : [];
-  }
+  const recentPlays = ref<Song[]>(safeGetSongs('recentPlays'));
 
   const favorites = ref<Song[]>(safeGetSongs('favorites'));
   const favoriteCount = computed(() => favorites.value.length);
@@ -47,12 +56,68 @@ export const usePlayerStore = defineStore('player', () => {
     if (idx !== -1) {
       favorites.value.splice(idx, 1);
     } else {
-      favorites.value.push(song);
+      favorites.value.push(serializeSong(song));
     }
     storage.set('favorites', favorites.value);
   }
 
-  // 计算属性
+  function setQueue(songs: Song[]) {
+    queue.value = songs;
+    persistSession();
+  }
+
+  function addToHistory(song: Song) {
+    const key = `${song.sourceId}-${song.id}`;
+    recentPlays.value = [
+      serializeSong(song),
+      ...recentPlays.value.filter((s) => `${s.sourceId}-${s.id}` !== key),
+    ].slice(0, HISTORY_LIMIT);
+    storage.set('recentPlays', recentPlays.value);
+  }
+
+  function clearRecentPlays() {
+    recentPlays.value = [];
+    storage.remove('recentPlays');
+  }
+
+  function persistSession() {
+    storage.set('playbackSession', {
+      queue: queue.value.map(serializeSong),
+      currentSong: currentSong.value ? serializeSong(currentSong.value) : null,
+      currentIndex: currentIndex.value,
+      currentTime: currentTime.value,
+    });
+  }
+
+  function restoreSession(): {
+    song: Song;
+    queue: Song[];
+    index: number;
+    time: number;
+  } | null {
+    const session = storage.get<{
+      queue?: Song[];
+      currentSong?: Song | null;
+      currentIndex?: number;
+      currentTime?: number;
+    } | null>('playbackSession', null);
+
+    if (!session?.currentSong || !Array.isArray(session.queue) || session.queue.length === 0) {
+      return null;
+    }
+
+    queue.value = session.queue;
+    currentSong.value = session.currentSong;
+    currentIndex.value = session.currentIndex ?? 0;
+    currentTime.value = Math.max(0, session.currentTime || 0);
+    return {
+      song: session.currentSong,
+      queue: session.queue,
+      index: currentIndex.value,
+      time: currentTime.value,
+    };
+  }
+
   const progress = computed(() =>
     duration.value === 0 ? 0 : (currentTime.value / duration.value) * 100,
   );
@@ -62,13 +127,6 @@ export const usePlayerStore = defineStore('player', () => {
     if (!lyric.value?.lines) return '';
     return lyric.value.lines[currentLyricIndex.value]?.text ?? '';
   });
-  const playModeIcon = computed(() => {
-    const icons: Record<PlayMode, string> = {
-      order: 'mdi:repeat', random: 'mdi:shuffle',
-      loop: 'mdi:repeat-once', single: 'mdi:repeat-once',
-    };
-    return icons[playMode.value];
-  });
   const playModeLabel = computed(() => {
     const labels: Record<PlayMode, string> = {
       order: '顺序播放', random: '随机播放',
@@ -76,33 +134,53 @@ export const usePlayerStore = defineStore('player', () => {
     };
     return labels[playMode.value];
   });
+  const qualityCascade = computed(() => {
+    const start = QUALITY_ORDER.indexOf(preferredQuality.value);
+    const from = start === -1 ? QUALITY_ORDER.indexOf('high') : start;
+    return QUALITY_ORDER.slice(from);
+  });
 
-  // 播放控制
   async function playSong(song: Song): Promise<string | null> {
     loading.value = true;
     error.value = '';
     try {
-      const url = await sourceManager.getPlayUrl(song);
+      const url = await sourceManager.getPlayUrl(song, qualityCascade.value);
       if (!url) throw new Error('无法获取播放地址');
-      currentSong.value = song;
-      const idx = searchResults.value.findIndex(
+      currentSong.value = serializeSong(song);
+      const idx = queue.value.findIndex(
         (s) => s.id === song.id && s.sourceId === song.sourceId,
       );
       if (idx !== -1) currentIndex.value = idx;
+      addToHistory(song);
       loadLyric(song);
+      persistSession();
       return url;
     } catch (e) {
       console.error('[Player] 播放失败:', e);
-      error.value = '播放失败，请尝试其他歌曲';
+      error.value = formatUserError(e, '播放失败，请尝试其他歌曲');
       return null;
     } finally {
       loading.value = false;
     }
   }
 
+  /** 恢复会话时只解析 URL，不写入历史 */
+  async function resolvePlayUrl(song: Song): Promise<string | null> {
+    try {
+      return await sourceManager.getPlayUrl(song, qualityCascade.value);
+    } catch {
+      return null;
+    }
+  }
+
   function togglePlay() {
     if (!currentSong.value) return;
     isPlaying.value = !isPlaying.value;
+  }
+
+  function setPlaying(playing: boolean) {
+    if (!currentSong.value) return;
+    isPlaying.value = playing;
   }
 
   function clearError() {
@@ -128,13 +206,17 @@ export const usePlayerStore = defineStore('player', () => {
     storage.set('playMode', playMode.value);
   }
 
+  function setPreferredQuality(quality: AudioQuality) {
+    preferredQuality.value = quality;
+    storage.set('preferredQuality', quality);
+  }
+
   function updateTime(ct: number, dur: number) {
     currentTime.value = ct;
     duration.value = dur;
     updateCurrentLyric();
   }
 
-  // 歌词
   async function loadLyric(song: Song) {
     try {
       const source = sourceManager.getSource(song.sourceId);
@@ -172,14 +254,29 @@ export const usePlayerStore = defineStore('player', () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
+  // 节流持久化进度
+  let lastPersistAt = 0;
+  watch(
+    () => [currentTime.value, isPlaying.value] as const,
+    ([, playing]) => {
+      const now = Date.now();
+      if (!playing || now - lastPersistAt >= SESSION_SAVE_INTERVAL) {
+        lastPersistAt = now;
+        if (currentSong.value) persistSession();
+      }
+    },
+  );
+
   return {
-    currentSong, isPlaying, playMode, volume, muted,
+    currentSong, isPlaying, playMode, volume, muted, preferredQuality,
     currentTime, duration, loading, error, lyric, currentLyricIndex,
-    searchResults, currentIndex,
+    queue, currentIndex, setQueue, recentPlays,
     favorites, favoriteCount, isFavorite, toggleFavorite,
     progress, formattedCurrentTime, formattedDuration, currentLyricText,
-    playModeIcon, playModeLabel,
-    playSong, togglePlay, clearError, setVolume, toggleMute, togglePlayMode,
+    playModeLabel, qualityCascade,
+    playSong, resolvePlayUrl, togglePlay, setPlaying, clearError,
+    setVolume, toggleMute, togglePlayMode, setPreferredQuality,
     updateTime, loadLyric, formatTime,
+    addToHistory, clearRecentPlays, persistSession, restoreSession,
   };
 });

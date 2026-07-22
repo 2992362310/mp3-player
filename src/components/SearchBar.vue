@@ -1,10 +1,9 @@
 <template>
   <div class="search-box">
-    <!-- 平台选择 -->
     <select
       v-model="search.currentSource"
+      class="search-source-select"
       @change="onSourceChanged"
-      style="padding: 8px 10px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d; flex-shrink: 0; cursor: pointer; position: relative; z-index: 1100;"
     >
       <option value="">全部音源</option>
       <option v-for="s in search.enabledSources" :key="s.id" :value="s.id">
@@ -12,39 +11,32 @@
       </option>
     </select>
 
-    <!-- 搜索输入框 -->
     <div class="search-input-wrap">
       <input
         v-model="searchInput"
+        class="sketch-input"
+        type="text"
+        placeholder="搜索歌曲..."
         @keyup.enter="handleSearch"
         @focus="showSearchHistory = true"
         @blur="hideSearchHistory"
-        type="text"
-        placeholder="搜索歌曲..."
-        style="width: 100%; padding: 8px 36px 8px 12px; font-family: 'Ma Shan Zheng', cursive; border: 2px solid #c4b5a0; border-radius: 6px 10px 8px 12px; font-size: 14px; background: transparent; color: #2d2d2d;"
       />
-      <button
-        @click="handleSearch"
-        class="search-btn"
-        style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;"
-        v-html="SketchSearchIcon"
-      ></button>
+      <button type="button" class="search-btn" @click="handleSearch">
+        <SketchIcon name="search" :size="20" />
+      </button>
 
-      <!-- 搜索历史下拉 -->
       <div
-        v-if="showSearchHistory && searchHistory.length > 0"
-        style="position: absolute; top: 100%; left: 0; right: 0; background: transparent; border: 2px solid #c4b5a0; border-top: none; border-radius: 0 0 8px 12px; max-height: 200px; overflow-y: auto; margin-top: -2px; z-index: 1200;"
+        v-if="showSearchHistory && search.searchHistory.length > 0"
+        class="search-history-dropdown"
       >
         <div
-          v-for="(item, idx) in searchHistory"
+          v-for="(item, idx) in search.searchHistory"
           :key="idx"
+          class="search-history-item"
           @click="selectHistory(item.keyword)"
-          style="padding: 8px 12px; border-bottom: 1px dashed #e8dcc8; cursor: pointer; font-family: 'Ma Shan Zheng', cursive; color: #666; font-size: 14px; display: flex; justify-content: space-between; align-items: center;"
-          @mouseenter="onHistoryItemEnter"
-          @mouseleave="onHistoryItemLeave"
         >
           <span>{{ item.keyword }}</span>
-          <span style="font-size: 12px; color: #aaa;">{{ item.source }}</span>
+          <span class="meta">{{ item.source || '全部' }}</span>
         </div>
       </div>
     </div>
@@ -53,21 +45,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { SketchSearchIcon } from './icons/SketchIcons';
+import SketchIcon from './icons/SketchIcon.vue';
 import { useSearchStore } from '../stores/search';
-import storage from '../core/storage';
-
-interface SearchHistoryItem {
-  keyword: string;
-  source: string;
-}
 
 const search = useSearchStore();
 const searchInput = ref('');
 const showSearchHistory = ref(false);
-const searchHistory = ref<SearchHistoryItem[]>(
-  storage.get<SearchHistoryItem[]>('searchHistory', []),
-);
 
 onMounted(() => {
   if (search.keyword) searchInput.value = search.keyword;
@@ -76,23 +59,11 @@ onMounted(() => {
   }
 });
 
-function saveHistory() {
-  storage.set('searchHistory', searchHistory.value);
-}
-
 async function handleSearch() {
   if (!searchInput.value.trim()) return;
 
   const kw = searchInput.value.trim();
-
-  // 添加到搜索历史
-  const exists = searchHistory.value.findIndex(h => h.keyword === kw);
-  if (exists !== -1) searchHistory.value.splice(exists, 1);
-  searchHistory.value.unshift({ keyword: kw, source: search.currentSource });
-  if (searchHistory.value.length > 15) searchHistory.value = searchHistory.value.slice(0, 15);
-  saveHistory();
-
-  // 执行搜索
+  search.addSearchHistory(kw, search.currentSource);
   await search.searchSongs(kw, search.currentSource);
 }
 
@@ -112,64 +83,4 @@ function hideSearchHistory() {
     showSearchHistory.value = false;
   }, 200);
 }
-
-function onHistoryItemEnter(e: MouseEvent) {
-  const target = e.currentTarget as HTMLElement;
-  if (target) target.style.background = 'rgba(200,180,160,0.1)';
-}
-
-function onHistoryItemLeave(e: MouseEvent) {
-  const target = e.currentTarget as HTMLElement;
-  if (target) target.style.background = 'transparent';
-}
 </script>
-
-<style scoped>
-.search-box {
-  position: relative;
-  width: 100%;
-  max-width: 800px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-select {
-  background: transparent !important;
-}
-
-select option {
-  background: #fdf6e3;
-  color: #2d2d2d;
-}
-
-.search-input-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 1024px) {
-  .search-box {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .search-box {
-    gap: 6px;
-  }
-
-  .search-box select {
-    max-width: 110px;
-    padding: 7px 8px !important;
-    font-size: 12px !important;
-  }
-
-  .search-box input {
-    padding: 7px 34px 7px 10px !important;
-    font-size: 13px !important;
-  }
-}
-</style>

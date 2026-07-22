@@ -4,10 +4,12 @@
 
 import { onMounted, onUnmounted } from 'vue';
 import { usePlayerStore } from '../stores/player';
+import { useUIStore } from '../stores/ui';
 import { useAudio } from './useAudio';
 
 export function useKeyboard() {
   const player = usePlayerStore();
+  const ui = useUIStore();
   const { playNext, playPrevious, seekTo } = useAudio();
 
   function handleKeydown(e: KeyboardEvent) {
@@ -40,7 +42,7 @@ export function useKeyboard() {
         player.toggleMute();
         break;
       case 'KeyL':
-        // 由外部组件监听切换歌词面板
+        ui.toggleLyricPanel();
         break;
     }
   }

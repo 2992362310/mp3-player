@@ -7,8 +7,8 @@
         <h2>欢迎使用 MoYun</h2>
         <ol>
           <li>先在顶部输入歌曲名，按回车搜索。</li>
-          <li>双击列表歌曲可播放，底部可调音量和模式。</li>
-          <li>点击右上角齿轮进入设置，可切换主题和音源。</li>
+          <li>点击列表歌曲即可播放；点 + 可加入自建歌单。</li>
+          <li>「我的」里可管理收藏和歌单；设置里可看快捷键。</li>
           <li>在手机浏览器里可添加到主屏幕，像 App 一样使用。</li>
         </ol>
         <div class="guide-actions">
@@ -19,6 +19,11 @@
 
     <!-- 顶部导航栏 -->
     <header class="top-nav">
+      <div class="nav-left">
+        <div class="logo" title="墨韵 MoYun" aria-label="墨韵">
+          <span class="logo-mark">墨</span><span class="logo-rest">韵</span>
+        </div>
+      </div>
       <div class="nav-center">
         <SearchBar />
       </div>
@@ -30,7 +35,7 @@
           @click="activeSection = section.id"
           :title="section.label"
         >
-          <span style="width: 20px; height: 20px;" v-html="getIconHtml(section.iconId)"></span>
+          <SketchIcon :name="section.iconId" :size="20" />
         </button>
       </div>
     </header>
@@ -38,16 +43,21 @@
     <!-- 主体 -->
     <div class="flex flex-col flex-1 overflow-hidden">
       <main class="main-content">
-        <div class="content-container">
-          <DiscoverSection v-if="activeSection === 'discover'" />
-          <FavoritesSection v-if="activeSection === 'favorites'" />
-          <SettingsSection v-if="activeSection === 'settings'" />
+        <div class="app-stage">
+          <div class="app-stage-main">
+            <DiscoverSection v-if="activeSection === 'discover'" />
+            <FavoritesSection v-if="activeSection === 'favorites'" />
+            <SettingsSection v-if="activeSection === 'settings'" />
+          </div>
+          <LyricPanel />
         </div>
       </main>
 
       <!-- 底部控制器 -->
       <PlayerBar />
     </div>
+
+    <AddToPlaylistModal />
   </div>
 </template>
 
@@ -57,10 +67,14 @@ import { useSearchStore } from './stores/search';
 import { useUIStore } from './stores/ui';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
-import { SketchMusicIcon, SketchHeartIcon, SketchSettingsIcon } from './components/icons/SketchIcons';
+import { useAudio } from './composables/useAudio';
+import SketchIcon from './components/icons/SketchIcon.vue';
+import type { SketchIconName } from './components/icons/SketchIcon.vue';
 
 import SearchBar from './components/SearchBar.vue';
 import PlayerBar from './components/PlayerBar.vue';
+import LyricPanel from './components/LyricPanel.vue';
+import AddToPlaylistModal from './components/AddToPlaylistModal.vue';
 import PwaInstallBanner from './components/PwaInstallBanner.vue';
 import DiscoverSection from './components/sections/DiscoverSection.vue';
 import FavoritesSection from './components/sections/FavoritesSection.vue';
@@ -71,28 +85,20 @@ type SectionId = 'discover' | 'favorites' | 'settings';
 interface Section {
   id: SectionId;
   label: string;
-  iconId: 'music' | 'heart' | 'settings';
+  iconId: SketchIconName;
 }
 
 /* ========== 状态 ========== */
 const search = useSearchStore();
 const ui = useUIStore();
+const { restoreLastSession } = useAudio();
 const activeSection = ref<SectionId>('discover');
 
 const sections = computed<Section[]>(() => [
   { id: 'discover', label: '发现音乐', iconId: 'music' },
-  { id: 'favorites', label: '我的收藏', iconId: 'heart' },
+  { id: 'favorites', label: '我的', iconId: 'heart' },
   { id: 'settings', label: '设置', iconId: 'settings' },
 ]);
-
-function getIconHtml(iconId: string): string {
-  const iconMap: Record<string, string> = {
-    music: SketchMusicIcon,
-    heart: SketchHeartIcon,
-    settings: SketchSettingsIcon,
-  };
-  return iconMap[iconId] || '';
-}
 
 /* ========== 初始化 ========== */
 useKeyboard();
@@ -100,6 +106,7 @@ useMediaSession();
 search.loadSources();
 
 onMounted(async () => {
+  await restoreLastSession();
   await search.loadRecommendations();
 });
 </script>
@@ -118,12 +125,13 @@ onMounted(async () => {
 
 .guide-card {
   width: min(92vw, 520px);
-  background: #fdf6e3;
-  border: 2px dashed #c4b5a0;
+  background: var(--paper-bg);
+  border: 2px dashed var(--border);
   border-radius: 12px;
   padding: 18px 18px 14px;
-  color: #2d2d2d;
+  color: var(--ink);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  animation: modalIn 0.22s ease-out;
 }
 
 .guide-card h2 {
@@ -145,5 +153,24 @@ onMounted(async () => {
   margin-top: 14px;
   display: flex;
   justify-content: flex-end;
+}
+
+.app-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
+}
+
+.app-stage-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 </style>

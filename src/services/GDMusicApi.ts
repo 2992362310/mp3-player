@@ -83,9 +83,17 @@ interface CacheItem<T> {
 
 // API 配置
 const API_BASE_URL = 'https://music-api.gdstudio.xyz/api.php';
-const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
-const REQUEST_LIMIT = 50; // 5分钟内限制50次
-const REQUEST_WINDOW = 5 * 60 * 1000; // 5分钟时间窗口
+const CACHE_DURATION = 5 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 80;
+const REQUEST_LIMIT = 50;
+const REQUEST_WINDOW = 5 * 60 * 1000;
+const COOLDOWN_MS = 60 * 1000;
+const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY_MS = 400;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 /**
  * GD Music API 服务类
@@ -93,26 +101,43 @@ const REQUEST_WINDOW = 5 * 60 * 1000; // 5分钟时间窗口
 class GDMusicApiService {
   private cache: Map<string, CacheItem<any>> = new Map();
   private requestTimestamps: number[] = [];
+  private cooldownUntil = 0;
 
-  public readonly stableSources: MusicSource[] = ['netease', 'kuwo', 'joox'];
+  public readonly stableSources: MusicSource[] = ['netease', 'kuwo', 'joox', 'bilibili'];
 
   public readonly allSources: MusicSource[] = [
     'netease', 'kuwo', 'joox', 'tencent', 'bilibili',
     'spotify', 'ytmusic', 'apple', 'tidal', 'qobuz',
   ];
 
-  /**
-   * 检查请求频率限制
-   */
+  /** 限流冷却剩余秒数，0 表示可请求 */
+  getCooldownSeconds(): number {
+    const remain = this.cooldownUntil - Date.now();
+    return remain > 0 ? Math.ceil(remain / 1000) : 0;
+  }
+
+  private enterCooldown(ms = COOLDOWN_MS) {
+    this.cooldownUntil = Math.max(this.cooldownUntil, Date.now() + ms);
+  }
+
+  private assertNotCoolingDown() {
+    const seconds = this.getCooldownSeconds();
+    if (seconds > 0) {
+      throw new Error(`请求频率超限，请约 ${seconds} 秒后再试`);
+    }
+  }
+
   private checkRateLimit(): boolean {
+    this.assertNotCoolingDown();
+
     const now = Date.now();
-    // 清理过期的时间戳
     this.requestTimestamps = this.requestTimestamps.filter(
-      ts => now - ts < REQUEST_WINDOW
+      (ts) => now - ts < REQUEST_WINDOW,
     );
 
     if (this.requestTimestamps.length >= REQUEST_LIMIT) {
-      console.warn('[GDMusicApi] 请求频率超限，请稍后再试');
+      this.enterCooldown();
+      console.warn('[GDMusicApi] 请求频率超限，进入冷却');
       return false;
     }
 
@@ -120,31 +145,76 @@ class GDMusicApiService {
     return true;
   }
 
-  /**
-   * 从缓存获取数据
-   */
   private getFromCache<T>(key: string): T | null {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      // LRU：命中后挪到末尾
+      this.cache.delete(key);
+      this.cache.set(key, cached);
       return cached.data as T;
     }
     this.cache.delete(key);
     return null;
   }
 
-  /**
-   * 保存数据到缓存
-   */
   private saveToCache<T>(key: string, data: T): void {
+    if (this.cache.has(key)) this.cache.delete(key);
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
+
+    while (this.cache.size > MAX_CACHE_ENTRIES) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey == null) break;
+      this.cache.delete(oldestKey);
+    }
   }
 
-  /**
-   * 发起 API 请求
-   */
+  private isRetryableError(error: unknown): boolean {
+    const msg = error instanceof Error ? error.message : String(error ?? '');
+    if (msg.includes('请求频率超限')) return false;
+    if (msg.includes('HTTP error! status: 4')) return false;
+    return (
+      msg.includes('服务暂时不可用') ||
+      msg.includes('Failed to fetch') ||
+      msg.includes('NetworkError') ||
+      msg.includes('network') ||
+      msg.includes('HTTP error! status: 5')
+    );
+  }
+
+  private async requestOnce<T>(url: string): Promise<T> {
+    if (!this.checkRateLimit()) {
+      const seconds = this.getCooldownSeconds();
+      throw new Error(`请求频率超限，请约 ${seconds || 60} 秒后再试`);
+    }
+
+    console.log('[GDMusicApi] 请求:', url);
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+    } catch {
+      throw new Error('网络异常，请检查连接后重试');
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        this.enterCooldown();
+        const seconds = this.getCooldownSeconds();
+        throw new Error(`请求频率超限，请约 ${seconds || 60} 秒后再试`);
+      }
+      if (response.status >= 500) throw new Error('服务暂时不可用，请稍后再试');
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
+  }
+
   private async request<T>(params: Record<string, string | number>): Promise<T> {
     const url = new URL(API_BASE_URL);
     Object.entries(params).forEach(([key, value]) => {
@@ -153,36 +223,26 @@ class GDMusicApiService {
 
     const cacheKey = url.toString();
     const cached = this.getFromCache<T>(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    if (cached) return cached;
 
-    if (!this.checkRateLimit()) {
-      throw new Error('请求频率超限，请稍后再试');
-    }
+    this.assertNotCoolingDown();
 
-    console.log('[GDMusicApi] 请求:', url.toString());
-
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const data = await this.requestOnce<T>(cacheKey);
+        this.saveToCache(cacheKey, data);
+        return data;
+      } catch (error) {
+        lastError = error;
+        if (attempt >= MAX_RETRIES || !this.isRetryableError(error)) break;
+        await sleep(RETRY_BASE_DELAY_MS * (attempt + 1));
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    this.saveToCache(cacheKey, data);
-    return data;
+    throw lastError instanceof Error ? lastError : new Error('请求失败');
   }
 
-  /**
-   * 搜索歌曲
-   * @param params 搜索参数
-   */
   async search(params: SearchParams): Promise<SearchResult> {
     const { keyword, source = 'netease', page = 1, limit = 20 } = params;
 
@@ -191,7 +251,7 @@ class GDMusicApiService {
       source,
       name: keyword,
       count: limit,
-      pages: page
+      pages: page,
     });
 
     return {
@@ -199,79 +259,53 @@ class GDMusicApiService {
       total: response.length,
       page,
       limit,
-      source
+      source,
     };
   }
 
-  /**
-   * 获取播放地址
-   * @param source 音乐源
-   * @param id 歌曲ID
-   * @param br 音质 (128/192/320/740/999)
-   */
   async getPlayUrl(
     source: MusicSource,
     id: string,
-    br: MusicQuality = 999
+    br: MusicQuality = 320,
   ): Promise<GDPlayUrlResponse> {
     return this.request<GDPlayUrlResponse>({
       types: 'url',
       source,
       id,
-      br
+      br,
     });
   }
 
-  /**
-   * 获取专辑图片
-   * @param source 音乐源
-   * @param id 图片ID
-   * @param size 尺寸 (300/500)
-   */
   async getPicUrl(
     source: MusicSource,
     id: string,
-    size: PicSize = 300
+    size: PicSize = 300,
   ): Promise<GDPicResponse> {
     return this.request<GDPicResponse>({
       types: 'pic',
       source,
       id,
-      size
+      size,
     });
   }
 
-  /**
-   * 获取歌词
-   * @param source 音乐源
-   * @param id 歌词ID
-   */
   async getLyric(source: MusicSource, id: string): Promise<GDLyricResponse> {
     return this.request<GDLyricResponse>({
       types: 'lyric',
       source,
-      id
+      id,
     });
   }
 
-  /**
-   * 获取专辑歌曲列表
-   * @param source 音乐源
-   * @param albumId 专辑ID
-   */
   async getAlbumSongs(source: MusicSource, albumId: string): Promise<GDSong[]> {
-    // 使用 source_album 格式
     const albumSource = `${source}_album` as any;
     return this.request<GDSong[]>({
       types: 'search',
       source: albumSource,
-      name: albumId
+      name: albumId,
     });
   }
 
-  /**
-   * 转换歌曲数据为标准格式
-   */
   normalizeSong(song: GDSong): {
     id: string;
     title: string;
@@ -286,15 +320,12 @@ class GDMusicApiService {
       title: song.name,
       artist: Array.isArray(song.artist) ? song.artist.join(', ') : song.artist,
       album: song.album || '',
-      cover: '', // 需要单独请求
+      cover: '',
       sourceId: song.source,
-      raw: song
+      raw: song,
     };
   }
 
-  /**
-   * 获取完整歌曲信息（包含封面）
-   */
   async getFullSongInfo(song: GDSong, picSize: PicSize = 300): Promise<{
     id: string;
     title: string;
@@ -306,7 +337,6 @@ class GDMusicApiService {
   }> {
     const normalized = this.normalizeSong(song);
 
-    // 获取封面
     if (song.pic_id) {
       try {
         const picResponse = await this.getPicUrl(song.source, song.pic_id, picSize);
@@ -319,41 +349,14 @@ class GDMusicApiService {
     return normalized;
   }
 
-  /**
-   * 搜索并获取完整歌曲信息
-   */
   async searchWithDetails(params: SearchParams, picSize: PicSize = 300) {
     const result = await this.search(params);
-
-    const songsWithDetails = await Promise.all(
-      result.songs.map(song => this.getFullSongInfo(song, picSize))
+    const songs = await Promise.all(
+      result.songs.map((song) => this.getFullSongInfo(song, picSize)),
     );
-
-    return {
-      ...result,
-      songs: songsWithDetails
-    };
-  }
-
-  /**
-   * 清除缓存
-   */
-  clearCache(): void {
-    this.cache.clear();
-    console.log('[GDMusicApi] 缓存已清除');
-  }
-
-  /**
-   * 获取缓存统计
-   */
-  getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys())
-    };
+    return { ...result, songs };
   }
 }
 
-// 导出单例
 export const gdMusicApi = new GDMusicApiService();
 export default gdMusicApi;

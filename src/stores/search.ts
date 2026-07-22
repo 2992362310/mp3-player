@@ -7,8 +7,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Song } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
-import { usePlayerStore } from './player';
 import storage from '../core/storage';
+import { formatUserError } from '../utils/errors';
 
 export interface SourceInfo {
   id: string;
@@ -16,6 +16,11 @@ export interface SourceInfo {
   icon: string;
   color: string;
   enabled: boolean;
+}
+
+export interface SearchHistoryItem {
+  keyword: string;
+  source: string;
 }
 
 export const useSearchStore = defineStore('search', () => {
@@ -37,6 +42,9 @@ export const useSearchStore = defineStore('search', () => {
   );
   const lastRecommendation = ref<{ keyword: string; sourceId: string } | null>(
     storage.get<{ keyword: string; sourceId: string } | null>('lastRecommendation', null),
+  );
+  const searchHistory = ref<SearchHistoryItem[]>(
+    storage.get<SearchHistoryItem[]>('searchHistory', []),
   );
 
   const enabledSources = computed(() => sources.value.filter((s) => s.enabled));
@@ -60,11 +68,21 @@ export const useSearchStore = defineStore('search', () => {
     return picked;
   }
 
-  // ==================== 同步到播放器 ====================
+  // ==================== 搜索历史 ====================
 
-  function syncToPlayer() {
-    const player = usePlayerStore();
-    player.searchResults = results.value;
+  function addSearchHistory(kw: string, source: string) {
+    const exists = searchHistory.value.findIndex((h) => h.keyword === kw);
+    if (exists !== -1) searchHistory.value.splice(exists, 1);
+    searchHistory.value.unshift({ keyword: kw, source });
+    if (searchHistory.value.length > 15) {
+      searchHistory.value = searchHistory.value.slice(0, 15);
+    }
+    storage.set('searchHistory', searchHistory.value);
+  }
+
+  function clearSearchHistory() {
+    searchHistory.value = [];
+    storage.remove('searchHistory');
   }
 
   // ==================== 初始化 ====================
@@ -158,7 +176,6 @@ export const useSearchStore = defineStore('search', () => {
 
       keyword.value = kw;
       results.value = shuffled;
-      syncToPlayer();
       sourceResults.value.clear();
       sourceHasMore.value.clear();
       hasMore.value = false;
@@ -168,7 +185,7 @@ export const useSearchStore = defineStore('search', () => {
       storage.set('lastRecommendation', lastRecommendation.value);
     } catch (e) {
       console.error('[Search] 推荐加载失败:', e);
-      error.value = e instanceof Error ? e.message : '推荐加载失败';
+      error.value = formatUserError(e, '推荐加载失败');
     } finally {
       loading.value = false;
     }
@@ -218,11 +235,10 @@ export const useSearchStore = defineStore('search', () => {
       sourceResults.value.set(source, result.songs);
       sourceHasMore.value.set(source, result.hasMore || result.songs.length === pageSize);
       results.value = mergeResults();
-      syncToPlayer();
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
     } catch (e) {
       console.error('[Search] 搜索失败:', e);
-      error.value = e instanceof Error ? e.message : '搜索失败，请稍后再试';
+      error.value = formatUserError(e, '搜索失败，请稍后再试');
     } finally {
       loading.value = false;
     }
@@ -275,7 +291,6 @@ export const useSearchStore = defineStore('search', () => {
           );
           // 每完成一个音源就立即合并展示，让用户看到逐步增加的结果
           results.value = mergeResults();
-          syncToPlayer();
         } catch {
           sourceResults.value.set(sid, []);
           sourceHasMore.value.set(sid, false);
@@ -285,7 +300,7 @@ export const useSearchStore = defineStore('search', () => {
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
     } catch (e) {
       console.error('[Search] 多源搜索失败:', e);
-      error.value = e instanceof Error ? e.message : '搜索失败，请稍后再试';
+      error.value = formatUserError(e, '搜索失败，请稍后再试');
     } finally {
       loading.value = false;
     }
@@ -324,7 +339,6 @@ export const useSearchStore = defineStore('search', () => {
               results.value.push(song);
             }
           });
-          syncToPlayer();
         } catch {
           sourceHasMore.value.set(sid, false);
         }
@@ -383,6 +397,7 @@ export const useSearchStore = defineStore('search', () => {
     page,
     hasMore,
     sourceHasMore,
+    searchHistory,
     enabledSources,
     loadSources,
     loadRecommendations,
@@ -391,5 +406,7 @@ export const useSearchStore = defineStore('search', () => {
     loadMore,
     switchSource,
     setSourceEnabled,
+    addSearchHistory,
+    clearSearchHistory,
   };
 });

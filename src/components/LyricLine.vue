@@ -2,7 +2,6 @@
   <p
     :ref="setLineRef"
     :class="lineClasses"
-    :style="lineStyle"
     @click="handleClick"
   >
     {{ line.text || '· · ·' }}
@@ -33,17 +32,6 @@ const lineClasses = computed(() => [
   props.isPassed ? 'passed' : '',
 ]);
 
-const lineStyle = computed(() => ({
-  cursor: 'pointer',
-  fontFamily: "'Ma Shan Zheng', cursive",
-  transition: 'all 0.3s',
-  margin: '0',
-  padding: '8px 12px',
-  fontSize: '15px',
-  color: props.isActive ? '#2d2d2d' : props.isPassed ? '#b0a080' : '#999',
-  fontWeight: props.isActive ? 'bold' : 'normal',
-}));
-
 function handleClick() {
   emit('lineClick', props.line.time);
 }
@@ -55,16 +43,26 @@ function setLineRef(el: Element | ComponentPublicInstance | null) {
 
 <style scoped>
 .lyrics-line {
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 15px;
   line-height: 1.8;
+  font-family: 'Ma Shan Zheng', cursive;
+  color: var(--muted);
+  font-weight: normal;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+  text-align: center;
 }
 
 .lyrics-line.active {
-  color: #2d2d2d !important;
+  color: var(--ink);
   font-weight: 700;
+  font-size: 17px;
 }
 
 .lyrics-line.passed {
-  color: #b0a080 !important;
+  color: var(--faint);
 }
 
 .active-animated {
@@ -72,14 +70,29 @@ function setLineRef(el: Element | ComponentPublicInstance | null) {
 }
 
 @keyframes lyricPulse {
-  0% {
+  0%,
+  100% {
     opacity: 0.85;
   }
   50% {
     opacity: 1;
   }
-  100% {
-    opacity: 0.85;
+}
+
+@media (max-width: 768px) {
+  .lyrics-line {
+    padding: 12px 18px;
+    font-size: 16px;
+  }
+
+  .lyrics-line.active {
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active-animated {
+    animation: none;
   }
 }
 </style>
