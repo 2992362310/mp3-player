@@ -1,24 +1,5 @@
 <template>
   <div class="content-section discover-section">
-    <!-- 最近播放：横向条，不占满纵向空间 -->
-    <section v-if="player.recentPlays.length > 0" class="recent-strip">
-      <div class="recent-strip-head">
-        <h2 class="section-title">最近播放</h2>
-      </div>
-      <div class="recent-strip-scroll">
-        <button
-          v-for="track in player.recentPlays.slice(0, 12)"
-          :key="`recent-${track.sourceId}-${track.id}`"
-          type="button"
-          :class="['recent-chip', isCurrent(track) ? 'playing' : '']"
-          @click="playRecent(track)"
-        >
-          <span class="recent-chip-title">{{ track.title }}</span>
-          <span class="recent-chip-artist">{{ track.artist }}</span>
-        </button>
-      </div>
-    </section>
-
     <div v-if="search.error" class="search-error" role="alert">{{ search.error }}</div>
 
     <!-- 结果区：仅内部滚动 -->
@@ -121,13 +102,12 @@
     </div>
 
     <div
-      v-else-if="!search.loading && player.recentPlays.length === 0"
+      v-else-if="!search.loading"
       class="discover-empty"
     >
-      <div style="width: 48px; height: 48px; opacity: 0.5;">
-        <SketchIcon name="music" :size="48" />
-      </div>
-      <p>搜索您喜欢的歌曲吧</p>
+      <div class="discover-empty-mark" aria-hidden="true">墨</div>
+      <p>搜索你喜欢的歌</p>
+      <p class="discover-empty-hint">结果会留在这里；收藏与最近播放在「我的」</p>
     </div>
   </div>
 </template>
@@ -202,78 +182,12 @@ function isCurrent(track: Song) {
 function playTrack(track: Song) {
   playFromList(filteredResults.value, track);
 }
-
-function playRecent(track: Song) {
-  playFromList(player.recentPlays, track);
-}
 </script>
 
 <style scoped>
 .discover-section {
   padding: 12px 16px;
   gap: 10px;
-}
-
-.recent-strip {
-  flex-shrink: 0;
-}
-
-.recent-strip-head .section-title {
-  margin-bottom: 8px;
-}
-
-.recent-strip-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.recent-strip-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.recent-chip {
-  flex: 0 0 auto;
-  max-width: 160px;
-  padding: 8px 12px;
-  border: 1px dashed var(--border);
-  border-radius: 8px 12px 6px 10px;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-family: 'Ma Shan Zheng', cursive;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.recent-chip:hover {
-  background: var(--hover);
-}
-
-.recent-chip.playing {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.recent-chip-title {
-  display: block;
-  color: var(--ink);
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.recent-chip-artist {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .results-panel {
@@ -302,6 +216,7 @@ function playRecent(track: Song) {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -315,5 +230,31 @@ function playRecent(track: Song) {
 
 .discover-empty {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+.discover-empty-mark {
+  font-size: 56px;
+  line-height: 1;
+  color: var(--ink);
+  opacity: 0.28;
+  letter-spacing: 0.08em;
+  animation: brandIn 0.45s ease-out;
+}
+
+.discover-empty p {
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+.discover-empty-hint {
+  font-size: 13px !important;
+  color: var(--faint) !important;
 }
 </style>

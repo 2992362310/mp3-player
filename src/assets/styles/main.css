@@ -496,15 +496,17 @@ body {
   padding: 8px 12px;
   border-bottom: 1px dashed var(--border-soft);
   border-left: 3px solid transparent;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-left-color 0.2s ease;
   cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .playlist-item:last-child { border-bottom: none; }
 
 .playlist-item:hover {
   background-color: var(--hover);
-  transform: translateX(3px);
+  border-left-color: var(--border);
 }
 
 .playlist-item.playing {

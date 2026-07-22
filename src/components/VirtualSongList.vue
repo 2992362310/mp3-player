@@ -164,6 +164,7 @@ onUnmounted(() => {
 <style scoped>
 .virtual-song-list {
   max-height: min(60vh, 560px);
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

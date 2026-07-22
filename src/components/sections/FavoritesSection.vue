@@ -1,169 +1,210 @@
 <template>
-  <div class="content-section">
-    <div class="library-body">
-      <div class="content-header">
-        <h1>
-          <SketchIcon name="heart" :size="28" />
-          <span>我的</span>
-        </h1>
+  <div class="content-section library-section">
+    <!-- 页头：一个主标题 + 一句说明 -->
+    <header class="library-hero">
+      <h1 class="library-brand">我的</h1>
+      <p class="library-tagline">收藏、歌单，还有刚才听过的</p>
+    </header>
+
+    <!-- 最近播放 -->
+    <section v-if="player.recentPlays.length > 0" class="recent-block">
+      <div class="recent-head">
+        <h2>最近播放</h2>
+        <span class="recent-count">{{ Math.min(player.recentPlays.length, 12) }}</span>
       </div>
-
-      <div class="tab-row">
+      <div class="recent-strip">
         <button
+          v-for="track in player.recentPlays.slice(0, 12)"
+          :key="`recent-${track.sourceId}-${track.id}`"
           type="button"
-          :class="['tab-btn', libraryTab === 'favorites' ? 'active' : '']"
-          @click="libraryTab = 'favorites'"
+          :class="['recent-chip', isCurrent(track) ? 'playing' : '']"
+          @click="playRecent(track)"
         >
-          收藏 ({{ player.favoriteCount }})
-        </button>
-        <button
-          type="button"
-          :class="['tab-btn', libraryTab === 'playlists' ? 'active' : '']"
-          @click="openPlaylistsTab"
-        >
-          歌单 ({{ playlists.playlistCount }})
+          <span class="recent-chip-title">{{ track.title }}</span>
+          <span class="recent-chip-artist">{{ track.artist }}</span>
         </button>
       </div>
+    </section>
 
-      <div class="content-area main-scroll">
-        <!-- 收藏 -->
-        <section v-if="libraryTab === 'favorites'">
-          <div v-if="player.favorites.length === 0" class="empty-state">
-            <div class="empty-icon" style="width: 64px; height: 64px;">
-              <SketchIcon name="heart" :size="64" />
-            </div>
-            <p>还没有收藏歌曲~</p>
-            <p class="hint">点击 ♡ 收藏喜欢的歌</p>
-          </div>
+    <!-- 分段：收藏 / 歌单 -->
+    <nav class="library-nav" aria-label="我的内容">
+      <button
+        type="button"
+        :class="['library-nav-btn', libraryTab === 'favorites' ? 'active' : '']"
+        @click="libraryTab = 'favorites'"
+      >
+        收藏
+        <em>{{ player.favoriteCount }}</em>
+      </button>
+      <button
+        type="button"
+        :class="['library-nav-btn', libraryTab === 'playlists' ? 'active' : '']"
+        @click="openPlaylistsTab"
+      >
+        歌单
+        <em>{{ playlists.playlistCount }}</em>
+      </button>
+      <span class="library-nav-ink" :data-tab="libraryTab" aria-hidden="true" />
+    </nav>
 
-          <div v-else class="sketch-card" style="padding: 0; overflow: hidden;">
-            <VirtualSongList
-              v-if="player.favorites.length > 40"
-              :songs="player.favorites"
-              :current-song="player.currentSong"
-              :is-playing="player.isPlaying"
-              :is-favorite="player.isFavorite"
-              @play="playFavorite"
-              @toggle-favorite="player.toggleFavorite"
-              @toggle-play="player.togglePlay()"
-              @add-to-playlist="playlists.openAddToPlaylist"
-            />
-            <template v-else>
-              <div
-                v-for="(song, idx) in player.favorites"
-                :key="`${song.sourceId}-${song.id}`"
-                :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
-                @click="playFavorite(song)"
-              >
-                <div class="song-index">{{ idx + 1 }}</div>
-                <div class="song-info">
-                  <div class="song-title">{{ song.title }}</div>
-                  <div class="song-artist">{{ song.artist }}</div>
-                </div>
-                <button type="button" class="play-btn" title="加入歌单" @click.stop="playlists.openAddToPlaylist(song)">
-                  <SketchIcon name="plus" :size="16" />
-                </button>
-                <button type="button" class="btn-favorite active" style="margin-right: 8px;" @click.stop="player.toggleFavorite(song)">♥</button>
-                <button type="button" class="play-btn" @click.stop="playFavorite(song)">播放</button>
-              </div>
-            </template>
-          </div>
-        </section>
+    <div class="library-body main-scroll">
+      <!-- 收藏 -->
+      <section v-if="libraryTab === 'favorites'" class="library-pane">
+        <div v-if="player.favorites.length === 0" class="library-empty">
+          <p>还没有收藏</p>
+          <p class="library-empty-hint">在发现页点 ♡，歌会出现在这里</p>
+        </div>
 
-        <!-- 歌单列表 -->
-        <section v-else-if="!playlists.activePlaylist">
-          <div class="playlist-toolbar">
-            <input
-              v-model="newPlaylistName"
-              class="sketch-input"
-              type="text"
-              maxlength="40"
-              placeholder="新建歌单名称"
-              @keyup.enter="createPlaylist"
-            />
-            <button type="button" class="btn-action btn-action-primary" @click="createPlaylist">新建</button>
-          </div>
-
-          <div v-if="playlists.playlists.length === 0" class="empty-state">
-            <p>还没有自建歌单</p>
-            <p class="hint">新建后，可在歌曲旁点 + 加入</p>
-          </div>
-
-          <div v-else class="sketch-card" style="padding: 0; overflow: hidden;">
+        <div v-else class="song-panel sketch-card sketch-card-ghost">
+          <VirtualSongList
+            v-if="player.favorites.length > 40"
+            fill
+            :songs="player.favorites"
+            :current-song="player.currentSong"
+            :is-playing="player.isPlaying"
+            :is-favorite="player.isFavorite"
+            @play="playFavorite"
+            @toggle-favorite="player.toggleFavorite"
+            @toggle-play="player.togglePlay()"
+            @add-to-playlist="playlists.openAddToPlaylist"
+          />
+          <template v-else>
             <div
-              v-for="item in playlists.playlists"
-              :key="item.id"
-              class="playlist-item"
-              @click="playlists.openPlaylist(item.id)"
-            >
-              <div class="song-info">
-                <div class="song-title">{{ item.name }}</div>
-                <div class="song-artist">{{ item.songs.length }} 首</div>
-              </div>
-              <button class="play-btn" @click.stop="playPlaylist(item.id)">播放</button>
-              <button class="play-btn danger" title="删除歌单" @click.stop="removePlaylist(item.id)">删</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- 歌单详情 -->
-        <section v-else>
-          <div class="detail-toolbar">
-            <button type="button" class="btn-action" @click="playlists.openPlaylist(null)">← 返回</button>
-            <input
-              v-model="renameDraft"
-              type="text"
-              maxlength="40"
-              class="sketch-input rename-input"
-              @change="commitRename"
-              @keyup.enter="commitRename"
-            />
-            <button
-              type="button"
-              class="btn-action btn-action-primary"
-              :disabled="!playlists.activePlaylist.songs.length"
-              @click="playPlaylist(playlists.activePlaylist.id)"
-            >
-              播放全部
-            </button>
-          </div>
-
-          <div v-if="playlists.activePlaylist.songs.length === 0" class="empty-state">
-            <p>歌单还是空的</p>
-            <p class="hint">去发现页点歌曲旁的 + 加入</p>
-          </div>
-
-          <div v-else class="sketch-card" style="padding: 0; overflow: hidden;">
-            <div
-              v-for="(song, idx) in playlists.activePlaylist.songs"
+              v-for="(song, idx) in player.favorites"
               :key="`${song.sourceId}-${song.id}`"
               :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
-              @click="playFromActive(song)"
+              @click="playFavorite(song)"
             >
               <div class="song-index">{{ idx + 1 }}</div>
               <div class="song-info">
                 <div class="song-title">{{ song.title }}</div>
                 <div class="song-artist">{{ song.artist }}</div>
               </div>
-              <button
-                class="btn-favorite"
-                :class="player.isFavorite(song) ? 'active' : ''"
-                style="margin-right: 8px;"
-                @click.stop="player.toggleFavorite(song)"
-              >
-                {{ player.isFavorite(song) ? '♥' : '♡' }}
+              <button type="button" class="play-btn" title="加入歌单" @click.stop="playlists.openAddToPlaylist(song)">
+                <SketchIcon name="plus" :size="16" />
               </button>
-              <button
-                class="play-btn danger"
-                title="移出歌单"
-                @click.stop="playlists.removeSongFromPlaylist(playlists.activePlaylist!.id, song)"
-              >
-                移出
+              <button type="button" class="btn-favorite active" style="margin-right: 8px;" @click.stop="player.toggleFavorite(song)">♥</button>
+              <button type="button" class="play-btn" @click.stop="isCurrent(song) ? player.togglePlay() : playFavorite(song)">
+                <svg v-if="isCurrent(song) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
+                  <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
+                </svg>
+                <svg v-else width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                  <polyline points="4,2 4,14 13,8 4,2"/>
+                </svg>
               </button>
             </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- 歌单列表 -->
+      <section v-else-if="!playlists.activePlaylist" class="library-pane">
+        <form class="create-row" @submit.prevent="createPlaylist">
+          <input
+            v-model="newPlaylistName"
+            class="sketch-input"
+            type="text"
+            maxlength="40"
+            placeholder="写一个歌单名…"
+          />
+          <button type="submit" class="btn-action btn-action-primary">新建</button>
+        </form>
+
+        <div v-if="playlists.playlists.length === 0" class="library-empty">
+          <p>还没有歌单</p>
+          <p class="library-empty-hint">建好后，在歌曲旁点 + 加入</p>
+        </div>
+
+        <ul v-else class="playlist-grid">
+          <li
+            v-for="item in playlists.playlists"
+            :key="item.id"
+            class="playlist-tile"
+          >
+            <button type="button" class="playlist-tile-main" @click="playlists.openPlaylist(item.id)">
+              <span class="playlist-tile-name">{{ item.name }}</span>
+              <span class="playlist-tile-meta">{{ item.songs.length }} 首</span>
+            </button>
+            <div class="playlist-tile-actions">
+              <button
+                type="button"
+                class="tile-btn"
+                :disabled="!item.songs.length"
+                @click="playPlaylist(item.id)"
+              >
+                播放
+              </button>
+              <button
+                type="button"
+                class="tile-btn danger"
+                title="删除歌单"
+                @click="removePlaylist(item.id)"
+              >
+                删
+              </button>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 歌单详情 -->
+      <section v-else class="library-pane">
+        <div class="detail-bar">
+          <button type="button" class="btn-action" @click="playlists.openPlaylist(null)">← 返回</button>
+          <input
+            v-model="renameDraft"
+            type="text"
+            maxlength="40"
+            class="sketch-input rename-input"
+            aria-label="歌单名称"
+            @change="commitRename"
+            @keyup.enter="commitRename"
+          />
+          <button
+            type="button"
+            class="btn-action btn-action-primary"
+            :disabled="!playlists.activePlaylist.songs.length"
+            @click="playPlaylist(playlists.activePlaylist.id)"
+          >
+            播放全部
+          </button>
+        </div>
+
+        <div v-if="playlists.activePlaylist.songs.length === 0" class="library-empty">
+          <p>歌单还是空的</p>
+          <p class="library-empty-hint">去发现页点歌曲旁的 + 加入</p>
+        </div>
+
+        <div v-else class="song-panel sketch-card sketch-card-ghost">
+          <div
+            v-for="(song, idx) in playlists.activePlaylist.songs"
+            :key="`${song.sourceId}-${song.id}`"
+            :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
+            @click="playFromActive(song)"
+          >
+            <div class="song-index">{{ idx + 1 }}</div>
+            <div class="song-info">
+              <div class="song-title">{{ song.title }}</div>
+              <div class="song-artist">{{ song.artist }}</div>
+            </div>
+            <button
+              class="btn-favorite"
+              :class="player.isFavorite(song) ? 'active' : ''"
+              style="margin-right: 8px;"
+              @click.stop="player.toggleFavorite(song)"
+            >
+              {{ player.isFavorite(song) ? '♥' : '♡' }}
+            </button>
+            <button
+              class="play-btn danger"
+              title="移出歌单"
+              @click.stop="playlists.removeSongFromPlaylist(playlists.activePlaylist!.id, song)"
+            >
+              移出
+            </button>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -205,6 +246,10 @@ function playFavorite(song: Song) {
   playFromList(player.favorites, song);
 }
 
+function playRecent(track: Song) {
+  playFromList(player.recentPlays, track);
+}
+
 function createPlaylist() {
   const created = playlists.createPlaylist(newPlaylistName.value || '我的歌单');
   if (created) {
@@ -237,11 +282,341 @@ function playFromActive(song: Song) {
 </script>
 
 <style scoped>
+.library-section {
+  padding: 16px 18px 12px;
+  gap: 14px;
+}
+
+.library-hero {
+  flex-shrink: 0;
+  animation: brandIn 0.4s ease-out;
+}
+
+.library-brand {
+  margin: 0;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(36px, 7vw, 48px);
+  font-weight: normal;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  line-height: 1.05;
+}
+
+.library-tagline {
+  margin: 6px 0 0;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.recent-block {
+  flex-shrink: 0;
+}
+
+.recent-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.recent-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-weight: normal;
+  color: var(--ink-soft);
+  border: none;
+  padding: 0;
+}
+
+.recent-count {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.recent-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.recent-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.recent-chip {
+  flex: 0 0 auto;
+  max-width: 148px;
+  padding: 8px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 8px 12px 6px 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Ma Shan Zheng', cursive;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.recent-chip:hover {
+  background: var(--hover);
+}
+
+.recent-chip.playing {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.recent-chip-title {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-chip-artist {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.library-nav {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  border-bottom: 1px dashed var(--border-soft);
+  padding-bottom: 2px;
+}
+
+.library-nav-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: none;
+  background: none;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 16px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.library-nav-btn em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.library-nav-btn:hover {
+  color: var(--ink-soft);
+}
+
+.library-nav-btn.active {
+  color: var(--ink);
+}
+
+.library-nav-btn.active em {
+  color: var(--accent);
+}
+
+.library-nav-ink {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 50%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: transform 0.25s ease;
+}
+
+.library-nav-ink[data-tab='playlists'] {
+  transform: translateX(100%);
+}
+
 .library-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
+}
+
+.library-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.28s ease-out;
+}
+
+.song-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 !important;
+}
+
+.library-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 16px;
+  font-family: 'Ma Shan Zheng', cursive;
+  color: var(--ink-soft);
+}
+
+.library-empty p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.library-empty-hint {
+  font-size: 13px !important;
+  color: var(--faint) !important;
+}
+
+.create-row,
+.detail-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.create-row .sketch-input,
+.rename-input {
   flex: 1;
   min-width: 0;
-  min-height: 0;
+}
+
+.playlist-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playlist-tile {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  border: 1px dashed var(--border);
+  border-radius: 8px 14px 6px 12px;
+  background: transparent;
+  overflow: hidden;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.playlist-tile:hover {
+  background: var(--hover);
+  border-color: var(--border-strong);
+}
+
+.playlist-tile-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 14px 14px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+.playlist-tile-name {
+  color: var(--ink);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.playlist-tile-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.playlist-tile-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 8px 6px 0;
+}
+
+.tile-btn {
+  border: none;
+  background: none;
+  padding: 6px 10px;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.tile-btn:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--surface-strong);
+}
+
+.tile-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tile-btn.danger {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .library-section {
+    padding: 12px 14px 10px;
+    gap: 12px;
+  }
+
+  .library-brand {
+    font-size: 34px;
+  }
+
+  .library-nav-btn {
+    font-size: 15px;
+  }
 }
 </style>

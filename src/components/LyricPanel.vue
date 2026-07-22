@@ -411,7 +411,12 @@ function handleLineClick(time: number) {
     height: 100% !important;
     border-left: none;
     border-top: 2px dashed var(--border);
-    background: transparent;
+    /* 遮住下方列表，避免歌词与歌曲名叠字 */
+    background-color: var(--paper-bg);
+    background-image:
+      linear-gradient(var(--paper-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+    background-size: 28px 28px;
     z-index: 40;
     animation: lyricSheetIn 0.22s ease-out;
   }
