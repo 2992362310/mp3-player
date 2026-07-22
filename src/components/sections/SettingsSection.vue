@@ -140,6 +140,9 @@ const themes: Array<{ id: AppTheme; label: string }> = [
   { id: 'paper', label: '宣纸' },
   { id: 'sand', label: '暖沙' },
   { id: 'mint', label: '薄荷' },
+  { id: 'ink', label: '墨夜' },
+  { id: 'celadon', label: '青瓷' },
+  { id: 'cinnabar', label: '朱砂' },
 ];
 
 const qualities: Array<{ id: AudioQuality; label: string }> = [

@@ -214,7 +214,7 @@ function handleLineClick(time: number) {
   overflow: hidden;
   flex-shrink: 0;
   position: relative;
-  background: color-mix(in srgb, var(--paper-bg) 92%, transparent);
+  background: transparent;
   min-height: 0;
   animation: lyricPanelIn 0.22s ease-out;
 }
@@ -293,6 +293,7 @@ function handleLineClick(time: number) {
   text-align: right;
   border-top: 1px dashed var(--border);
   flex-shrink: 0;
+  background: transparent;
 }
 
 .lyrics-signature-title {
@@ -317,6 +318,7 @@ function handleLineClick(time: number) {
   padding: 10px 12px;
   border-bottom: 1px dashed var(--border);
   flex-shrink: 0;
+  background: transparent;
 }
 
 .lyrics-mobile-meta {
@@ -409,13 +411,8 @@ function handleLineClick(time: number) {
     height: 100% !important;
     border-left: none;
     border-top: 2px dashed var(--border);
-    background-color: var(--paper-bg);
-    background-image:
-      linear-gradient(var(--paper-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
-    background-size: 28px 28px;
+    background: transparent;
     z-index: 40;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
     animation: lyricSheetIn 0.22s ease-out;
   }
 

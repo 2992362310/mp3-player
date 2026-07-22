@@ -1,68 +1,58 @@
 <template>
-  <div class="content-section">
-    <div class="content-area main-scroll">
-      <div v-if="search.error" class="search-error" role="alert">{{ search.error }}</div>
-
-      <section v-if="player.recentPlays.length > 0" class="recent-block">
+  <div class="content-section discover-section">
+    <!-- 最近播放：横向条，不占满纵向空间 -->
+    <section v-if="player.recentPlays.length > 0" class="recent-strip">
+      <div class="recent-strip-head">
         <h2 class="section-title">最近播放</h2>
-        <div class="sketch-card" style="padding: 0; overflow: hidden;">
-          <div
-            v-for="(track, i) in player.recentPlays.slice(0, 8)"
-            :key="`recent-${track.sourceId}-${track.id}`"
-            :class="['playlist-item', isCurrent(track) ? 'playing' : '']"
-            @click="playRecent(track)"
-          >
-            <div class="song-index">{{ i + 1 }}</div>
-            <div class="song-info">
-              <div class="song-title">{{ track.title }}</div>
-              <div class="song-artist">{{ track.artist }}</div>
-            </div>
-            <button
-              type="button"
-              class="play-btn"
-              title="加入歌单"
-              @click.stop="playlists.openAddToPlaylist(track)"
-            >
-              <SketchIcon name="plus" :size="16" />
-            </button>
-            <button
-              type="button"
-              :class="['btn-favorite', player.isFavorite(track) ? 'active' : '']"
-              style="margin-right: 8px;"
-              @click.stop="player.toggleFavorite(track)"
-            >
-              {{ player.isFavorite(track) ? '♥' : '♡' }}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <div v-if="search.results.length > 0 || search.loading" class="sketch-card" style="padding: 0; overflow: hidden;">
-        <div
-          v-if="search.loading && search.results.length === 0"
-          style="text-align: center; padding: 40px; font-family: 'Ma Shan Zheng', cursive;"
+      </div>
+      <div class="recent-strip-scroll">
+        <button
+          v-for="track in player.recentPlays.slice(0, 12)"
+          :key="`recent-${track.sourceId}-${track.id}`"
+          type="button"
+          :class="['recent-chip', isCurrent(track) ? 'playing' : '']"
+          @click="playRecent(track)"
         >
-          <div class="spinner"></div>
-          <p style="color: var(--accent-green); font-size: 16px; margin-top: 12px;">搜索中...</p>
+          <span class="recent-chip-title">{{ track.title }}</span>
+          <span class="recent-chip-artist">{{ track.artist }}</span>
+        </button>
+      </div>
+    </section>
+
+    <div v-if="search.error" class="search-error" role="alert">{{ search.error }}</div>
+
+    <!-- 结果区：仅内部滚动 -->
+    <div
+      v-if="search.results.length > 0 || search.loading"
+      class="results-panel sketch-card sketch-card-ghost"
+    >
+      <div
+        v-if="search.loading && search.results.length === 0"
+        class="results-loading"
+      >
+        <div class="spinner"></div>
+        <p>搜索中...</p>
+      </div>
+
+      <template v-else>
+        <div class="filter-bar">
+          <select v-model="filterSourceId" class="filter-select">
+            <option value="">全部音源</option>
+            <option v-for="s in resultSources" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+          <select v-model="filterArtist" class="filter-select">
+            <option value="">全部歌手</option>
+            <option v-for="artist in resultArtists" :key="artist" :value="artist">{{ artist }}</option>
+          </select>
+          <span class="filter-count">{{ filteredResults.length }}/{{ search.results.length }}</span>
         </div>
 
-        <template v-else>
-          <div class="filter-bar">
-            <select v-model="filterSourceId" class="filter-select">
-              <option value="">全部音源</option>
-              <option v-for="s in resultSources" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
-            <select v-model="filterArtist" class="filter-select">
-              <option value="">全部歌手</option>
-              <option v-for="artist in resultArtists" :key="artist" :value="artist">{{ artist }}</option>
-            </select>
-            <span class="filter-count">{{ filteredResults.length }}/{{ search.results.length }}</span>
-          </div>
-
+        <div class="results-scroll main-scroll">
           <div v-if="filteredResults.length === 0" class="filter-empty">没有符合筛选条件的歌曲</div>
 
           <VirtualSongList
             v-else-if="useVirtual"
+            fill
             :songs="filteredResults"
             :current-song="player.currentSong"
             :is-playing="player.isPlaying"
@@ -73,7 +63,7 @@
             @add-to-playlist="playlists.openAddToPlaylist"
           />
 
-          <div v-else>
+          <template v-else>
             <div
               v-for="(track, i) in filteredResults"
               :key="`${track.sourceId}-${track.id}`"
@@ -114,10 +104,10 @@
                 </svg>
               </button>
             </div>
-          </div>
-        </template>
+          </template>
+        </div>
 
-        <div v-if="search.results.length > 0 && search.hasMore" style="padding: 12px; text-align: center;">
+        <div v-if="search.results.length > 0 && search.hasMore" class="results-footer">
           <button
             type="button"
             class="load-more-btn"
@@ -127,17 +117,17 @@
             {{ search.isLoadingMore ? '加载中...' : '加载更多 ↓' }}
           </button>
         </div>
-      </div>
+      </template>
+    </div>
 
-      <div
-        v-else-if="!search.loading && player.recentPlays.length === 0"
-        class="discover-empty"
-      >
-        <div style="width: 48px; height: 48px; opacity: 0.5;">
-          <SketchIcon name="music" :size="48" />
-        </div>
-        <p>搜索您喜欢的歌曲吧</p>
+    <div
+      v-else-if="!search.loading && player.recentPlays.length === 0"
+      class="discover-empty"
+    >
+      <div style="width: 48px; height: 48px; opacity: 0.5;">
+        <SketchIcon name="music" :size="48" />
       </div>
+      <p>搜索您喜欢的歌曲吧</p>
     </div>
   </div>
 </template>
@@ -217,3 +207,113 @@ function playRecent(track: Song) {
   playFromList(player.recentPlays, track);
 }
 </script>
+
+<style scoped>
+.discover-section {
+  padding: 12px 16px;
+  gap: 10px;
+}
+
+.recent-strip {
+  flex-shrink: 0;
+}
+
+.recent-strip-head .section-title {
+  margin-bottom: 8px;
+}
+
+.recent-strip-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.recent-strip-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.recent-chip {
+  flex: 0 0 auto;
+  max-width: 160px;
+  padding: 8px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 8px 12px 6px 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Ma Shan Zheng', cursive;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.recent-chip:hover {
+  background: var(--hover);
+}
+
+.recent-chip.playing {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.recent-chip-title {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-chip-artist {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.results-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.results-loading {
+  text-align: center;
+  padding: 40px;
+  font-family: 'Ma Shan Zheng', cursive;
+  color: var(--accent-green);
+}
+
+.results-loading p {
+  margin-top: 12px;
+  font-size: 16px;
+}
+
+.results-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.results-footer {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  text-align: center;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.discover-empty {
+  flex: 1;
+}
+</style>

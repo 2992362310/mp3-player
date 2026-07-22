@@ -1,5 +1,10 @@
 <template>
-  <div ref="rootEl" class="virtual-song-list" @scroll="onScroll">
+  <div
+    ref="rootEl"
+    class="virtual-song-list"
+    :class="{ fill: fill }"
+    @scroll="onScroll"
+  >
     <div :style="{ height: `${totalHeight}px`, position: 'relative' }">
       <div :style="{ transform: `translateY(${offsetY}px)` }">
         <div
@@ -82,11 +87,14 @@ const props = withDefaults(
     isPlaying: boolean;
     isFavorite: (song: Song) => boolean;
     showAddToPlaylist?: boolean;
+    /** 填满父级高度，由父级负责滚动区域 */
+    fill?: boolean;
   }>(),
   {
     itemHeight: 52,
     overscan: 6,
     showAddToPlaylist: true,
+    fill: false,
   },
 );
 
@@ -158,5 +166,12 @@ onUnmounted(() => {
   max-height: min(60vh, 560px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.virtual-song-list.fill {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+  height: auto;
 }
 </style>
