@@ -13,13 +13,14 @@
 
     <div class="search-input-wrap">
       <input
+        ref="inputEl"
         v-model="searchInput"
         class="sketch-input"
         type="text"
         placeholder="搜索歌曲..."
         @keyup.enter="handleSearch"
         @focus="showSearchHistory = true"
-        @blur="hideSearchHistory"
+        @blur="onInputBlur"
       />
       <button type="button" class="search-btn" @click="handleSearch">
         <SketchIcon name="search" :size="20" />
@@ -28,15 +29,16 @@
       <div
         v-if="showSearchHistory && search.searchHistory.length > 0"
         class="search-history-dropdown"
+        @mousedown.prevent
       >
         <div
           v-for="(item, idx) in search.searchHistory"
           :key="idx"
           class="search-history-item"
-          @click="selectHistory(item.keyword)"
+          @mousedown.prevent="selectHistory(item)"
         >
           <span>{{ item.keyword }}</span>
-          <span class="meta">{{ item.source || '全部' }}</span>
+          <span class="meta">{{ sourceLabel(item.source) }}</span>
         </div>
       </div>
     </div>
@@ -44,13 +46,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import SketchIcon from './icons/SketchIcon.vue';
-import { useSearchStore } from '../stores/search';
+import { useSearchStore, type SearchHistoryItem } from '../stores/search';
 
 const search = useSearchStore();
 const searchInput = ref('');
 const showSearchHistory = ref(false);
+const inputEl = ref<HTMLInputElement | null>(null);
+const goDiscover = inject<() => void>('goDiscover');
+
+let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(() => {
   if (search.keyword) searchInput.value = search.keyword;
@@ -59,10 +65,32 @@ onMounted(() => {
   }
 });
 
+function sourceLabel(sourceId: string) {
+  if (!sourceId) return '全部';
+  return search.sources.find((s) => s.id === sourceId)?.name || sourceId;
+}
+
+function clearHideTimer() {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+}
+
+function onInputBlur() {
+  clearHideTimer();
+  hideTimer = setTimeout(() => {
+    showSearchHistory.value = false;
+    hideTimer = null;
+  }, 180);
+}
+
 async function handleSearch() {
   if (!searchInput.value.trim()) return;
 
   const kw = searchInput.value.trim();
+  searchInput.value = kw;
+  goDiscover?.();
   search.addSearchHistory(kw, search.currentSource);
   await search.searchSongs(kw, search.currentSource);
 }
@@ -72,15 +100,19 @@ function onSourceChanged(e: Event) {
   search.switchSource(sourceId);
 }
 
-function selectHistory(keyword: string) {
-  searchInput.value = keyword;
+function selectHistory(item: SearchHistoryItem) {
+  clearHideTimer();
+  searchInput.value = item.keyword;
   showSearchHistory.value = false;
-  handleSearch();
-}
 
-function hideSearchHistory() {
-  setTimeout(() => {
-    showSearchHistory.value = false;
-  }, 200);
+  if (item.source) {
+    const enabled = search.enabledSources.some((s) => s.id === item.source);
+    search.switchSource(enabled ? item.source : '');
+  } else {
+    search.switchSource('');
+  }
+
+  inputEl.value?.focus();
+  void handleSearch();
 }
 </script>

@@ -6,15 +6,21 @@
       <p class="library-tagline">收藏、歌单，还有刚才听过的</p>
     </header>
 
-    <!-- 最近播放 -->
-    <section v-if="player.recentPlays.length > 0" class="recent-block">
+    <!-- 最近播放：顶部只留快捷条，完整列表进「最近」页签 -->
+    <section
+      v-if="player.recentPlays.length > 0 && libraryTab !== 'recent'"
+      class="recent-block"
+    >
       <div class="recent-head">
         <h2>最近播放</h2>
-        <span class="recent-count">{{ Math.min(player.recentPlays.length, 12) }}</span>
+        <span class="recent-count">{{ player.recentPlays.length }}</span>
+        <button type="button" class="recent-more" @click="libraryTab = 'recent'">
+          全部
+        </button>
       </div>
       <div class="recent-strip">
         <button
-          v-for="track in player.recentPlays.slice(0, 12)"
+          v-for="track in recentPreview"
           :key="`recent-${track.sourceId}-${track.id}`"
           type="button"
           :class="['recent-chip', isCurrent(track) ? 'playing' : '']"
@@ -26,7 +32,7 @@
       </div>
     </section>
 
-    <!-- 分段：收藏 / 歌单 -->
+    <!-- 分段：收藏 / 歌单 / 最近 -->
     <nav class="library-nav" aria-label="我的内容">
       <button
         type="button"
@@ -44,12 +50,95 @@
         歌单
         <em>{{ playlists.playlistCount }}</em>
       </button>
+      <button
+        type="button"
+        :class="['library-nav-btn', libraryTab === 'recent' ? 'active' : '']"
+        @click="libraryTab = 'recent'"
+      >
+        最近
+        <em>{{ player.recentPlays.length }}</em>
+      </button>
       <span class="library-nav-ink" :data-tab="libraryTab" aria-hidden="true" />
     </nav>
 
     <div class="library-body main-scroll">
+      <!-- 最近播放（完整列表） -->
+      <section v-if="libraryTab === 'recent'" class="library-pane">
+        <div v-if="player.recentPlays.length === 0" class="library-empty">
+          <p>还没有听过歌</p>
+          <p class="library-empty-hint">播过的歌会留在这里，最多记 50 首</p>
+        </div>
+
+        <template v-else>
+          <div class="recent-toolbar">
+            <button
+              type="button"
+              class="btn-action btn-action-primary"
+              @click="playAll(player.recentPlays)"
+            >
+              播放全部
+            </button>
+            <button type="button" class="btn-action" @click="clearRecent">
+              清空
+            </button>
+          </div>
+
+          <div class="song-panel sketch-card sketch-card-ghost">
+            <VirtualSongList
+              v-if="player.recentPlays.length > 40"
+              fill
+              :songs="player.recentPlays"
+              :current-song="player.currentSong"
+              :is-playing="player.isPlaying"
+              :is-favorite="player.isFavorite"
+              @play="playRecent"
+              @toggle-favorite="player.toggleFavorite"
+              @toggle-play="player.togglePlay()"
+              @add-to-playlist="playlists.openAddToPlaylist"
+            />
+            <template v-else>
+              <div
+                v-for="(song, idx) in player.recentPlays"
+                :key="`${song.sourceId}-${song.id}`"
+                :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
+                @click="playRecent(song)"
+              >
+                <div class="song-index">{{ idx + 1 }}</div>
+                <div class="song-info">
+                  <div class="song-title">{{ song.title }}</div>
+                  <div class="song-artist">{{ song.artist }}</div>
+                </div>
+                <button type="button" class="play-btn" title="加入歌单" @click.stop="playlists.openAddToPlaylist(song)">
+                  <SketchIcon name="plus" :size="16" />
+                </button>
+                <button
+                  type="button"
+                  :class="['btn-favorite', player.isFavorite(song) ? 'active' : '']"
+                  style="margin-right: 8px;"
+                  @click.stop="player.toggleFavorite(song)"
+                >
+                  {{ player.isFavorite(song) ? '♥' : '♡' }}
+                </button>
+                <button
+                  type="button"
+                  class="play-btn"
+                  @click.stop="isCurrent(song) ? player.togglePlay() : playRecent(song)"
+                >
+                  <svg v-if="isCurrent(song) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
+                    <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
+                  </svg>
+                  <svg v-else width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                    <polyline points="4,2 4,14 13,8 4,2"/>
+                  </svg>
+                </button>
+              </div>
+            </template>
+          </div>
+        </template>
+      </section>
+
       <!-- 收藏 -->
-      <section v-if="libraryTab === 'favorites'" class="library-pane">
+      <section v-else-if="libraryTab === 'favorites'" class="library-pane">
         <div v-if="player.favorites.length === 0" class="library-empty">
           <p>还没有收藏</p>
           <p class="library-empty-hint">在发现页点 ♡，歌会出现在这里</p>
@@ -210,7 +299,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
 import { useAudio } from '../../composables/useAudio';
@@ -218,13 +307,17 @@ import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 
+const RECENT_PREVIEW = 8;
+
 const player = usePlayerStore();
 const playlists = usePlaylistStore();
 const { playFromList, playAll } = useAudio();
 
-const libraryTab = ref<'favorites' | 'playlists'>('favorites');
+const libraryTab = ref<'favorites' | 'playlists' | 'recent'>('favorites');
 const newPlaylistName = ref('');
 const renameDraft = ref('');
+
+const recentPreview = computed(() => player.recentPlays.slice(0, RECENT_PREVIEW));
 
 watch(
   () => playlists.activePlaylist?.name,
@@ -248,6 +341,12 @@ function playFavorite(song: Song) {
 
 function playRecent(track: Song) {
   playFromList(player.recentPlays, track);
+}
+
+function clearRecent() {
+  if (!player.recentPlays.length) return;
+  if (!confirm('确定清空最近播放吗？')) return;
+  player.clearRecentPlays();
 }
 
 function createPlaylist() {
@@ -335,6 +434,27 @@ function playFromActive(song: Song) {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 12px;
   color: var(--faint);
+}
+
+.recent-more {
+  margin-left: auto;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.recent-more:hover {
+  color: var(--ink);
+}
+
+.recent-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .recent-strip {
@@ -440,7 +560,7 @@ function playFromActive(song: Song) {
   position: absolute;
   bottom: -1px;
   left: 0;
-  width: 50%;
+  width: calc(100% / 3);
   height: 2px;
   background: var(--accent);
   border-radius: 2px;
@@ -449,6 +569,10 @@ function playFromActive(song: Song) {
 
 .library-nav-ink[data-tab='playlists'] {
   transform: translateX(100%);
+}
+
+.library-nav-ink[data-tab='recent'] {
+  transform: translateX(200%);
 }
 
 .library-body {

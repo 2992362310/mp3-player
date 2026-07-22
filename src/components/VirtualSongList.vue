@@ -171,8 +171,6 @@ onUnmounted(() => {
 
 .virtual-song-list.fill {
   max-height: none;
-  flex: 1;
-  min-height: 0;
-  height: auto;
+  height: 100%;
 }
 </style>

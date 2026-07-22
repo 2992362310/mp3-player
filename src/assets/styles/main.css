@@ -499,7 +499,8 @@ body {
   transition: background-color 0.2s ease, border-left-color 0.2s ease;
   cursor: pointer;
   max-width: 100%;
-  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .playlist-item:last-child { border-bottom: none; }

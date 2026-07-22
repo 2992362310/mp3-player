@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, provide } from 'vue';
 import { useSearchStore } from './stores/search';
 import { useUIStore } from './stores/ui';
 import { useKeyboard } from './composables/useKeyboard';
@@ -99,6 +99,10 @@ const sections = computed<Section[]>(() => [
   { id: 'favorites', label: '我的', iconId: 'heart' },
   { id: 'settings', label: '设置', iconId: 'settings' },
 ]);
+
+provide('goDiscover', () => {
+  activeSection.value = 'discover';
+});
 
 /* ========== 初始化 ========== */
 useKeyboard();

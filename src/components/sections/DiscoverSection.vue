@@ -214,11 +214,15 @@ function playTrack(track: Song) {
 .results-scroll {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* 虚拟列表铺满滚动区，普通列表仍由本容器滚动 */
+.results-scroll :deep(.virtual-song-list.fill) {
+  height: 100%;
+  min-height: 100%;
 }
 
 .results-footer {
