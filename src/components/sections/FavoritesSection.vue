@@ -18,11 +18,12 @@
           全部
         </button>
       </div>
-      <div class="recent-strip">
+      <div class="recent-strip" role="list">
         <button
-          v-for="track in recentPreview"
+          v-for="track in player.recentPlays"
           :key="`recent-${track.sourceId}-${track.id}`"
           type="button"
+          role="listitem"
           :class="['recent-chip', isCurrent(track) ? 'playing' : '']"
           @click="playRecent(track)"
         >
@@ -299,15 +300,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
 import { useAudio } from '../../composables/useAudio';
 import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
-
-const RECENT_PREVIEW = 8;
 
 const player = usePlayerStore();
 const playlists = usePlaylistStore();
@@ -316,8 +315,6 @@ const { playFromList, playAll } = useAudio();
 const libraryTab = ref<'favorites' | 'playlists' | 'recent'>('favorites');
 const newPlaylistName = ref('');
 const renameDraft = ref('');
-
-const recentPreview = computed(() => player.recentPlays.slice(0, RECENT_PREVIEW));
 
 watch(
   () => playlists.activePlaylist?.name,
@@ -384,6 +381,8 @@ function playFromActive(song: Song) {
 .library-section {
   padding: 16px 18px 12px;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .library-hero {
@@ -411,6 +410,8 @@ function playFromActive(song: Song) {
 
 .recent-block {
   flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .recent-head {
@@ -459,20 +460,23 @@ function playFromActive(song: Song) {
 
 .recent-strip {
   display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
   overflow-x: auto;
-  padding-bottom: 2px;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  padding: 2px 2px 6px;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.recent-strip::-webkit-scrollbar {
-  display: none;
+  scrollbar-width: thin;
 }
 
 .recent-chip {
   flex: 0 0 auto;
-  max-width: 148px;
+  width: 140px;
+  max-width: 140px;
   padding: 8px 12px;
   border: 1px dashed var(--border);
   border-radius: 8px 12px 6px 10px;

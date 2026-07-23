@@ -63,10 +63,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, provide } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useSearchStore } from './stores/search';
+import { usePlayerStore } from './stores/player';
 import { useUIStore } from './stores/ui';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
+import { useWakeLock } from './composables/useWakeLock';
 import { useAudio } from './composables/useAudio';
 import SketchIcon from './components/icons/SketchIcon.vue';
 import type { SketchIconName } from './components/icons/SketchIcon.vue';
@@ -90,7 +93,10 @@ interface Section {
 
 /* ========== 状态 ========== */
 const search = useSearchStore();
+const player = usePlayerStore();
 const ui = useUIStore();
+const { keepScreenOn } = storeToRefs(ui);
+const { isPlaying } = storeToRefs(player);
 const { restoreLastSession } = useAudio();
 const activeSection = ref<SectionId>('discover');
 
@@ -100,6 +106,8 @@ const sections = computed<Section[]>(() => [
   { id: 'settings', label: '设置', iconId: 'settings' },
 ]);
 
+const keepAwakeActive = computed(() => keepScreenOn.value && isPlaying.value);
+
 provide('goDiscover', () => {
   activeSection.value = 'discover';
 });
@@ -107,6 +115,7 @@ provide('goDiscover', () => {
 /* ========== 初始化 ========== */
 useKeyboard();
 useMediaSession();
+useWakeLock(keepAwakeActive);
 search.loadSources();
 
 onMounted(async () => {

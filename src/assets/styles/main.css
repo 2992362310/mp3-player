@@ -130,6 +130,32 @@ html[data-theme='cinnabar'] {
   --shadow-ink: #c4a99a;
 }
 
+/* 清风：小清新海盐青绿，柔圆轻阴影（非紫、非奶油陶土） */
+html[data-theme='breeze'] {
+  --paper-bg: #eef8f5;
+  --paper-grid: rgba(90, 170, 150, 0.1);
+  --ink: #243832;
+  --ink-soft: #3d564e;
+  --muted: #6a8a80;
+  --faint: #95b4a8;
+  --border: #b7d8cc;
+  --border-strong: #7eb8a6;
+  --border-soft: #d7ebe3;
+  --surface: rgba(255, 255, 255, 0.55);
+  --surface-strong: rgba(255, 255, 255, 0.82);
+  --hover: rgba(120, 200, 180, 0.16);
+  --accent: #2aa89a;
+  --accent-soft: rgba(42, 168, 154, 0.14);
+  --accent-green: #3caf7a;
+  --accent-green-strong: #2d8f62;
+  --control-fill: #d9f0e8;
+  --shadow-ink: rgba(60, 130, 115, 0.12);
+  --ui-font: "Outfit", "Noto Sans SC", sans-serif;
+  --ui-display: "Outfit", "Noto Sans SC", sans-serif;
+  --ui-radius: 16px;
+  --ui-radius-sm: 12px;
+}
+
 /* ========== 手绘风格主题 ========== */
 @theme {
   --color-ink: #2d2d2d;
@@ -1629,6 +1655,180 @@ body {
   .volume-slider {
     width: 48px;
   }
+}
+
+/* ========== 主题设置器：风格 / 字体 / 边框 / 圆角 / 纹理 ========== */
+:root {
+  --ui-font: "KaiTi", "STKaiti", "Ma Shan Zheng", "Noto Serif SC", serif;
+  --ui-display: "Ma Shan Zheng", cursive;
+  --ui-radius: 12px;
+  --ui-radius-sm: 8px;
+  --ui-border-style: dashed;
+  --ui-card-shadow: none;
+}
+
+html[data-ui-font='hand'] {
+  --ui-font: "KaiTi", "STKaiti", "Ma Shan Zheng", serif;
+  --ui-display: "Ma Shan Zheng", cursive;
+}
+
+html[data-ui-font='kai'] {
+  --ui-font: "KaiTi", "STKaiti", "Noto Serif SC", serif;
+  --ui-display: "KaiTi", "STKaiti", "Noto Serif SC", serif;
+}
+
+html[data-ui-font='sans'] {
+  --ui-font: "Outfit", "Noto Sans SC", sans-serif;
+  --ui-display: "Outfit", "Noto Sans SC", sans-serif;
+}
+
+html[data-ui-radius='sharp'] {
+  --ui-radius: 6px;
+  --ui-radius-sm: 4px;
+}
+
+html[data-ui-radius='soft'] {
+  --ui-radius: 12px;
+  --ui-radius-sm: 8px;
+}
+
+html[data-ui-radius='round'] {
+  --ui-radius: 18px;
+  --ui-radius-sm: 14px;
+}
+
+html[data-ui-border='dashed'] {
+  --ui-border-style: dashed;
+}
+
+html[data-ui-border='solid'] {
+  --ui-border-style: solid;
+}
+
+html[data-ui-style='sketch'] {
+  --ui-card-shadow: none;
+}
+
+html[data-ui-style='fresh'] {
+  --ui-card-shadow: 0 10px 28px rgba(40, 90, 80, 0.1);
+}
+
+html[data-ui-style='minimal'] {
+  --ui-card-shadow: none;
+  --surface: transparent;
+  --surface-strong: color-mix(in srgb, var(--paper-bg) 88%, white);
+}
+
+html[data-ui-pattern='grid'] body {
+  background-image:
+    linear-gradient(var(--paper-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+html[data-ui-pattern='dots'] body {
+  background-image: radial-gradient(var(--paper-grid) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+html[data-ui-pattern='wash'] body {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, color-mix(in srgb, var(--border) 35%, transparent), transparent 50%),
+    radial-gradient(var(--paper-grid) 1.1px, transparent 1.1px);
+  background-size: auto, auto, 22px 22px;
+}
+
+html[data-ui-pattern='none'] body {
+  background-image: none;
+}
+
+html[data-ui-font] body {
+  font-family: var(--ui-font);
+}
+
+html[data-ui-font] .top-nav .nav-left .logo,
+html[data-ui-font] .content-header h1,
+html[data-ui-font] .content-section h2,
+html[data-ui-font] .about-brand,
+html[data-ui-font] .library-brand,
+html[data-ui-font] .library-tagline,
+html[data-ui-font] .library-nav-btn,
+html[data-ui-font] .recent-chip,
+html[data-ui-font] .playlist-item .song-title,
+html[data-ui-font] .playlist-item .song-artist,
+html[data-ui-font] .btn-action,
+html[data-ui-font] .sketch-input,
+html[data-ui-font] .filter-select,
+html[data-ui-font] .search-source-select,
+html[data-ui-font] .tab-btn,
+html[data-ui-font] .track-title,
+html[data-ui-font] .track-artist,
+html[data-ui-font] .setting-hint,
+html[data-ui-font] .source-item {
+  font-family: var(--ui-display) !important;
+}
+
+html[data-ui-style] .sketch-card {
+  border-style: var(--ui-border-style);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-card-shadow);
+}
+
+html[data-ui-style='fresh'] .sketch-card::before,
+html[data-ui-style='minimal'] .sketch-card::before {
+  display: none;
+}
+
+html[data-ui-style] .btn-action,
+html[data-ui-style] .load-more-btn,
+html[data-ui-style] .sketch-input,
+html[data-ui-style] .filter-select,
+html[data-ui-style] .search-source-select,
+html[data-ui-style] .nav-icon-btn,
+html[data-ui-style] .recent-chip,
+html[data-ui-style] .source-item,
+html[data-ui-style] .guide-card,
+html[data-ui-style] .modal-card {
+  border-style: var(--ui-border-style);
+  border-radius: var(--ui-radius-sm);
+}
+
+html[data-ui-style='fresh'] .top-nav,
+html[data-ui-style='fresh'] .bottom-controller,
+html[data-ui-style='minimal'] .top-nav,
+html[data-ui-style='minimal'] .bottom-controller {
+  border-style: solid;
+  background: color-mix(in srgb, var(--paper-bg) 80%, white);
+  backdrop-filter: blur(10px);
+}
+
+html[data-ui-style='fresh'] .btn-action-primary,
+html[data-ui-style='minimal'] .btn-action-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+
+html[data-ui-style='fresh'] .recent-chip,
+html[data-ui-style='minimal'] .recent-chip {
+  background: var(--surface-strong);
+}
+
+html[data-ui-style='fresh'] .library-nav-ink {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, white));
+}
+
+html[data-ui-style='minimal'] .sketch-card {
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-ui-style='minimal'] .playlist-item {
+  border-bottom-style: solid;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -61,19 +61,32 @@
         </section>
 
         <section class="settings-section">
-          <h2>主题切换</h2>
+          <h2>主题设置器</h2>
           <div class="sketch-card">
-            <div class="action-row">
-              <button
-                v-for="themeOption in themes"
-                :key="themeOption.id"
-                @click="ui.setTheme(themeOption.id)"
-                :class="['btn-action', ui.theme === themeOption.id ? 'btn-action-primary' : '']"
-              >
-                {{ themeOption.label }}
-              </button>
-            </div>
-            <p class="setting-hint">主题会自动保存，下次打开仍生效。</p>
+            <ThemeCustomizer />
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h2>显示与省电</h2>
+          <div class="sketch-card">
+            <label class="source-item">
+              <span>播放时不自动息屏</span>
+              <input
+                class="source-toggle"
+                type="checkbox"
+                :checked="ui.keepScreenOn"
+                :disabled="!wakeLockSupported"
+                @change="ui.setKeepScreenOn(($event.target as HTMLInputElement).checked)"
+              />
+            </label>
+            <p class="setting-hint">
+              {{
+                wakeLockSupported
+                  ? '开启后，页面在前台时会尽量保持屏幕常亮（适合手机听歌）。'
+                  : '当前浏览器不支持屏幕常亮，请用系统设置关闭自动锁屏。'
+              }}
+            </p>
           </div>
         </section>
 
@@ -126,9 +139,10 @@
 
 <script setup lang="ts">
 import SketchIcon from '../icons/SketchIcon.vue';
+import ThemeCustomizer from '../ThemeCustomizer.vue';
 import { useSearchStore } from '../../stores/search';
 import { usePlayerStore, type AudioQuality } from '../../stores/player';
-import { useUIStore, type AppTheme } from '../../stores/ui';
+import { useUIStore } from '../../stores/ui';
 import storage from '../../core/storage';
 import { APP_BUILD_TIME, APP_VERSION, UPDATE_NOTES } from '../../version';
 
@@ -136,14 +150,8 @@ const search = useSearchStore();
 const player = usePlayerStore();
 const ui = useUIStore();
 
-const themes: Array<{ id: AppTheme; label: string }> = [
-  { id: 'paper', label: '宣纸' },
-  { id: 'sand', label: '暖沙' },
-  { id: 'mint', label: '薄荷' },
-  { id: 'ink', label: '墨夜' },
-  { id: 'celadon', label: '青瓷' },
-  { id: 'cinnabar', label: '朱砂' },
-];
+const wakeLockSupported =
+  typeof navigator !== 'undefined' && 'wakeLock' in navigator;
 
 const qualities: Array<{ id: AudioQuality; label: string }> = [
   { id: 'high', label: '高品质 320k' },
