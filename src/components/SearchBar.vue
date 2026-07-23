@@ -29,17 +29,18 @@
       <div
         v-if="showSearchHistory && search.searchHistory.length > 0"
         class="search-history-dropdown"
-        @mousedown.prevent
+        @pointerdown.prevent
       >
-        <div
+        <button
           v-for="(item, idx) in search.searchHistory"
           :key="idx"
+          type="button"
           class="search-history-item"
-          @mousedown.prevent="selectHistory(item)"
+          @pointerdown.prevent="selectHistory(item)"
         >
           <span>{{ item.keyword }}</span>
           <span class="meta">{{ sourceLabel(item.source) }}</span>
-        </div>
+        </button>
       </div>
     </div>
   </div>

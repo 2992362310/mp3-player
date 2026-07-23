@@ -280,6 +280,8 @@ body {
 
 /* ========== 顶部导航栏 ========== */
 .top-nav {
+  position: relative;
+  z-index: 1200;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -287,6 +289,7 @@ body {
   border-bottom: 2px dashed var(--border);
   flex-shrink: 0;
   gap: 12px;
+  overflow: visible;
 }
 
 .top-nav .nav-left {
@@ -316,6 +319,9 @@ body {
   min-width: 0;
   display: flex;
   justify-content: center;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .top-nav .nav-center .search-box {
@@ -1121,11 +1127,13 @@ body {
 /* ========== 搜索 / 筛选 / Tab ========== */
 .search-box {
   position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 800px;
   display: flex;
   gap: 8px;
   align-items: center;
+  overflow: visible;
 }
 
 .search-source-select,
@@ -1136,7 +1144,7 @@ body {
   border: 2px solid var(--border);
   border-radius: 6px 10px 8px 12px;
   font-size: 14px;
-  background: var(--surface);
+  background: var(--surface-strong);
   color: var(--ink);
   outline: none;
 }
@@ -1145,7 +1153,7 @@ body {
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
-  z-index: 1100;
+  z-index: 1;
 }
 
 .search-source-select option,
@@ -1156,8 +1164,10 @@ body {
 
 .search-input-wrap {
   position: relative;
+  z-index: 2;
   flex: 1;
   min-width: 0;
+  overflow: visible;
 }
 
 .search-input-wrap .sketch-input {
@@ -1188,29 +1198,37 @@ body {
 
 .search-history-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% - 1px);
   left: 0;
   right: 0;
-  background: var(--paper-bg);
+  background: var(--surface-strong);
   border: 2px solid var(--border);
-  border-top: none;
+  border-top: 1px solid var(--border-soft);
   border-radius: 0 0 8px 12px;
-  max-height: 200px;
+  max-height: 220px;
+  overflow-x: hidden;
   overflow-y: auto;
-  margin-top: -2px;
-  z-index: 1200;
+  margin-top: 0;
+  z-index: 1300;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  pointer-events: auto;
 }
 
 .search-history-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 8px 12px;
+  border: none;
   border-bottom: 1px dashed var(--border-soft);
+  background: transparent;
   cursor: pointer;
   font-family: "Ma Shan Zheng", cursive;
   color: var(--ink-soft);
+  text-align: left;
   font-size: 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .search-history-item:hover {
@@ -1430,7 +1448,7 @@ body {
   .top-nav .nav-center {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .top-nav .nav-right {
@@ -1799,8 +1817,20 @@ html[data-ui-style='fresh'] .bottom-controller,
 html[data-ui-style='minimal'] .top-nav,
 html[data-ui-style='minimal'] .bottom-controller {
   border-style: solid;
-  background: color-mix(in srgb, var(--paper-bg) 80%, white);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--paper-bg) 88%, white);
+  /* 不用 backdrop-filter：会形成层叠上下文，把搜索历史下拉盖住/点不到 */
+}
+
+html[data-ui-style='fresh'] .top-nav,
+html[data-ui-style='minimal'] .top-nav {
+  overflow: visible;
+}
+
+html[data-ui-style='minimal'] .search-source-select,
+html[data-ui-style='minimal'] .sketch-input,
+html[data-ui-style='minimal'] .filter-select,
+html[data-ui-style='minimal'] .search-history-dropdown {
+  background: color-mix(in srgb, var(--paper-bg) 92%, white);
 }
 
 html[data-ui-style='fresh'] .btn-action-primary,
