@@ -7,7 +7,8 @@ export type AppTheme =
   | 'ink'
   | 'celadon'
   | 'cinnabar'
-  | 'breeze';
+  | 'breeze'
+  | 'maruko';
 
 export type UiStyle = 'sketch' | 'fresh' | 'minimal';
 export type UiBorder = 'dashed' | 'solid';
@@ -33,6 +34,7 @@ export const THEME_IDS: AppTheme[] = [
   'celadon',
   'cinnabar',
   'breeze',
+  'maruko',
 ];
 
 export const THEME_PRESETS: Array<{
@@ -48,19 +50,20 @@ export const THEME_PRESETS: Array<{
   { id: 'celadon', label: '青瓷', swatch: '#e4ece8', accent: '#3d6b5e' },
   { id: 'cinnabar', label: '朱砂', swatch: '#f0ebe6', accent: '#b33a2b' },
   { id: 'breeze', label: '清风', swatch: '#eef8f5', accent: '#2aa89a' },
+  { id: 'maruko', label: '小丸子', swatch: '#fffbf0', accent: '#ffb7c5' },
 ];
 
 export const ACCENT_PRESETS = [
+  '#ffb7c5',
+  '#ff6b6b',
+  '#d81b60',
+  '#ffb74d',
+  '#87ceeb',
+  '#98d8c8',
   '#c0392b',
-  '#b45309',
   '#0f766e',
   '#2aa89a',
-  '#3d6b5e',
-  '#2563eb',
-  '#b33a2b',
   '#d4a574',
-  '#ca8a04',
-  '#64748b',
 ] as const;
 
 export const DEFAULT_CUSTOMIZE: ThemeCustomize = {
@@ -80,6 +83,7 @@ const STYLE_DEFAULTS: Record<AppTheme, Partial<ThemeCustomize>> = {
   celadon: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'kai', radius: 'soft' },
   cinnabar: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
   breeze: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
+  maruko: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
 };
 
 export function normalizeTheme(value: string | null | undefined): AppTheme {
