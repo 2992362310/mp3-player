@@ -144,6 +144,7 @@ const fontOptions: Array<{ id: UiFont; label: string }> = [
   { id: 'hand', label: '手写' },
   { id: 'kai', label: '楷体' },
   { id: 'sans', label: '无衬线' },
+  { id: 'mono', label: '等宽' },
 ];
 
 const borderOptions: Array<{ id: UiBorder; label: string }> = [

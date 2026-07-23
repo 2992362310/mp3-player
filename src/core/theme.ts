@@ -8,12 +8,14 @@ export type AppTheme =
   | 'celadon'
   | 'cinnabar'
   | 'breeze'
-  | 'maruko';
+  | 'maruko'
+  | 'matrix'
+  | 'cyberpunk';
 
 export type UiStyle = 'sketch' | 'fresh' | 'minimal';
 export type UiBorder = 'dashed' | 'solid';
 export type UiPattern = 'grid' | 'dots' | 'wash' | 'none';
-export type UiFont = 'hand' | 'kai' | 'sans';
+export type UiFont = 'hand' | 'kai' | 'sans' | 'mono';
 export type UiRadius = 'sharp' | 'soft' | 'round';
 
 export interface ThemeCustomize {
@@ -35,6 +37,8 @@ export const THEME_IDS: AppTheme[] = [
   'cinnabar',
   'breeze',
   'maruko',
+  'matrix',
+  'cyberpunk',
 ];
 
 export const THEME_PRESETS: Array<{
@@ -51,19 +55,21 @@ export const THEME_PRESETS: Array<{
   { id: 'cinnabar', label: '朱砂', swatch: '#f0ebe6', accent: '#b33a2b' },
   { id: 'breeze', label: '清风', swatch: '#eef8f5', accent: '#2aa89a' },
   { id: 'maruko', label: '小丸子', swatch: '#fffbf0', accent: '#ffb7c5' },
+  { id: 'matrix', label: '矩阵', swatch: '#0d0d0d', accent: '#00ff41' },
+  { id: 'cyberpunk', label: '赛博', swatch: '#0a0a0a', accent: '#fcee09' },
 ];
 
 export const ACCENT_PRESETS = [
+  '#fcee09',
+  '#00f0ff',
+  '#ff003c',
+  '#00ff41',
+  '#39ff14',
   '#ffb7c5',
   '#ff6b6b',
-  '#d81b60',
   '#ffb74d',
   '#87ceeb',
-  '#98d8c8',
-  '#c0392b',
-  '#0f766e',
   '#2aa89a',
-  '#d4a574',
 ] as const;
 
 export const DEFAULT_CUSTOMIZE: ThemeCustomize = {
@@ -84,6 +90,8 @@ const STYLE_DEFAULTS: Record<AppTheme, Partial<ThemeCustomize>> = {
   cinnabar: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
   breeze: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
   maruko: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
+  matrix: { style: 'minimal', border: 'solid', pattern: 'none', font: 'mono', radius: 'sharp' },
+  cyberpunk: { style: 'minimal', border: 'solid', pattern: 'none', font: 'sans', radius: 'sharp' },
 };
 
 export function normalizeTheme(value: string | null | undefined): AppTheme {
@@ -95,7 +103,7 @@ export function normalizeCustomize(raw: Partial<ThemeCustomize> | null | undefin
   const styles: UiStyle[] = ['sketch', 'fresh', 'minimal'];
   const borders: UiBorder[] = ['dashed', 'solid'];
   const patterns: UiPattern[] = ['grid', 'dots', 'wash', 'none'];
-  const fonts: UiFont[] = ['hand', 'kai', 'sans'];
+  const fonts: UiFont[] = ['hand', 'kai', 'sans', 'mono'];
   const radii: UiRadius[] = ['sharp', 'soft', 'round'];
 
   return {

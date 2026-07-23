@@ -156,6 +156,63 @@ html[data-theme='breeze'] {
   --ui-radius-sm: 12px;
 }
 
+/* 赛博：2077 霓虹黄 + 深黑 + 锐角 HUD */
+html[data-theme='cyberpunk'] {
+  --paper-bg: #0a0a0a;
+  --paper-grid: rgba(252, 238, 9, 0.06);
+  --ink: #e0e0e0;
+  --ink-soft: #b0b0b0;
+  --muted: #8a8a8a;
+  --faint: #5a5a5a;
+  --border: #3a3a3a;
+  --border-strong: #fcee09;
+  --border-soft: #2a2a2a;
+  --surface: #1a1a1a;
+  --surface-strong: #1a1a1a;
+  --hover: rgba(252, 238, 9, 0.1);
+  --accent: #fcee09;
+  --accent-soft: rgba(252, 238, 9, 0.14);
+  --accent-green: #00f0ff;
+  --accent-green-strong: #00c4d1;
+  --control-fill: #2a2a2a;
+  --shadow-ink: rgba(252, 238, 9, 0.25);
+  --ui-font: "Rajdhani", "Noto Sans SC", sans-serif;
+  --ui-display: "Rajdhani", "Noto Sans SC", sans-serif;
+  --ui-radius: 0px;
+  --ui-radius-sm: 0px;
+  --cp-cyan: #00f0ff;
+  --cp-magenta: #ff003c;
+  --cp-yellow: #fcee09;
+  --glow-yellow: 0 0 12px rgba(252, 238, 9, 0.45);
+  --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.35);
+}
+
+/* 矩阵：黑客帝国终端，深黑霓虹绿等宽 */
+html[data-theme='matrix'] {
+  --paper-bg: #0d0d0d;
+  --paper-grid: rgba(0, 255, 65, 0.06);
+  --ink: #00ff41;
+  --ink-soft: #39ff14;
+  --muted: #00b82e;
+  --faint: #007a1f;
+  --border: #003300;
+  --border-strong: #00ff41;
+  --border-soft: #001a00;
+  --surface: #0a0a0a;
+  --surface-strong: #0a0a0a;
+  --hover: rgba(0, 255, 65, 0.1);
+  --accent: #00ff41;
+  --accent-soft: rgba(0, 255, 65, 0.12);
+  --accent-green: #39ff14;
+  --accent-green-strong: #00ff41;
+  --control-fill: #001a00;
+  --shadow-ink: transparent;
+  --ui-font: "Courier New", "Lucida Console", "Consolas", monospace;
+  --ui-display: "Courier New", "Lucida Console", "Consolas", monospace;
+  --ui-radius: 0px;
+  --ui-radius-sm: 0px;
+}
+
 /* 小丸子：温馨粉嫩奶油色，圆润童趣 */
 html[data-theme='maruko'] {
   --paper-bg: #fffbf0;
@@ -1730,9 +1787,30 @@ html[data-ui-font='sans'] {
   --ui-display: "Outfit", "Noto Sans SC", sans-serif;
 }
 
+html[data-ui-font='mono'] {
+  --ui-font: "Courier New", "Lucida Console", "Consolas", monospace;
+  --ui-display: "Courier New", "Lucida Console", "Consolas", monospace;
+}
+
 html[data-theme='maruko'][data-ui-font='sans'] {
   --ui-font: "ZCOOL KuaiLe", "Nunito", "Noto Sans SC", sans-serif;
   --ui-display: "ZCOOL KuaiLe", "Nunito", "Noto Sans SC", sans-serif;
+}
+
+html[data-theme='matrix'][data-ui-font='mono'],
+html[data-theme='matrix'][data-ui-font='sans'] {
+  --ui-font: "Courier New", "Lucida Console", "Consolas", monospace;
+  --ui-display: "Courier New", "Lucida Console", "Consolas", monospace;
+}
+
+html[data-theme='cyberpunk'][data-ui-font='sans'] {
+  --ui-font: "Rajdhani", "Noto Sans SC", sans-serif;
+  --ui-display: "Rajdhani", "Noto Sans SC", sans-serif;
+}
+
+html[data-theme='cyberpunk'][data-ui-font='mono'] {
+  --ui-font: "Share Tech Mono", "Courier New", monospace;
+  --ui-display: "Share Tech Mono", "Courier New", monospace;
 }
 
 html[data-ui-radius='sharp'] {
@@ -2098,6 +2176,521 @@ html[data-theme='maruko'] .preset-card.active {
   background: rgba(255, 183, 197, 0.18);
 }
 
+/* ========== 矩阵终端：克制黑绿 ========== */
+html[data-theme='matrix'] body {
+  font-family: var(--ui-font);
+  background-color: #0d0d0d;
+  background-image: none;
+  color: #00ff41;
+}
+
+html[data-theme='matrix'] .top-nav,
+html[data-theme='matrix'] .bottom-controller {
+  background: #0a0a0a;
+  border-style: solid;
+  border-color: #003300;
+  border-width: 0 0 1px;
+}
+
+html[data-theme='matrix'] .bottom-controller {
+  border-width: 1px 0 0;
+}
+
+html[data-theme='matrix'] .top-nav .nav-left .logo,
+html[data-theme='matrix'] .content-header h1,
+html[data-theme='matrix'] .content-section h2,
+html[data-theme='matrix'] .library-brand,
+html[data-theme='matrix'] .about-brand {
+  color: #39ff14 !important;
+  font-family: var(--ui-display) !important;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+html[data-theme='matrix'] .top-nav .nav-left .logo .logo-mark {
+  color: #00ff41;
+}
+
+html[data-theme='matrix'] .sketch-card {
+  background: #0d0d0d;
+  border: 1px solid #003300;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .sketch-card::before {
+  display: none;
+}
+
+html[data-theme='matrix'] .sketch-card-ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .btn-action,
+html[data-theme='matrix'] .load-more-btn,
+html[data-theme='matrix'] .tile-btn,
+html[data-theme='matrix'] .nav-icon-btn,
+html[data-theme='matrix'] .recent-chip,
+html[data-theme='matrix'] .chip {
+  background: transparent;
+  border: 1px dashed #003300;
+  border-radius: 0;
+  color: #00ff41;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+html[data-theme='matrix'] .btn-action:hover,
+html[data-theme='matrix'] .load-more-btn:hover,
+html[data-theme='matrix'] .nav-icon-btn:hover,
+html[data-theme='matrix'] .recent-chip:hover,
+html[data-theme='matrix'] .chip:hover {
+  border-style: solid;
+  border-color: #00ff41;
+  background: rgba(0, 255, 65, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .btn-action-primary,
+html[data-theme='matrix'] .nav-icon-btn.active,
+html[data-theme='matrix'] .chip.active,
+html[data-theme='matrix'] .preset-card.active {
+  background: #003300;
+  border: 1px solid #00ff41;
+  color: #39ff14;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .sketch-input,
+html[data-theme='matrix'] .filter-select,
+html[data-theme='matrix'] .search-source-select {
+  background: #0a0a0a;
+  border: 1px solid #003300;
+  border-radius: 0;
+  color: #00ff41;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+html[data-theme='matrix'] .sketch-input:focus,
+html[data-theme='matrix'] .filter-select:focus,
+html[data-theme='matrix'] .search-source-select:focus {
+  border-color: #00ff41;
+  box-shadow: none;
+  outline: none;
+}
+
+html[data-theme='matrix'] .sketch-input::placeholder {
+  color: #007a1f;
+}
+
+html[data-theme='matrix'] .search-history-dropdown {
+  background: #0a0a0a;
+  border: 1px solid #003300;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .search-history-item {
+  color: #00ff41;
+  border-bottom: 1px solid #003300;
+}
+
+html[data-theme='matrix'] .search-history-item:hover {
+  background: rgba(0, 255, 65, 0.1);
+}
+
+html[data-theme='matrix'] .playlist-item {
+  border-bottom: 1px solid #003300;
+  border-radius: 0;
+  margin: 0;
+  transition: all 0.2s ease;
+}
+
+html[data-theme='matrix'] .playlist-item:hover {
+  background: rgba(0, 255, 65, 0.1);
+  border-left-color: #00ff41;
+  transform: none;
+}
+
+html[data-theme='matrix'] .playlist-item.playing {
+  background: rgba(0, 255, 65, 0.12);
+  border-left-color: #39ff14;
+  animation: none;
+}
+
+html[data-theme='matrix'] .library-nav {
+  border-bottom: 1px solid #003300;
+}
+
+html[data-theme='matrix'] .library-nav-ink {
+  height: 1px;
+  border-radius: 0;
+  background: #00ff41;
+}
+
+html[data-theme='matrix'] .library-nav-btn.active {
+  color: #39ff14;
+}
+
+html[data-theme='matrix'] .progress-bar {
+  background: #00ff41;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .progress-bar::after {
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .guide-card,
+html[data-theme='matrix'] .modal-card {
+  background: #0d0d0d;
+  border: 1px solid #003300;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-theme='matrix'] .source-item {
+  background: #0a0a0a;
+  border: 1px solid #003300;
+  border-radius: 0;
+  color: #00ff41;
+}
+
+html[data-theme='matrix'] .source-toggle {
+  border: 1px solid #003300;
+  border-radius: 0;
+  background: #0a0a0a;
+}
+
+html[data-theme='matrix'] .source-toggle:checked {
+  background: #003300;
+  border-color: #00ff41;
+}
+
+html[data-theme='matrix'] .preset-swatch {
+  border-radius: 0;
+}
+
+html[data-theme='matrix'] .recent-chip.playing {
+  border-style: solid;
+  border-color: #00ff41;
+  background: rgba(0, 255, 65, 0.12);
+}
+
+html[data-theme='matrix'] ::selection {
+  background: #00ff41;
+  color: #0d0d0d;
+}
+
+/* ========== 赛博朋克 2077：霓虹黄 HUD ========== */
+html[data-theme='cyberpunk'] body {
+  font-family: var(--ui-font);
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgba(252, 238, 9, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  color: #e0e0e0;
+}
+
+/* 扫描线叠加层：不拦截点击，避免挡搜索 */
+html[data-theme='cyberpunk'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.18) 2px,
+    rgba(0, 0, 0, 0.18) 3px
+  );
+  opacity: 0.35;
+}
+
+html[data-theme='cyberpunk'] .top-nav,
+html[data-theme='cyberpunk'] .bottom-controller {
+  background: rgba(10, 10, 10, 0.92);
+  border-style: solid;
+  border-color: #3a3a3a;
+  border-width: 0 0 1px;
+}
+
+html[data-theme='cyberpunk'] .bottom-controller {
+  border-width: 1px 0 0;
+}
+
+html[data-theme='cyberpunk'] .top-nav .nav-left .logo,
+html[data-theme='cyberpunk'] .content-header h1,
+html[data-theme='cyberpunk'] .content-section h2,
+html[data-theme='cyberpunk'] .library-brand,
+html[data-theme='cyberpunk'] .about-brand {
+  color: var(--cp-yellow) !important;
+  font-family: var(--ui-display) !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(252, 238, 9, 0.35);
+}
+
+html[data-theme='cyberpunk'] .top-nav .nav-left .logo .logo-mark {
+  color: var(--cp-cyan);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.45);
+}
+
+html[data-theme='cyberpunk'] .library-tagline,
+html[data-theme='cyberpunk'] .setting-hint,
+html[data-theme='cyberpunk'] .track-artist {
+  color: var(--cp-cyan);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+
+html[data-theme='cyberpunk'] .sketch-card {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 0;
+  box-shadow: none;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+html[data-theme='cyberpunk'] .sketch-card::before {
+  display: none;
+}
+
+html[data-theme='cyberpunk'] .sketch-card-ghost {
+  background: rgba(26, 26, 26, 0.72);
+  box-shadow: none;
+  clip-path: none;
+}
+
+html[data-theme='cyberpunk'] .btn-action,
+html[data-theme='cyberpunk'] .load-more-btn,
+html[data-theme='cyberpunk'] .tile-btn,
+html[data-theme='cyberpunk'] .chip {
+  background: transparent;
+  border: 1px solid var(--cp-yellow);
+  border-radius: 0;
+  color: var(--cp-yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: none;
+  transition: background 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+    color 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+html[data-theme='cyberpunk'] .btn-action:hover,
+html[data-theme='cyberpunk'] .load-more-btn:hover,
+html[data-theme='cyberpunk'] .chip:hover {
+  background: rgba(252, 238, 9, 0.12);
+  box-shadow: var(--glow-yellow);
+  transform: none;
+}
+
+html[data-theme='cyberpunk'] .btn-action-primary,
+html[data-theme='cyberpunk'] .chip.active,
+html[data-theme='cyberpunk'] .preset-card.active {
+  background: var(--cp-yellow);
+  border-color: var(--cp-yellow);
+  color: #0a0a0a;
+  box-shadow: var(--glow-yellow);
+  font-weight: 700;
+}
+
+html[data-theme='cyberpunk'] .nav-icon-btn {
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: #8a8a8a;
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+html[data-theme='cyberpunk'] .nav-icon-btn:hover {
+  color: var(--cp-yellow);
+  border-color: var(--cp-yellow);
+  background: rgba(252, 238, 9, 0.08);
+  box-shadow: var(--glow-yellow);
+  transform: none;
+}
+
+html[data-theme='cyberpunk'] .nav-icon-btn.active {
+  color: #0a0a0a;
+  background: var(--cp-yellow);
+  border-color: var(--cp-yellow);
+  box-shadow: var(--glow-yellow);
+}
+
+html[data-theme='cyberpunk'] .sketch-input,
+html[data-theme='cyberpunk'] .filter-select,
+html[data-theme='cyberpunk'] .search-source-select {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 0;
+  color: #e0e0e0;
+  box-shadow: none;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html[data-theme='cyberpunk'] .sketch-input:focus,
+html[data-theme='cyberpunk'] .filter-select:focus,
+html[data-theme='cyberpunk'] .search-source-select:focus {
+  border-color: var(--cp-yellow);
+  box-shadow: var(--glow-yellow);
+  outline: none;
+}
+
+html[data-theme='cyberpunk'] .sketch-input::placeholder {
+  color: #5a5a5a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+html[data-theme='cyberpunk'] .search-history-dropdown {
+  background: #1a1a1a;
+  border: 1px solid var(--cp-yellow);
+  border-radius: 0;
+  box-shadow: var(--glow-yellow);
+}
+
+html[data-theme='cyberpunk'] .search-history-item {
+  color: #e0e0e0;
+  border-bottom: 1px solid #2a2a2a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+html[data-theme='cyberpunk'] .search-history-item:hover {
+  background: rgba(252, 238, 9, 0.1);
+  color: var(--cp-yellow);
+}
+
+html[data-theme='cyberpunk'] .search-history-item .meta {
+  color: var(--cp-cyan);
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0.12em;
+}
+
+html[data-theme='cyberpunk'] .playlist-item {
+  border-bottom: 1px solid #2a2a2a;
+  border-radius: 0;
+  margin: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+html[data-theme='cyberpunk'] .playlist-item:hover {
+  background: rgba(252, 238, 9, 0.08);
+  border-left-color: var(--cp-yellow);
+  transform: none;
+}
+
+html[data-theme='cyberpunk'] .playlist-item.playing {
+  background: rgba(0, 240, 255, 0.08);
+  border-left-color: var(--cp-cyan);
+  animation: none;
+  box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.06);
+}
+
+html[data-theme='cyberpunk'] .playlist-item.playing .song-title {
+  color: var(--cp-cyan);
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.35);
+}
+
+html[data-theme='cyberpunk'] .recent-chip {
+  border: 1px solid #3a3a3a;
+  border-radius: 0;
+  background: #1a1a1a;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html[data-theme='cyberpunk'] .recent-chip:hover {
+  border-color: var(--cp-yellow);
+  box-shadow: var(--glow-yellow);
+  transform: none;
+}
+
+html[data-theme='cyberpunk'] .recent-chip.playing {
+  border-color: var(--cp-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+html[data-theme='cyberpunk'] .library-nav {
+  border-bottom: 1px solid #3a3a3a;
+}
+
+html[data-theme='cyberpunk'] .library-nav-btn {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+html[data-theme='cyberpunk'] .library-nav-btn.active {
+  color: var(--cp-yellow);
+}
+
+html[data-theme='cyberpunk'] .library-nav-ink {
+  height: 2px;
+  border-radius: 0;
+  background: var(--cp-yellow);
+  box-shadow: var(--glow-yellow);
+}
+
+html[data-theme='cyberpunk'] .progress-bar {
+  background: linear-gradient(90deg, var(--cp-yellow), var(--cp-cyan));
+  border-radius: 0;
+  box-shadow: 0 0 8px rgba(252, 238, 9, 0.45);
+}
+
+html[data-theme='cyberpunk'] .progress-bar::after {
+  background: var(--cp-yellow);
+  box-shadow: var(--glow-yellow);
+  border-radius: 0;
+}
+
+html[data-theme='cyberpunk'] .guide-card,
+html[data-theme='cyberpunk'] .modal-card {
+  background: #1a1a1a;
+  border: 1px solid var(--cp-yellow);
+  border-radius: 0;
+  box-shadow: var(--glow-yellow);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+
+html[data-theme='cyberpunk'] .source-item {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 0;
+}
+
+html[data-theme='cyberpunk'] .source-toggle {
+  border: 1px solid #3a3a3a;
+  border-radius: 0;
+  background: #0a0a0a;
+}
+
+html[data-theme='cyberpunk'] .source-toggle:checked {
+  background: var(--cp-yellow);
+  border-color: var(--cp-yellow);
+}
+
+html[data-theme='cyberpunk'] .btn-favorite.active,
+html[data-theme='cyberpunk'] .play-btn.danger {
+  color: var(--cp-magenta);
+}
+
+html[data-theme='cyberpunk'] ::selection {
+  background: var(--cp-yellow);
+  color: #0a0a0a;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -2109,5 +2702,9 @@ html[data-theme='maruko'] .preset-card.active {
   .top-nav .nav-left .logo,
   .modal-enter {
     animation: none !important;
+  }
+
+  html[data-theme='cyberpunk'] body::after {
+    display: none;
   }
 }
