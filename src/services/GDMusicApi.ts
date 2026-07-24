@@ -64,6 +64,13 @@ export interface SearchParams {
   source?: MusicSource;
   page?: number;
   limit?: number;
+  signal?: AbortSignal;
+}
+
+export function isAbortError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const name = (error as { name?: string }).name;
+  return name === 'AbortError';
 }
 
 // 搜索结果
@@ -184,7 +191,9 @@ class GDMusicApiService {
     );
   }
 
-  private async requestOnce<T>(url: string): Promise<T> {
+  private async requestOnce<T>(url: string, signal?: AbortSignal): Promise<T> {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
     if (!this.checkRateLimit()) {
       const seconds = this.getCooldownSeconds();
       throw new Error(`请求频率超限，请约 ${seconds || 60} 秒后再试`);
@@ -197,8 +206,10 @@ class GDMusicApiService {
       response = await fetch(url, {
         method: 'GET',
         headers: { Accept: 'application/json' },
+        signal,
       });
-    } catch {
+    } catch (error) {
+      if (isAbortError(error)) throw error;
       throw new Error('网络异常，请检查连接后重试');
     }
 
@@ -215,7 +226,10 @@ class GDMusicApiService {
     return response.json() as Promise<T>;
   }
 
-  private async request<T>(params: Record<string, string | number>): Promise<T> {
+  private async request<T>(
+    params: Record<string, string | number>,
+    signal?: AbortSignal,
+  ): Promise<T> {
     const url = new URL(API_BASE_URL);
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, String(value));
@@ -229,12 +243,14 @@ class GDMusicApiService {
 
     let lastError: unknown;
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
       try {
-        const data = await this.requestOnce<T>(cacheKey);
+        const data = await this.requestOnce<T>(cacheKey, signal);
         this.saveToCache(cacheKey, data);
         return data;
       } catch (error) {
         lastError = error;
+        if (isAbortError(error)) throw error;
         if (attempt >= MAX_RETRIES || !this.isRetryableError(error)) break;
         await sleep(RETRY_BASE_DELAY_MS * (attempt + 1));
       }
@@ -244,15 +260,18 @@ class GDMusicApiService {
   }
 
   async search(params: SearchParams): Promise<SearchResult> {
-    const { keyword, source = 'netease', page = 1, limit = 20 } = params;
+    const { keyword, source = 'netease', page = 1, limit = 20, signal } = params;
 
-    const response = await this.request<GDSong[]>({
-      types: 'search',
-      source,
-      name: keyword,
-      count: limit,
-      pages: page,
-    });
+    const response = await this.request<GDSong[]>(
+      {
+        types: 'search',
+        source,
+        name: keyword,
+        count: limit,
+        pages: page,
+      },
+      signal,
+    );
 
     return {
       songs: response,
@@ -267,34 +286,45 @@ class GDMusicApiService {
     source: MusicSource,
     id: string,
     br: MusicQuality = 320,
+    signal?: AbortSignal,
   ): Promise<GDPlayUrlResponse> {
-    return this.request<GDPlayUrlResponse>({
-      types: 'url',
-      source,
-      id,
-      br,
-    });
+    return this.request<GDPlayUrlResponse>(
+      {
+        types: 'url',
+        source,
+        id,
+        br,
+      },
+      signal,
+    );
   }
 
   async getPicUrl(
     source: MusicSource,
     id: string,
     size: PicSize = 300,
+    signal?: AbortSignal,
   ): Promise<GDPicResponse> {
-    return this.request<GDPicResponse>({
-      types: 'pic',
-      source,
-      id,
-      size,
-    });
+    return this.request<GDPicResponse>(
+      {
+        types: 'pic',
+        source,
+        id,
+        size,
+      },
+      signal,
+    );
   }
 
-  async getLyric(source: MusicSource, id: string): Promise<GDLyricResponse> {
-    return this.request<GDLyricResponse>({
-      types: 'lyric',
-      source,
-      id,
-    });
+  async getLyric(source: MusicSource, id: string, signal?: AbortSignal): Promise<GDLyricResponse> {
+    return this.request<GDLyricResponse>(
+      {
+        types: 'lyric',
+        source,
+        id,
+      },
+      signal,
+    );
   }
 
   async getAlbumSongs(source: MusicSource, albumId: string): Promise<GDSong[]> {

@@ -25,11 +25,28 @@
             <option value="">全部歌手</option>
             <option v-for="artist in resultArtists" :key="artist" :value="artist">{{ artist }}</option>
           </select>
-          <span class="filter-count">{{ filteredResults.length }}/{{ search.results.length }}</span>
+          <label class="playable-toggle" title="开启后会探测播放地址（消耗请求额度）">
+            <input
+              type="checkbox"
+              :checked="search.onlyPlayable"
+              @change="onOnlyPlayableChange(($event.target as HTMLInputElement).checked)"
+            />
+            <span>仅可播</span>
+          </label>
+          <span class="filter-count">
+            {{ filteredResults.length }}/{{ search.results.length }}
+            <em v-if="search.probingPlayable">检测中</em>
+          </span>
         </div>
 
         <div class="results-scroll main-scroll">
-          <div v-if="filteredResults.length === 0" class="filter-empty">没有符合筛选条件的歌曲</div>
+          <div v-if="filteredResults.length === 0" class="filter-empty">
+            {{
+              search.onlyPlayable
+                ? (search.probingPlayable ? '正在检测可播放歌曲…' : '没有检测到可播放歌曲')
+                : '没有符合筛选条件的歌曲'
+            }}
+          </div>
 
           <VirtualSongList
             v-else-if="useVirtual"
@@ -107,7 +124,19 @@
     >
       <div class="discover-empty-mark" aria-hidden="true">墨</div>
       <p>搜索你喜欢的歌</p>
-      <p class="discover-empty-hint">结果会留在这里；收藏与最近播放在「我的」</p>
+      <p class="discover-empty-hint">点下面快捷词，或到顶部搜索框输入</p>
+      <div class="hot-chips" role="list">
+        <button
+          v-for="kw in HOT_KEYWORDS"
+          :key="kw"
+          type="button"
+          class="hot-chip"
+          role="listitem"
+          @click="searchHot(kw)"
+        >
+          {{ kw }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -121,6 +150,7 @@ import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 import { useSearchStore } from '../../stores/search';
+import { HOT_KEYWORDS } from '../../constants/hotKeywords';
 
 const player = usePlayerStore();
 const playlists = usePlaylistStore();
@@ -165,6 +195,8 @@ const filteredResults = computed(() =>
   search.results.filter((song) => {
     if (filterSourceId.value && song.sourceId !== filterSourceId.value) return false;
     if (filterArtist.value && song.artist !== filterArtist.value) return false;
+    // 仅可播：隐藏已确认不可播；检测中仍显示未知项
+    if (search.onlyPlayable && search.isPlayableKnown(song) === false) return false;
     return true;
   }),
 );
@@ -181,6 +213,15 @@ function isCurrent(track: Song) {
 
 function playTrack(track: Song) {
   playFromList(filteredResults.value, track);
+}
+
+function onOnlyPlayableChange(checked: boolean) {
+  void search.setOnlyPlayable(checked);
+}
+
+async function searchHot(kw: string) {
+  search.addSearchHistory(kw, search.currentSource);
+  await search.searchSongs(kw, search.currentSource);
 }
 </script>
 
@@ -219,7 +260,6 @@ function playTrack(track: Song) {
   -webkit-overflow-scrolling: touch;
 }
 
-/* 虚拟列表铺满滚动区，普通列表仍由本容器滚动 */
 .results-scroll :deep(.virtual-song-list.fill) {
   height: 100%;
   min-height: 100%;
@@ -232,6 +272,29 @@ function playTrack(track: Song) {
   border-top: 1px dashed var(--border-soft);
 }
 
+.playable-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.playable-toggle input {
+  accent-color: var(--accent);
+}
+
+.filter-count em {
+  font-style: normal;
+  margin-left: 4px;
+  color: var(--accent);
+  font-size: 12px;
+}
+
 .discover-empty {
   flex: 1;
   display: flex;
@@ -241,6 +304,7 @@ function playTrack(track: Song) {
   gap: 8px;
   color: var(--muted);
   font-family: 'Ma Shan Zheng', cursive;
+  padding: 12px 8px 24px;
 }
 
 .discover-empty-mark {
@@ -260,5 +324,32 @@ function playTrack(track: Song) {
 .discover-empty-hint {
   font-size: 13px !important;
   color: var(--faint) !important;
+}
+
+.hot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 420px;
+  margin-top: 10px;
+}
+
+.hot-chip {
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 14px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.hot-chip:hover {
+  background: var(--hover);
+  border-color: var(--accent);
+  color: var(--ink);
 }
 </style>

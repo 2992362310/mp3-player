@@ -79,7 +79,14 @@
             </svg>
           </button>
           <!-- 歌词 -->
-          <button @click="toggleLyricPanel" class="sketch-icon" title="歌词" :disabled="!player.currentSong" style="padding: 2px;">
+          <button
+            @click="toggleLyricPanel"
+            class="sketch-icon"
+            :class="{ active: ui.showLyricPanel && !ui.karaokeMode }"
+            title="歌词 (L)"
+            :disabled="!player.currentSong"
+            style="padding: 2px;"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 5L8 3L12 5L16 3L20 5V19"/>
               <line x1="4" y1="9" x2="20" y2="9"/>
@@ -87,6 +94,22 @@
               <line x1="4" y1="17" x2="18" y2="17"/>
               <circle cx="6" cy="21" r="2" fill="currentColor"/>
               <circle cx="18" cy="19" r="2" fill="currentColor"/>
+            </svg>
+          </button>
+          <!-- 跟唱 -->
+          <button
+            type="button"
+            @click="toggleKaraokeMode"
+            class="sketch-icon"
+            :class="{ active: ui.karaokeMode }"
+            title="跟唱模式 (K)"
+            :disabled="!player.currentSong"
+            style="padding: 2px;"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v11"/>
+              <circle cx="12" cy="17" r="3"/>
+              <path d="M8 7c-2 1-3 2.5-3 5M16 7c2 1 3 2.5 3 5"/>
             </svg>
           </button>
           <!-- 播放模式 -->
@@ -211,6 +234,11 @@ function onPointerDown(e: PointerEvent) {
 function toggleLyricPanel() {
   ui.toggleLyricPanel();
 }
+
+function toggleKaraokeMode() {
+  if (!player.currentSong) return;
+  ui.toggleKaraokeMode();
+}
 </script>
 
 <style scoped>
@@ -241,6 +269,10 @@ function toggleLyricPanel() {
 
 .sketch-icon {
   color: var(--ink-soft);
+}
+
+.sketch-icon.active {
+  color: var(--accent);
 }
 
 .fav-on {

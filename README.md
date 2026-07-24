@@ -1,4 +1,6 @@
-# 手绘播放器 - 云听音乐聚合平台
+# 墨韵 MoYun
+
+Vue 3 + Vite + Pinia 多音源在线音乐播放器，支持 PWA、歌词、自建歌单与主题设置器。
 
 ### 安装与运行
 
@@ -18,45 +20,56 @@ pnpm run preview
 
 ### PWA 安装（iOS/Android）
 
-本项目已支持 PWA，可在移动端“添加到主屏幕”后像 App 一样打开。
+已支持添加到主屏幕，可像 App 一样使用（建议 HTTPS）。
 
-1. 先部署站点（推荐 HTTPS，GitHub Pages 也可）。
-2. iPhone Safari 打开站点，点击分享按钮，选择“添加到主屏幕”。
-3. Android Chrome 打开站点，按提示“安装应用”或在菜单里选择“安装应用”。
+1. 部署站点后用手机浏览器打开。
+2. iPhone Safari：分享 →「添加到主屏幕」。
+3. Android Chrome：按提示「安装应用」，或菜单中选择安装。
 
 已包含：
-- Web App Manifest（应用名称、图标、启动模式）
+- Web App Manifest（名称、PNG/SVG 图标、横竖屏 `orientation: any`）
 - Service Worker（自动更新与基础缓存）
 - 离线提示页 [public/offline.html](public/offline.html)
+- Apple Touch Icon / 独立模式 meta
 
-## 核心模块说明
+## 功能概览
 
-### 1. 音频引擎 (`AudioEngine.ts`)
+- 多音源搜索（网易云、酷我、JOOX、B站等），支持音源/歌手筛选与「仅可播」探测
+- 热门词快捷搜索；新搜索会取消进行中的旧请求
+- 独立播放队列、会话恢复（不自动开播）、最近播放、自建歌单
+- 歌词面板（移动端全屏 / 横屏紧凑布局），点击歌词跳转
+- 跟唱模式：全屏大字歌词、句间倒计时、可选压低原唱
+- 主题设置器：底色预设 + 风格/字体/边框/圆角/纹理/强调色
+- 锁屏 Media Session（封面、进度、快进快退）
+- 可选「播放时不自动息屏」（跟唱播放时也会自动常亮）
 
-基于 Howler.js 的音频播放引擎，提供：
-- **音频加载和播放**: 支持立即播放或静默加载（用于恢复会话）
-- **播放控制**: 播放、暂停、跳转进度
-- **进度管理**: 节流同步到界面（约 250ms）
-- **音量控制**: 音量调节和静音
-- **事件系统**: 播放、暂停、结束、错误事件
+### 快捷键
 
-### 2. API 服务 (`GDMusicApi.ts`)
+| 按键 | 功能 |
+|------|------|
+| Space | 播放 / 暂停 |
+| ← / → | 快退 / 快进 5 秒 |
+| Shift + ← / → | 上一首 / 下一首 |
+| ↑ / ↓ | 音量加减 |
+| M | 静音 |
+| L | 打开 / 关闭歌词 |
+| K | 打开 / 关闭跟唱模式 |
+| Esc | 退出跟唱 / 关闭歌词 |
 
-GD Music API 的封装和优化：
-- **请求频率限制**: 5分钟内最多50次请求
-- **缓存机制**: 5分钟 TTL，最多保留约 80 条缓存
-- **多音质支持**: 128k / 192k / 320k / 无损，可按偏好降级
-- **错误处理**: 播放失败会尝试同名单曲或自动下一首
-- **稳定音源**: 网易云、酷我、JOOX、B站
+## 核心模块
 
-### 3. 播放体验
+### 音频引擎 (`AudioEngine.ts`)
 
-- 独立播放队列（与搜索结果解耦）
-- 恢复上次播放位置（不自动开播，需手动继续）
-- 最近播放历史、自建歌单
-- 搜索结果按音源 / 歌手筛选
-- 进度条拖拽定位
-- 快捷键：空格播放/暂停，方向键调节进度/音量，`L` 歌词，`M` 静音
+基于 Howler.js：加载播放、进度节流同步、音量/静音、事件回调。
+
+### API 服务 (`GDMusicApi.ts`)
+
+GD Music API 封装：限流（约 5 分钟 50 次）、缓存、音质降级、请求可取消（`AbortSignal`）。
+
+### 状态与界面
+
+- Pinia：`player` / `search` / `playlist` / `ui`
+- 样式：`src/assets/styles/main.css`（CSS 变量主题，无 DaisyUI）
 
 ---
 
@@ -64,16 +77,12 @@ GD Music API 的封装和优化：
 
 MIT License - 本项目仅供学习交流使用
 
----
-
 ## 致谢
 
-- [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架
-- [Vite](https://vitejs.dev/) - 下一代前端构建工具
-- [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
-- [DaisyUI](https://daisyui.com/) - Tailwind CSS 组件库
-- [GD Music API](https://music-api.gdstudio.xyz/) - 音乐 API 服务
+- [Vue.js](https://vuejs.org/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Howler.js](https://howlerjs.com/)
+- [GD Music API](https://music-api.gdstudio.xyz/)
 
----
-
-> **温馨提示**: 请合理使用 API 服务，支持正版音乐，尊重音乐版权！
+> **提示**：请合理使用 API，支持正版音乐，尊重版权。

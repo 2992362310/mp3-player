@@ -77,7 +77,7 @@ export class GDMusicSource implements ISourcePlugin {
    * 搜索歌曲
    */
   async search(params: SearchParams): Promise<SearchResult> {
-    const { keyword, page = 1, pageSize = 20 } = params;
+    const { keyword, page = 1, pageSize = 20, signal } = params;
 
     try {
       const result = await gdMusicApi.search({
@@ -85,6 +85,7 @@ export class GDMusicSource implements ISourcePlugin {
         source: this.source,
         page,
         limit: pageSize,
+        signal,
       });
 
       // 转换为标准格式
@@ -98,6 +99,7 @@ export class GDMusicSource implements ISourcePlugin {
         hasMore: songs.length === pageSize,
       };
     } catch (error) {
+      if ((error as { name?: string })?.name === 'AbortError') throw error;
       console.error(`[${this.id}] 搜索失败:`, error);
       return {
         songs: [],

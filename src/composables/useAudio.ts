@@ -1,7 +1,12 @@
 import { watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
+import { useSearchStore } from '../stores/search';
+import { useUIStore } from '../stores/ui';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
+
+/** 跟唱模式压低原唱的音量系数（不改动用户保存的音量） */
+const KARAOKE_SOFT_SCALE = 0.32;
 
 let initialized = false;
 let playGeneration = 0;
@@ -10,6 +15,8 @@ let restoring = false;
 
 export function useAudio() {
   const player = usePlayerStore();
+  const search = useSearchStore();
+  const ui = useUIStore();
 
   function normalizeText(value?: string): string {
     return (value || '')
@@ -30,7 +37,13 @@ export function useAudio() {
   }
 
   function effectiveVolume(): number {
-    return player.muted ? 0 : player.volume;
+    if (player.muted) return 0;
+    const soft = ui.karaokeMode && ui.karaokeSoftVocal ? KARAOKE_SOFT_SCALE : 1;
+    return player.volume * soft;
+  }
+
+  function applyOutputVolume() {
+    audioEngine.setVolume(effectiveVolume());
   }
 
   function skipAfterFailure() {
@@ -51,9 +64,12 @@ export function useAudio() {
 
     if (url) {
       consecutiveFailures = 0;
+      search.markPlayable(song, true);
       audioEngine.load(url, { volume: effectiveVolume() });
       return;
     }
+
+    search.markPlayable(song, false);
 
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
@@ -62,9 +78,11 @@ export function useAudio() {
       if (generation !== playGeneration) return;
       if (fallbackUrl) {
         consecutiveFailures = 0;
+        search.markPlayable(candidate, true);
         audioEngine.load(fallbackUrl, { volume: effectiveVolume() });
         return;
       }
+      search.markPlayable(candidate, false);
     }
 
     if (generation === playGeneration) skipAfterFailure();
@@ -183,10 +201,8 @@ export function useAudio() {
     });
 
     watch(
-      () => [player.volume, player.muted] as const,
-      ([vol, muted]) => {
-        audioEngine.setVolume(muted ? 0 : vol);
-      },
+      () => [player.volume, player.muted, ui.karaokeMode, ui.karaokeSoftVocal] as const,
+      () => applyOutputVolume(),
       { immediate: true },
     );
   }

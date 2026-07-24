@@ -9,6 +9,7 @@
           <li>先在顶部输入歌曲名，按回车搜索。</li>
           <li>点击列表歌曲即可播放；点 + 可加入自建歌单。</li>
           <li>「我的」里可管理收藏和歌单；设置里可看快捷键。</li>
+          <li>播放时按 K 或点麦克风可进入跟唱：大字歌词、可选压低原唱。</li>
           <li>在手机浏览器里可添加到主屏幕，像 App 一样使用。</li>
         </ol>
         <div class="guide-actions">
@@ -95,7 +96,7 @@ interface Section {
 const search = useSearchStore();
 const player = usePlayerStore();
 const ui = useUIStore();
-const { keepScreenOn } = storeToRefs(ui);
+const { keepScreenOn, karaokeMode } = storeToRefs(ui);
 const { isPlaying } = storeToRefs(player);
 const { restoreLastSession } = useAudio();
 const activeSection = ref<SectionId>('discover');
@@ -106,7 +107,9 @@ const sections = computed<Section[]>(() => [
   { id: 'settings', label: '设置', iconId: 'settings' },
 ]);
 
-const keepAwakeActive = computed(() => keepScreenOn.value && isPlaying.value);
+const keepAwakeActive = computed(
+  () => isPlaying.value && (keepScreenOn.value || karaokeMode.value),
+);
 
 provide('goDiscover', () => {
   activeSection.value = 'discover';

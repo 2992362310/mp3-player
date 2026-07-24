@@ -1,7 +1,7 @@
 {
   "name": "mp3-player",
-  "version": "2.1.0",
-  "description": "MP3 Player built with Vue 3 + Vite",
+  "version": "2.3.0",
+  "description": "墨韵 MoYun — Vue 3 多音源在线音乐播放器",
   "type": "module",
   "scripts": {
     "dev": "vite",

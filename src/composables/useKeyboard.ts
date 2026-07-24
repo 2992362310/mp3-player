@@ -44,6 +44,16 @@ export function useKeyboard() {
       case 'KeyL':
         ui.toggleLyricPanel();
         break;
+      case 'KeyK':
+        if (player.currentSong) ui.toggleKaraokeMode();
+        break;
+      case 'Escape':
+        if (ui.karaokeMode) {
+          ui.setKaraokeMode(false);
+        } else if (ui.showLyricPanel) {
+          ui.closeLyricPanel();
+        }
+        break;
     }
   }
 

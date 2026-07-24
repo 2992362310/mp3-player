@@ -189,6 +189,8 @@ export interface SearchParams {
   pageSize?: number;
   /** 搜索类型 */
   type?: 'song' | 'album' | 'artist' | 'playlist';
+  /** 取消信号 */
+  signal?: AbortSignal;
 }
 
 /**

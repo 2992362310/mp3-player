@@ -37,7 +37,7 @@ class SourceManager {
   async search(
     keyword: string,
     sourceId: string,
-    options?: { page?: number; limit?: number },
+    options?: { page?: number; limit?: number; signal?: AbortSignal },
   ): Promise<SearchResult> {
     const source = this.sources.get(sourceId);
     if (!source) throw new Error(`音源 ${sourceId} 不存在`);
@@ -47,8 +47,10 @@ class SourceManager {
         keyword,
         page: options?.page || 1,
         pageSize: options?.limit || 20,
+        signal: options?.signal,
       });
     } catch (error) {
+      if ((error as { name?: string })?.name === 'AbortError') throw error;
       console.error(`[SourceManager] 搜索失败 (${sourceId}):`, error);
       return { songs: [], hasMore: false };
     }

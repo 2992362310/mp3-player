@@ -736,7 +736,10 @@ body {
   flex: 1;
   padding: 0 16px;
 }
-.right-controls { justify-content: flex-end; }
+.right-controls {
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
 
 .track-info { text-align: center; }
 

@@ -83,10 +83,26 @@
             <p class="setting-hint">
               {{
                 wakeLockSupported
-                  ? '开启后，页面在前台时会尽量保持屏幕常亮（适合手机听歌）。'
+                  ? '开启后，页面在前台时会尽量保持屏幕常亮（适合手机听歌）。跟唱模式下播放时也会自动常亮。'
                   : '当前浏览器不支持屏幕常亮，请用系统设置关闭自动锁屏。'
               }}
             </p>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h2>跟唱</h2>
+          <div class="sketch-card">
+            <label class="source-item">
+              <span>跟唱时压低原唱</span>
+              <input
+                class="source-toggle"
+                type="checkbox"
+                :checked="ui.karaokeSoftVocal"
+                @change="ui.setKaraokeSoftVocal(($event.target as HTMLInputElement).checked)"
+              />
+            </label>
+            <p class="setting-hint">仅在跟唱模式生效，不改动你平时的音量设置。快捷键 K 开关跟唱。</p>
           </div>
         </section>
 
@@ -100,6 +116,8 @@
               <li><kbd>↑</kbd> / <kbd>↓</kbd> 音量加减</li>
               <li><kbd>M</kbd> 静音切换</li>
               <li><kbd>L</kbd> 打开 / 关闭歌词</li>
+              <li><kbd>K</kbd> 打开 / 关闭跟唱模式</li>
+              <li><kbd>Esc</kbd> 退出跟唱 / 关闭歌词</li>
             </ul>
             <p class="setting-hint">在输入框内时快捷键不会触发。</p>
           </div>
