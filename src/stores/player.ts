@@ -140,11 +140,11 @@ export const usePlayerStore = defineStore('player', () => {
     return QUALITY_ORDER.slice(from);
   });
 
-  async function playSong(song: Song): Promise<string | null> {
+  async function playSong(song: Song, resolvedUrl?: string): Promise<string | null> {
     loading.value = true;
     error.value = '';
     try {
-      const url = await sourceManager.getPlayUrl(song, qualityCascade.value);
+      const url = resolvedUrl || await sourceManager.getPlayUrl(song, qualityCascade.value);
       if (!url) throw new Error('无法获取播放地址');
       currentSong.value = serializeSong(song);
       const idx = queue.value.findIndex(

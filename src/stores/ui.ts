@@ -21,9 +21,6 @@ export const useUIStore = defineStore('ui', () => {
   const guideDismissed = ref(storage.get<boolean>('guideDismissed', false));
   const showOnboarding = ref(!guideDismissed.value);
   const keepScreenOn = ref(storage.get<boolean>('keepScreenOn', false));
-  /** 跟唱模式：大字歌词 + 可选压低原唱 */
-  const karaokeMode = ref(false);
-  const karaokeSoftVocal = ref(storage.get<boolean>('karaokeSoftVocal', true));
 
   applyThemeToDocument(theme.value, customize.value);
 
@@ -34,26 +31,10 @@ export const useUIStore = defineStore('ui', () => {
 
   function toggleLyricPanel() {
     showLyricPanel.value = !showLyricPanel.value;
-    if (!showLyricPanel.value) karaokeMode.value = false;
   }
 
   function closeLyricPanel() {
     showLyricPanel.value = false;
-    karaokeMode.value = false;
-  }
-
-  function setKaraokeMode(on: boolean) {
-    karaokeMode.value = on;
-    if (on) showLyricPanel.value = true;
-  }
-
-  function toggleKaraokeMode() {
-    setKaraokeMode(!karaokeMode.value);
-  }
-
-  function setKaraokeSoftVocal(on: boolean) {
-    karaokeSoftVocal.value = on;
-    storage.set('karaokeSoftVocal', on);
   }
 
   function setTheme(nextTheme: AppTheme) {
@@ -97,13 +78,8 @@ export const useUIStore = defineStore('ui', () => {
     customize,
     showOnboarding,
     keepScreenOn,
-    karaokeMode,
-    karaokeSoftVocal,
     toggleLyricPanel,
     closeLyricPanel,
-    setKaraokeMode,
-    toggleKaraokeMode,
-    setKaraokeSoftVocal,
     setTheme,
     patchCustomize,
     resetCustomize,

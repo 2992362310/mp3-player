@@ -18,13 +18,11 @@ interface Props {
   isActive: boolean;
   isPassed: boolean;
   isUpcoming?: boolean;
-  size?: 'normal' | 'karaoke';
   lineRefSetter?: (el: HTMLElement | null) => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isUpcoming: false,
-  size: 'normal',
 });
 
 const emit = defineEmits<{
@@ -33,7 +31,6 @@ const emit = defineEmits<{
 
 const lineClasses = computed(() => [
   'lyrics-line',
-  props.size === 'karaoke' ? 'is-karaoke' : '',
   props.isActive ? 'active active-animated' : '',
   props.isPassed ? 'passed' : '',
   props.isUpcoming ? 'upcoming' : '',
@@ -75,22 +72,6 @@ function setLineRef(el: Element | ComponentPublicInstance | null) {
 .lyrics-line.upcoming {
   color: var(--ink-soft);
   opacity: 0.85;
-}
-
-.lyrics-line.is-karaoke {
-  padding: 14px 20px;
-  font-size: clamp(18px, 4.2vw, 28px);
-  line-height: 1.55;
-}
-
-.lyrics-line.is-karaoke.active {
-  font-size: clamp(24px, 5.6vw, 38px);
-  color: var(--accent);
-  text-shadow: 0 2px 0 color-mix(in srgb, var(--accent-soft) 80%, transparent);
-}
-
-.lyrics-line.is-karaoke.upcoming {
-  font-size: clamp(16px, 3.6vw, 22px);
 }
 
 .active-animated {

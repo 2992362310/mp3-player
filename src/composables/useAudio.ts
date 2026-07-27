@@ -1,22 +1,19 @@
 import { watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useSearchStore } from '../stores/search';
-import { useUIStore } from '../stores/ui';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
-
-/** 跟唱模式压低原唱的音量系数（不改动用户保存的音量） */
-const KARAOKE_SOFT_SCALE = 0.32;
 
 let initialized = false;
 let playGeneration = 0;
 let consecutiveFailures = 0;
 let restoring = false;
+let nextPrefetchTask: Promise<void> | null = null;
+let prefetchedNext: { key: string; url: string } | null = null;
 
 export function useAudio() {
   const player = usePlayerStore();
   const search = useSearchStore();
-  const ui = useUIStore();
 
   function normalizeText(value?: string): string {
     return (value || '')
@@ -38,12 +35,61 @@ export function useAudio() {
 
   function effectiveVolume(): number {
     if (player.muted) return 0;
-    const soft = ui.karaokeMode && ui.karaokeSoftVocal ? KARAOKE_SOFT_SCALE : 1;
-    return player.volume * soft;
+    return player.volume;
   }
 
   function applyOutputVolume() {
     audioEngine.setVolume(effectiveVolume());
+  }
+
+  function songKey(song: Song): string {
+    return `${song.sourceId}-${song.id}`;
+  }
+
+  function clearNextPrefetch() {
+    prefetchedNext = null;
+    nextPrefetchTask = null;
+  }
+
+  function getSequentialNextSong(): Song | null {
+    const list = player.queue;
+    if (list.length === 0) return null;
+    if (!player.currentSong) return null;
+    if (player.playMode === 'random' || player.playMode === 'single') return null;
+
+    let idx: number | null = null;
+    if (player.currentIndex < list.length - 1) idx = player.currentIndex + 1;
+    else if (player.playMode === 'loop') idx = 0;
+    if (idx == null) return null;
+
+    return list[idx] || null;
+  }
+
+  async function prefetchSequentialNext() {
+    const nextSong = getSequentialNextSong();
+    if (!nextSong) {
+      clearNextPrefetch();
+      return;
+    }
+
+    const key = songKey(nextSong);
+    if (prefetchedNext?.key === key) return;
+
+    const task = (async () => {
+      try {
+        const url = await player.resolvePlayUrl(nextSong);
+        if (!url) return;
+        const latest = getSequentialNextSong();
+        if (!latest || songKey(latest) !== key) return;
+        prefetchedNext = { key, url };
+      } catch {
+        // ignore prefetch errors; normal play flow will still resolve on demand
+      }
+    })();
+
+    nextPrefetchTask = task;
+    await task;
+    if (nextPrefetchTask === task) nextPrefetchTask = null;
   }
 
   function skipAfterFailure() {
@@ -56,16 +102,18 @@ export function useAudio() {
     playNext();
   }
 
-  async function playSong(song: Song) {
+  async function playSong(song: Song, resolvedUrl?: string) {
     const generation = ++playGeneration;
+    clearNextPrefetch();
 
-    const url = await player.playSong(song);
+    const url = await player.playSong(song, resolvedUrl);
     if (generation !== playGeneration) return;
 
     if (url) {
       consecutiveFailures = 0;
       search.markPlayable(song, true);
       audioEngine.load(url, { volume: effectiveVolume() });
+      void prefetchSequentialNext();
       return;
     }
 
@@ -80,6 +128,7 @@ export function useAudio() {
         consecutiveFailures = 0;
         search.markPlayable(candidate, true);
         audioEngine.load(fallbackUrl, { volume: effectiveVolume() });
+        void prefetchSequentialNext();
         return;
       }
       search.markPlayable(candidate, false);
@@ -93,7 +142,7 @@ export function useAudio() {
     playSong(song);
   }
 
-  function playNext() {
+  async function playNext() {
     const list = player.queue;
     if (list.length === 0) return;
     if (player.playMode === 'random') { playRandom(); return; }
@@ -101,7 +150,20 @@ export function useAudio() {
     if (player.currentIndex < list.length - 1) idx = player.currentIndex + 1;
     else if (player.playMode === 'loop') idx = 0;
     else return;
-    playSong(list[idx]);
+
+    const target = list[idx];
+    const key = songKey(target);
+    if (nextPrefetchTask) {
+      try { await nextPrefetchTask; } catch { /* ignore */ }
+    }
+    if (prefetchedNext?.key === key) {
+      const { url } = prefetchedNext;
+      clearNextPrefetch();
+      playSong(target, url);
+      return;
+    }
+
+    playSong(target);
   }
 
   function playPrevious() {
@@ -182,7 +244,7 @@ export function useAudio() {
           audioEngine.seek(0);
           audioEngine.play();
         } else {
-          playNext();
+          void playNext();
         }
       },
       onTimeUpdate: (ct, dur) => player.updateTime(ct, dur),
@@ -201,7 +263,7 @@ export function useAudio() {
     });
 
     watch(
-      () => [player.volume, player.muted, ui.karaokeMode, ui.karaokeSoftVocal] as const,
+      () => [player.volume, player.muted] as const,
       () => applyOutputVolume(),
       { immediate: true },
     );

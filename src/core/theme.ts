@@ -48,28 +48,14 @@ export const THEME_PRESETS: Array<{
   accent: string;
 }> = [
   { id: 'paper', label: '宣纸', swatch: '#fdf6e3', accent: '#c0392b' },
-  { id: 'sand', label: '暖沙', swatch: '#f8ecd2', accent: '#b45309' },
-  { id: 'mint', label: '薄荷', swatch: '#eaf4ec', accent: '#0f766e' },
-  { id: 'ink', label: '墨夜', swatch: '#1c2228', accent: '#d4a574' },
-  { id: 'celadon', label: '青瓷', swatch: '#e4ece8', accent: '#3d6b5e' },
-  { id: 'cinnabar', label: '朱砂', swatch: '#f0ebe6', accent: '#b33a2b' },
   { id: 'breeze', label: '清风', swatch: '#eef8f5', accent: '#2aa89a' },
-  { id: 'maruko', label: '小丸子', swatch: '#fffbf0', accent: '#ffb7c5' },
   { id: 'matrix', label: '矩阵', swatch: '#0d0d0d', accent: '#00ff41' },
-  { id: 'cyberpunk', label: '赛博', swatch: '#0a0a0a', accent: '#fcee09' },
 ];
 
 export const ACCENT_PRESETS = [
-  '#fcee09',
-  '#00f0ff',
-  '#ff003c',
-  '#00ff41',
-  '#39ff14',
-  '#ffb7c5',
-  '#ff6b6b',
-  '#ffb74d',
-  '#87ceeb',
+  '#c0392b',
   '#2aa89a',
+  '#00ff41',
 ] as const;
 
 export const DEFAULT_CUSTOMIZE: ThemeCustomize = {

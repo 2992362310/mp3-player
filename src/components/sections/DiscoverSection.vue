@@ -220,8 +220,15 @@ function onOnlyPlayableChange(checked: boolean) {
 }
 
 async function searchHot(kw: string) {
-  search.addSearchHistory(kw, search.currentSource);
-  await search.searchSongs(kw, search.currentSource);
+  const keyword = kw.trim();
+  if (!keyword) return;
+
+  const currentEnabled =
+    !!search.currentSource && search.enabledSources.some((s) => s.id === search.currentSource);
+  const source = currentEnabled ? search.currentSource : '';
+
+  search.addSearchHistory(keyword, source);
+  await search.searchSongs(keyword, source);
 }
 </script>
 
