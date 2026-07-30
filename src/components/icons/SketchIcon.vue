@@ -56,11 +56,31 @@
       <line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round" />
       <line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round" />
     </template>
+
+    <!-- folder -->
+    <template v-else-if="name === 'folder'">
+      <path
+        d="M3 7.5C3 6.5 3.8 5.5 5 5.5H9L11 7.5H19C20.2 7.5 21 8.3 21 9.5V17.5C21 18.7 20.2 19.5 19 19.5H5C3.8 19.5 3 18.7 3 17.5V7.5Z"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </template>
+
+    <!-- globe -->
+    <template v-else-if="name === 'globe'">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12H21" stroke-linecap="round" />
+      <path
+        d="M12 3C14.5 6.5 15.5 9.5 15.5 12C15.5 14.5 14.5 17.5 12 21C9.5 17.5 8.5 14.5 8.5 12C8.5 9.5 9.5 6.5 12 3Z"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </template>
   </svg>
 </template>
 
 <script setup lang="ts">
-export type SketchIconName = 'music' | 'heart' | 'settings' | 'search' | 'plus';
+export type SketchIconName = 'music' | 'heart' | 'settings' | 'search' | 'plus' | 'folder' | 'globe';
 
 withDefaults(
   defineProps<{

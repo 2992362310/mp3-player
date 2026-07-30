@@ -34,7 +34,7 @@ const VISIT_COUNT_KEY = 'pwaVisitCount';
 const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
 const props = defineProps<{
-  activeSection: 'discover' | 'favorites' | 'settings';
+  activeSection: 'discover' | 'websites' | 'local' | 'favorites' | 'settings';
 }>();
 
 const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null);

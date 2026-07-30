@@ -107,7 +107,7 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   function loadSources() {
-    const all = sourceManager.getAllSources();
+    const all = sourceManager.getAllSources().filter((s) => s.id !== 'local');
     sources.value = all.map((s) => ({
       id: s.id,
       name: s.name,

@@ -1,6 +1,6 @@
 <template>
-  <div class="h-screen flex flex-col overflow-hidden">
-    <PwaInstallBanner :active-section="activeSection" />
+  <div class="h-screen flex flex-col overflow-hidden" :class="{ 'web-immersive': isWebImmersive }">
+    <PwaInstallBanner v-if="!isWebImmersive" :active-section="activeSection" />
 
     <div v-if="ui.showOnboarding" class="guide-backdrop" @click.self="ui.closeOnboarding()">
       <section class="guide-card">
@@ -8,8 +8,8 @@
         <ol>
           <li>先在顶部输入歌曲名，按回车搜索。</li>
           <li>点击列表歌曲即可播放；点 + 可加入自建歌单。</li>
-          <li>「我的」里可管理收藏和歌单；设置里可看快捷键。</li>
-          <li>在手机浏览器里可添加到主屏幕，像 App 一样使用。</li>
+          <li>「我的」里可管理收藏和歌单；「本地」可导入本机音频离线听。</li>
+          <li>设置里可看快捷键；手机浏览器可添加到主屏幕，像 App 一样使用。</li>
         </ol>
         <div class="guide-actions">
           <button class="btn-action" @click="ui.closeOnboarding()">我知道了</button>
@@ -17,45 +17,55 @@
       </section>
     </div>
 
-    <!-- 顶部导航栏 -->
-    <header class="top-nav">
-      <div class="nav-left">
-        <div class="logo" title="墨韵 MoYun" aria-label="墨韵">
-          <span class="logo-mark">墨</span><span class="logo-rest">韵</span>
-        </div>
-      </div>
-      <div class="nav-center">
-        <SearchBar />
-      </div>
-      <div class="nav-right">
-        <button
-          v-for="section in sections"
-          :key="section.id"
-          :class="['nav-icon-btn', activeSection === section.id ? 'active' : '']"
-          @click="activeSection = section.id"
-          :title="section.label"
-        >
-          <SketchIcon :name="section.iconId" :size="20" />
-        </button>
-      </div>
-    </header>
+    <!-- 第三方站点全屏：隐藏墨韵壳层 -->
+    <WebSitesSection
+      v-if="isWebImmersive"
+      immersive
+      @exit="activeSection = 'discover'"
+    />
 
-    <!-- 主体 -->
-    <div class="flex flex-col flex-1 overflow-hidden">
-      <main class="main-content">
-        <div class="app-stage">
-          <div class="app-stage-main">
-            <DiscoverSection v-if="activeSection === 'discover'" />
-            <FavoritesSection v-if="activeSection === 'favorites'" />
-            <SettingsSection v-if="activeSection === 'settings'" />
+    <template v-else>
+      <!-- 顶部导航栏 -->
+      <header class="top-nav">
+        <div class="nav-left">
+          <div class="logo" title="墨韵 MoYun" aria-label="墨韵">
+            <span class="logo-mark">墨</span><span class="logo-rest">韵</span>
           </div>
-          <LyricPanel />
         </div>
-      </main>
+        <div class="nav-center">
+          <SearchBar />
+        </div>
+        <div class="nav-right">
+          <button
+            v-for="section in sections"
+            :key="section.id"
+            :class="['nav-icon-btn', activeSection === section.id ? 'active' : '']"
+            @click="activeSection = section.id"
+            :title="section.label"
+          >
+            <SketchIcon :name="section.iconId" :size="20" />
+          </button>
+        </div>
+      </header>
 
-      <!-- 底部控制器 -->
-      <PlayerBar />
-    </div>
+      <!-- 主体 -->
+      <div class="flex flex-col flex-1 overflow-hidden">
+        <main class="main-content">
+          <div class="app-stage">
+            <div class="app-stage-main">
+              <DiscoverSection v-if="activeSection === 'discover'" />
+              <LocalSection v-if="activeSection === 'local'" />
+              <FavoritesSection v-if="activeSection === 'favorites'" />
+              <SettingsSection v-if="activeSection === 'settings'" />
+            </div>
+            <LyricPanel />
+          </div>
+        </main>
+
+        <!-- 底部控制器 -->
+        <PlayerBar />
+      </div>
+    </template>
 
     <AddToPlaylistModal />
   </div>
@@ -67,6 +77,7 @@ import { storeToRefs } from 'pinia';
 import { useSearchStore } from './stores/search';
 import { usePlayerStore } from './stores/player';
 import { useUIStore } from './stores/ui';
+import { useLocalStore } from './stores/local';
 import { useKeyboard } from './composables/useKeyboard';
 import { useMediaSession } from './composables/useMediaSession';
 import { useWakeLock } from './composables/useWakeLock';
@@ -80,10 +91,12 @@ import LyricPanel from './components/LyricPanel.vue';
 import AddToPlaylistModal from './components/AddToPlaylistModal.vue';
 import PwaInstallBanner from './components/PwaInstallBanner.vue';
 import DiscoverSection from './components/sections/DiscoverSection.vue';
+import WebSitesSection from './components/sections/WebSitesSection.vue';
+import LocalSection from './components/sections/LocalSection.vue';
 import FavoritesSection from './components/sections/FavoritesSection.vue';
 import SettingsSection from './components/sections/SettingsSection.vue';
 
-type SectionId = 'discover' | 'favorites' | 'settings';
+type SectionId = 'discover' | 'websites' | 'local' | 'favorites' | 'settings';
 
 interface Section {
   id: SectionId;
@@ -95,13 +108,18 @@ interface Section {
 const search = useSearchStore();
 const player = usePlayerStore();
 const ui = useUIStore();
+const local = useLocalStore();
 const { keepScreenOn } = storeToRefs(ui);
 const { isPlaying } = storeToRefs(player);
 const { restoreLastSession } = useAudio();
 const activeSection = ref<SectionId>('discover');
 
+const isWebImmersive = computed(() => activeSection.value === 'websites');
+
 const sections = computed<Section[]>(() => [
   { id: 'discover', label: '发现音乐', iconId: 'music' },
+  { id: 'websites', label: '站点', iconId: 'globe' },
+  { id: 'local', label: '本地', iconId: 'folder' },
   { id: 'favorites', label: '我的', iconId: 'heart' },
   { id: 'settings', label: '设置', iconId: 'settings' },
 ]);
@@ -119,11 +137,17 @@ useWakeLock(keepAwakeActive);
 search.loadSources();
 
 onMounted(async () => {
+  await local.load();
   await restoreLastSession();
+  await search.loadRecommendations();
 });
 </script>
 
 <style scoped>
+.web-immersive {
+  background: #000;
+}
+
 .guide-backdrop {
   position: fixed;
   inset: 0;

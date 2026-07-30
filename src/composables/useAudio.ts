@@ -3,6 +3,7 @@ import { usePlayerStore } from '../stores/player';
 import { useSearchStore } from '../stores/search';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
+import { LOCAL_SOURCE_ID } from '../core/sources/LocalSource';
 
 let initialized = false;
 let playGeneration = 0;
@@ -10,6 +11,32 @@ let consecutiveFailures = 0;
 let restoring = false;
 let nextPrefetchTask: Promise<void> | null = null;
 let prefetchedNext: { key: string; url: string } | null = null;
+
+function audioFormatFor(song: Song | null | undefined, url: string): string[] | undefined {
+  if (!song) return undefined;
+  // blob: URL 没有扩展名，Howler 需要显式 format，否则首次加载会误报失败
+  if (!url.startsWith('blob:') && song.sourceId !== LOCAL_SOURCE_ID) return undefined;
+
+  const mime = String(song.raw?.mimeType || song.raw?.mime || '').toLowerCase();
+  const mimeMap: Record<string, string> = {
+    'audio/mpeg': 'mp3',
+    'audio/mp3': 'mp3',
+    'audio/mp4': 'm4a',
+    'audio/x-m4a': 'm4a',
+    'audio/aac': 'aac',
+    'audio/flac': 'flac',
+    'audio/wav': 'wav',
+    'audio/x-wav': 'wav',
+    'audio/ogg': 'ogg',
+    'audio/webm': 'webm',
+    'audio/opus': 'opus',
+  };
+  if (mimeMap[mime]) return [mimeMap[mime]];
+
+  const ext = String(song.raw?.fileName || '').split('.').pop()?.toLowerCase();
+  if (ext && /^[a-z0-9]+$/.test(ext)) return [ext === 'mp4' ? 'm4a' : ext];
+  return ['mp3'];
+}
 
 export function useAudio() {
   const player = usePlayerStore();
@@ -44,6 +71,14 @@ export function useAudio() {
 
   function songKey(song: Song): string {
     return `${song.sourceId}-${song.id}`;
+  }
+
+  function loadAudio(song: Song, url: string, autoplay = true) {
+    audioEngine.load(url, {
+      volume: effectiveVolume(),
+      autoplay,
+      format: audioFormatFor(song, url),
+    });
   }
 
   function clearNextPrefetch() {
@@ -112,12 +147,15 @@ export function useAudio() {
     if (url) {
       consecutiveFailures = 0;
       search.markPlayable(song, true);
-      audioEngine.load(url, { volume: effectiveVolume() });
+      loadAudio(song, url);
       void prefetchSequentialNext();
       return;
     }
 
     search.markPlayable(song, false);
+
+    // 本地曲无需跨音源回退
+    if (song.sourceId === LOCAL_SOURCE_ID) return;
 
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
@@ -127,7 +165,7 @@ export function useAudio() {
       if (fallbackUrl) {
         consecutiveFailures = 0;
         search.markPlayable(candidate, true);
-        audioEngine.load(fallbackUrl, { volume: effectiveVolume() });
+        loadAudio(candidate, fallbackUrl);
         void prefetchSequentialNext();
         return;
       }
@@ -216,7 +254,7 @@ export function useAudio() {
       const url = await player.resolvePlayUrl(session.song);
       if (generation !== playGeneration || !url) return;
 
-      audioEngine.load(url, { volume: effectiveVolume(), autoplay: false });
+      loadAudio(session.song, url, false);
       player.isPlaying = false;
       if (session.time > 0) {
         // 等 howl onload 后再 seek 更稳，这里短延迟兜底
@@ -236,7 +274,10 @@ export function useAudio() {
     initialized = true;
 
     audioEngine.setCallbacks({
-      onPlay: () => { player.isPlaying = true; },
+      onPlay: () => {
+        player.isPlaying = true;
+        player.clearError();
+      },
       onPause: () => { player.isPlaying = false; },
       onEnd: () => {
         player.isPlaying = false;
@@ -249,6 +290,14 @@ export function useAudio() {
       },
       onTimeUpdate: (ct, dur) => player.updateTime(ct, dur),
       onError: (msg) => {
+        const isLocal = player.currentSong?.sourceId === LOCAL_SOURCE_ID;
+        if (isLocal) {
+          player.error = msg.includes('格式')
+            ? '本地音频格式不受当前浏览器支持'
+            : '本地音频加载失败，请尝试重新导入';
+          player.isPlaying = false;
+          return;
+        }
         player.error = msg.includes('失败')
           ? '音频加载失败，可能是网络或版权限制'
           : msg;

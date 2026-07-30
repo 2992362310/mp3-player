@@ -12,6 +12,8 @@ export interface LoadOptions {
   volume?: number;
   /** 默认 true；恢复会话时设为 false */
   autoplay?: boolean;
+  /** blob: URL 等无法从路径推断后缀时必须指定，例如 ['mp3'] */
+  format?: string | string[];
 }
 
 class AudioEngine {
@@ -33,10 +35,13 @@ class AudioEngine {
     if (options.volume != null) this.volume = options.volume;
     const autoplay = options.autoplay !== false;
 
+    const formats = normalizeFormats(options.format);
+
     this.howl = new Howl({
       src: [url],
       html5: true,
       volume: this.volume,
+      ...(formats.length ? { format: formats } : {}),
       onplay: () => {
         this.startRaf();
         this.callbacks?.onPlay();
@@ -52,8 +57,23 @@ class AudioEngine {
       onload: () => {
         if (!autoplay) this.emitTimeUpdate();
       },
-      onloaderror: () => this.callbacks?.onError('音频加载失败'),
-      onplayerror: () => this.callbacks?.onError('播放失败'),
+      onloaderror: (_id, err) => {
+        const detail = typeof err === 'string' ? err : '';
+        this.callbacks?.onError(detail.includes('No codec') ? '音频格式不受支持' : '音频加载失败');
+      },
+      onplayerror: (_id, err) => {
+        // 部分浏览器在异步取流后丢失手势，Howler 可在 unlock 后重试
+        const sound = this.howl;
+        if (sound) {
+          sound.once('unlock', () => {
+            sound.play();
+          });
+        }
+        const detail = typeof err === 'string' ? err : '';
+        if (detail && !/NotAllowedError|play\(\)/i.test(detail)) {
+          this.callbacks?.onError('播放失败');
+        }
+      },
     });
 
     if (autoplay) this.howl.play();
@@ -120,10 +140,23 @@ class AudioEngine {
     }
   }
 
+  /** 卸载当前音频，保留回调供后续播放 */
+  unload(): void {
+    this.stopInternal();
+  }
+
   destroy(): void {
     this.stopInternal();
     this.callbacks = null;
   }
+}
+
+function normalizeFormats(format?: string | string[]): string[] {
+  if (!format) return [];
+  const list = Array.isArray(format) ? format : [format];
+  return list
+    .map((f) => f.replace(/^\./, '').trim().toLowerCase())
+    .filter(Boolean);
 }
 
 export const audioEngine = new AudioEngine();

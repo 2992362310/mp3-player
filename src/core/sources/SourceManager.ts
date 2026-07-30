@@ -86,9 +86,12 @@ class SourceManager {
     const source = this.sources.get(song.sourceId);
     if (!source) throw new Error(`音源不可用：${song.sourceId}`);
 
+    // 本地音源无音质档位，避免无意义的多次尝试/告警
+    const qualityList = song.sourceId === 'local' ? (['high'] as const) : qualities;
+
     let lastError: unknown = new Error('无法获取播放地址');
 
-    for (const quality of qualities) {
+    for (const quality of qualityList) {
       try {
         const playUrl = await source.getPlayUrl(song, quality);
         if (playUrl?.url) return playUrl.url;

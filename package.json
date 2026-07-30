@@ -1,6 +1,6 @@
 {
   "name": "mp3-player",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "墨韵 MoYun — Vue 3 多音源在线音乐播放器",
   "type": "module",
   "scripts": {
