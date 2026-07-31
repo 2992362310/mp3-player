@@ -137,11 +137,11 @@ export function useAudio() {
     playNext();
   }
 
-  async function playSong(song: Song, resolvedUrl?: string) {
+  async function playSong(song: Song, resolvedUrl?: string, options?: { addToHistory?: boolean }) {
     const generation = ++playGeneration;
     clearNextPrefetch();
 
-    const url = await player.playSong(song, resolvedUrl);
+    const url = await player.playSong(song, resolvedUrl, options);
     if (generation !== playGeneration) return;
 
     if (url) {
@@ -160,7 +160,7 @@ export function useAudio() {
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
       if (generation !== playGeneration) return;
-      const fallbackUrl = await player.playSong(candidate);
+      const fallbackUrl = await player.playSong(candidate, undefined, options);
       if (generation !== playGeneration) return;
       if (fallbackUrl) {
         consecutiveFailures = 0;
@@ -175,9 +175,9 @@ export function useAudio() {
     if (generation === playGeneration) skipAfterFailure();
   }
 
-  function playFromList(songs: Song[], song: Song) {
+  function playFromList(songs: Song[], song: Song, options?: { addToHistory?: boolean }) {
     player.setQueue(songs);
-    playSong(song);
+    playSong(song, undefined, options);
   }
 
   async function playNext() {

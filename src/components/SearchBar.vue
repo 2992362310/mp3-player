@@ -1,15 +1,11 @@
 <template>
   <div class="search-box">
-    <select
-      v-model="search.currentSource"
-      class="search-source-select"
-      @change="onSourceChanged"
-    >
-      <option value="">全部音源</option>
-      <option v-for="s in search.enabledSources" :key="s.id" :value="s.id">
-        {{ s.name }}
-      </option>
-    </select>
+    <SketchSelect
+      v-model="currentSource"
+      class="search-source-select-wrap"
+      trigger-class="search-source-select"
+      :options="sourceOptions"
+    />
 
     <div class="search-input-wrap">
       <input
@@ -47,15 +43,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from 'vue';
+import { computed, ref, onMounted, inject } from 'vue';
 import SketchIcon from './icons/SketchIcon.vue';
 import { useSearchStore, type SearchHistoryItem } from '../stores/search';
+import SketchSelect from './SketchSelect.vue';
 
 const search = useSearchStore();
 const searchInput = ref('');
 const showSearchHistory = ref(false);
 const inputEl = ref<HTMLInputElement | null>(null);
 const goDiscover = inject<() => void>('goDiscover');
+
+const sourceOptions = computed(() => [
+  { label: '全部音源', value: '' },
+  ...search.enabledSources.map((s) => ({ label: s.name, value: s.id })),
+]);
+
+const currentSource = computed({
+  get: () => search.currentSource,
+  set: (sourceId: string) => {
+    search.switchSource(sourceId);
+  },
+});
 
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -93,12 +102,8 @@ async function handleSearch() {
   searchInput.value = kw;
   goDiscover?.();
   search.addSearchHistory(kw, search.currentSource);
+  if (search.restoreQuickSearch(kw, search.currentSource)) return;
   await search.searchSongs(kw, search.currentSource);
-}
-
-function onSourceChanged(e: Event) {
-  const sourceId = (e.target as HTMLSelectElement).value;
-  search.switchSource(sourceId);
 }
 
 function selectHistory(item: SearchHistoryItem) {

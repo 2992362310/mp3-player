@@ -10,11 +10,12 @@
   >
     <!-- music -->
     <template v-if="name === 'music'">
-      <path
-        d="M7 2C7.2 2.3 7.3 2.8 7.3 3.5L7.5 14C7.5 15.2 6.7 16 5.5 16C4.2 16 3.5 15.2 3.5 14C3.5 12.8 4.2 12 5.5 12L16 10.5C16.8 10.3 17.5 9.5 17.5 8.5V3M17 3V12C17.2 12.3 17.3 12.8 17.3 13.5L17.5 20C17.5 21.2 16.7 22 15.5 22C14.2 22 13.5 21.2 13.5 20C13.5 18.8 14.2 18 15.5 18"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
+      <circle cx="11" cy="13" r="6.5" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="11" cy="13" r="1.8" fill="none" />
+      <path d="M15.8 8.2L19.5 4.5" stroke-linecap="round" />
+      <path d="M18 3.5H20.5V6" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M7.4 10.6C8.3 9.8 9.5 9.4 11 9.4" stroke-linecap="round" />
+      <path d="M7.1 15.6C8 16.6 9.4 17.1 11 17.1" stroke-linecap="round" />
     </template>
 
     <!-- heart -->

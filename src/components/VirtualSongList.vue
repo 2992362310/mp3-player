@@ -89,12 +89,15 @@ const props = withDefaults(
     showAddToPlaylist?: boolean;
     /** 填满父级高度，由父级负责滚动区域 */
     fill?: boolean;
+    /** 距离底部多少像素时触发懒加载 */
+    loadMoreThreshold?: number;
   }>(),
   {
     itemHeight: 52,
     overscan: 6,
     showAddToPlaylist: true,
     fill: false,
+    loadMoreThreshold: 140,
   },
 );
 
@@ -103,6 +106,7 @@ const emit = defineEmits<{
   'toggle-favorite': [song: Song];
   'toggle-play': [];
   'add-to-playlist': [song: Song];
+  'reach-end': [];
 }>();
 
 const rootEl = ref<HTMLElement | null>(null);
@@ -139,6 +143,9 @@ function isCurrent(song: Song) {
 function onScroll() {
   if (!rootEl.value) return;
   scrollTop.value = rootEl.value.scrollTop;
+
+  const remain = rootEl.value.scrollHeight - (rootEl.value.scrollTop + rootEl.value.clientHeight);
+  if (remain <= props.loadMoreThreshold) emit('reach-end');
 }
 
 function measure() {
@@ -167,6 +174,7 @@ onUnmounted(() => {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overflow-anchor: none;
 }
 
 .virtual-song-list.fill {

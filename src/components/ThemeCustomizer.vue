@@ -13,7 +13,18 @@
         <span
           class="preset-swatch"
           :style="{ background: preset.swatch, boxShadow: `inset 0 0 0 2px ${preset.accent}55` }"
-        />
+        >
+          <span v-if="preset.id === 'gadgetcat'" class="preset-mascot preset-mascot--cat" aria-hidden="true">
+            <svg viewBox="0 0 28 20" role="img" focusable="false">
+              <path d="M6 7.5 L9 4.2 L11 8.1" class="line" />
+              <path d="M22 7.5 L19 4.2 L17 8.1" class="line" />
+              <rect x="5" y="7" width="18" height="10" rx="5" class="fill" />
+              <circle cx="11" cy="12" r="1.2" class="dot" />
+              <circle cx="17" cy="12" r="1.2" class="dot" />
+              <path d="M13 14 Q14 15 15 14" class="line" />
+            </svg>
+          </span>
+        </span>
         <span class="preset-label">{{ preset.label }}</span>
       </button>
     </div>
@@ -205,7 +216,7 @@ function onCustomAccent(e: Event) {
   padding: 8px 6px;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: var(--surface);
+  background: transparent;
   cursor: pointer;
   color: var(--ink-soft);
   font-family: inherit;
@@ -223,6 +234,47 @@ function onCustomAccent(e: Event) {
   height: 28px;
   border-radius: 8px;
   border: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-mascot {
+  width: 28px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-mascot svg {
+  width: 100%;
+  height: 100%;
+}
+
+.preset-mascot .fill {
+  fill: rgba(255, 255, 255, 0.78);
+  stroke: rgba(255, 255, 255, 0.65);
+  stroke-width: 1;
+}
+
+.preset-mascot .line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.preset-mascot .dot {
+  fill: rgba(255, 255, 255, 0.95);
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.preset-mascot--cat svg {
+  transform: translateY(0.4px);
 }
 
 .preset-label {
@@ -239,7 +291,7 @@ function onCustomAccent(e: Event) {
   padding: 6px 12px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--surface);
+  background: transparent;
   color: var(--ink-soft);
   font-family: inherit;
   font-size: 13px;

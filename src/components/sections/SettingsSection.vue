@@ -1,12 +1,6 @@
 <template>
   <div class="content-section">
     <div class="settings-body">
-      <div class="content-header">
-        <h1>
-          <SketchIcon name="settings" :size="28" />
-          <span>设置</span>
-        </h1>
-      </div>
       <div class="content-area main-scroll settings-scroll">
         <section>
           <h2>音源设置</h2>
@@ -187,6 +181,10 @@ function resetPwaPrompt() {
   min-height: 0;
 }
 
+.settings-scroll {
+  padding-top: 10px;
+}
+
 .source-list {
   display: grid;
   gap: 10px;
@@ -201,7 +199,7 @@ function resetPwaPrompt() {
   border-radius: 8px;
   font-family: 'Ma Shan Zheng', cursive;
   color: var(--ink-soft);
-  background: var(--surface);
+  background: transparent;
 }
 
 .source-toggle {

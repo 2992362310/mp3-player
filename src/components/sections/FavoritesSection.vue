@@ -1,38 +1,5 @@
 <template>
   <div class="content-section library-section">
-    <!-- 页头：一个主标题 + 一句说明 -->
-    <header class="library-hero">
-      <h1 class="library-brand">我的</h1>
-      <p class="library-tagline">收藏、歌单，还有刚才听过的</p>
-    </header>
-
-    <!-- 最近播放：顶部只留快捷条，完整列表进「最近」页签 -->
-    <section
-      v-if="player.recentPlays.length > 0 && libraryTab !== 'recent'"
-      class="recent-block"
-    >
-      <div class="recent-head">
-        <h2>最近播放</h2>
-        <span class="recent-count">{{ player.recentPlays.length }}</span>
-        <button type="button" class="recent-more" @click="libraryTab = 'recent'">
-          全部
-        </button>
-      </div>
-      <div class="recent-strip" role="list">
-        <button
-          v-for="track in player.recentPlays"
-          :key="`recent-${track.sourceId}-${track.id}`"
-          type="button"
-          role="listitem"
-          :class="['recent-chip', isCurrent(track) ? 'playing' : '']"
-          @click="playRecent(track)"
-        >
-          <span class="recent-chip-title">{{ track.title }}</span>
-          <span class="recent-chip-artist">{{ track.artist }}</span>
-        </button>
-      </div>
-    </section>
-
     <!-- 分段：收藏 / 歌单 / 最近 -->
     <nav class="library-nav" aria-label="我的内容">
       <button
@@ -71,24 +38,30 @@
         </div>
 
         <template v-else>
-          <div class="recent-toolbar">
-            <button
-              type="button"
-              class="btn-action btn-action-primary"
-              @click="playAll(player.recentPlays)"
-            >
-              播放全部
-            </button>
+          <div class="recent-tools">
+            <label class="recent-search-wrap">
+              <SketchIcon class="recent-search-icon" name="search" :size="14" />
+              <input
+                v-model="recentQuery"
+                class="recent-search"
+                type="search"
+                placeholder="搜索最近播放"
+              />
+            </label>
             <button type="button" class="btn-action" @click="clearRecent">
               清空
             </button>
           </div>
 
+          <div v-if="filteredRecentPlays.length === 0" class="library-empty">
+            <p>没有匹配的最近播放</p>
+          </div>
+
           <div class="song-panel sketch-card sketch-card-ghost">
             <VirtualSongList
-              v-if="player.recentPlays.length > 40"
+              v-if="filteredRecentPlays.length > 40"
               fill
-              :songs="player.recentPlays"
+              :songs="filteredRecentPlays"
               :current-song="player.currentSong"
               :is-playing="player.isPlaying"
               :is-favorite="player.isFavorite"
@@ -99,7 +72,7 @@
             />
             <template v-else>
               <div
-                v-for="(song, idx) in player.recentPlays"
+                v-for="(song, idx) in filteredRecentPlays"
                 :key="`${song.sourceId}-${song.id}`"
                 :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
                 @click="playRecent(song)"
@@ -300,7 +273,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
 import { useAudio } from '../../composables/useAudio';
@@ -315,6 +288,17 @@ const { playFromList, playAll } = useAudio();
 const libraryTab = ref<'favorites' | 'playlists' | 'recent'>('favorites');
 const newPlaylistName = ref('');
 const renameDraft = ref('');
+const recentQuery = ref('');
+
+const filteredRecentPlays = computed(() => {
+  const query = recentQuery.value.trim().toLowerCase();
+  if (!query) return player.recentPlays;
+  return player.recentPlays.filter((song) =>
+    [song.title, song.artist]
+      .filter(Boolean)
+      .some((value) => value.toLowerCase().includes(query)),
+  );
+});
 
 watch(
   () => playlists.activePlaylist?.name,
@@ -337,13 +321,14 @@ function playFavorite(song: Song) {
 }
 
 function playRecent(track: Song) {
-  playFromList(player.recentPlays, track);
+  playFromList(player.recentPlays, track, { addToHistory: false });
 }
 
 function clearRecent() {
   if (!player.recentPlays.length) return;
   if (!confirm('确定清空最近播放吗？')) return;
   player.clearRecentPlays();
+  recentQuery.value = '';
 }
 
 function createPlaylist() {
@@ -378,141 +363,12 @@ function playFromActive(song: Song) {
 </script>
 
 <style scoped>
+
 .library-section {
-  padding: 16px 18px 12px;
-  gap: 14px;
+  padding: 10px 14px 10px;
+  gap: 8px;
   min-width: 0;
   max-width: 100%;
-}
-
-.library-hero {
-  flex-shrink: 0;
-  animation: brandIn 0.4s ease-out;
-}
-
-.library-brand {
-  margin: 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(36px, 7vw, 48px);
-  font-weight: normal;
-  letter-spacing: 0.12em;
-  color: var(--ink);
-  line-height: 1.05;
-}
-
-.library-tagline {
-  margin: 6px 0 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 14px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-}
-
-.recent-block {
-  flex-shrink: 0;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.recent-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.recent-head h2 {
-  margin: 0;
-  font-size: 15px;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-weight: normal;
-  color: var(--ink-soft);
-  border: none;
-  padding: 0;
-}
-
-.recent-count {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 12px;
-  color: var(--faint);
-}
-
-.recent-more {
-  margin-left: auto;
-  border: none;
-  background: none;
-  padding: 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 13px;
-  color: var(--accent);
-  cursor: pointer;
-}
-
-.recent-more:hover {
-  color: var(--ink);
-}
-
-.recent-toolbar {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.recent-strip {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  width: 100%;
-  min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x;
-  padding: 2px 2px 6px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-.recent-chip {
-  flex: 0 0 auto;
-  width: 140px;
-  max-width: 140px;
-  padding: 8px 12px;
-  border: 1px dashed var(--border);
-  border-radius: 8px 12px 6px 10px;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-family: 'Ma Shan Zheng', cursive;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.recent-chip:hover {
-  background: var(--hover);
-}
-
-.recent-chip.playing {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.recent-chip-title {
-  display: block;
-  color: var(--ink);
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.recent-chip-artist {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .library-nav {
@@ -595,8 +451,47 @@ function playFromActive(song: Song) {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   animation: fadeIn 0.28s ease-out;
+}
+
+.recent-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.recent-search-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 2px dashed var(--line-mid);
+  border-radius: 8px;
+  background: var(--bg-subtle);
+}
+
+.recent-search {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  padding: 7px 0;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+  outline: none;
+}
+
+.recent-search-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.recent-search-icon {
+  color: var(--faint);
 }
 
 .song-panel {
@@ -739,12 +634,18 @@ function playFromActive(song: Song) {
     gap: 12px;
   }
 
-  .library-brand {
-    font-size: 34px;
+  .recent-tools {
+    flex-wrap: wrap;
   }
+
+  .recent-search-wrap {
+    width: 100%;
+  }
+
 
   .library-nav-btn {
     font-size: 15px;
   }
+
 }
 </style>

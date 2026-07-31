@@ -140,7 +140,7 @@ export const usePlayerStore = defineStore('player', () => {
     return QUALITY_ORDER.slice(from);
   });
 
-  async function playSong(song: Song, resolvedUrl?: string): Promise<string | null> {
+  async function playSong(song: Song, resolvedUrl?: string, options?: { addToHistory?: boolean }): Promise<string | null> {
     loading.value = true;
     error.value = '';
     try {
@@ -151,7 +151,7 @@ export const usePlayerStore = defineStore('player', () => {
         (s) => s.id === song.id && s.sourceId === song.sourceId,
       );
       if (idx !== -1) currentIndex.value = idx;
-      addToHistory(song);
+      if (options?.addToHistory !== false) addToHistory(song);
       loadLyric(song);
       persistSession();
       return url;

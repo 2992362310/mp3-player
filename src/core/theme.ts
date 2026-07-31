@@ -8,6 +8,7 @@ export type AppTheme =
   | 'celadon'
   | 'cinnabar'
   | 'breeze'
+  | 'gadgetcat'
   | 'maruko'
   | 'matrix'
   | 'cyberpunk';
@@ -36,6 +37,7 @@ export const THEME_IDS: AppTheme[] = [
   'celadon',
   'cinnabar',
   'breeze',
+  'gadgetcat',
   'maruko',
   'matrix',
   'cyberpunk',
@@ -49,12 +51,14 @@ export const THEME_PRESETS: Array<{
 }> = [
   { id: 'paper', label: '宣纸', swatch: '#fdf6e3', accent: '#c0392b' },
   { id: 'breeze', label: '清风', swatch: '#eef8f5', accent: '#2aa89a' },
+  { id: 'gadgetcat', label: '蓝喵', swatch: '#eef8ff', accent: '#169bd5' },
   { id: 'matrix', label: '矩阵', swatch: '#0d0d0d', accent: '#00ff41' },
 ];
 
 export const ACCENT_PRESETS = [
   '#c0392b',
   '#2aa89a',
+  '#169bd5',
   '#00ff41',
 ] as const;
 
@@ -75,6 +79,7 @@ const STYLE_DEFAULTS: Record<AppTheme, Partial<ThemeCustomize>> = {
   celadon: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'kai', radius: 'soft' },
   cinnabar: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
   breeze: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
+  gadgetcat: { style: 'fresh', border: 'solid', pattern: 'dots', font: 'sans', radius: 'round' },
   maruko: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
   matrix: { style: 'minimal', border: 'solid', pattern: 'none', font: 'mono', radius: 'sharp' },
   cyberpunk: { style: 'minimal', border: 'solid', pattern: 'none', font: 'sans', radius: 'sharp' },

@@ -7,52 +7,67 @@
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
   >
-    <header class="local-hero">
-      <h1 class="local-brand">本地</h1>
-      <p class="local-tagline">导入本机音频，离线也能听；同名 .lrc 会自动配对</p>
-    </header>
-
     <div class="local-toolbar">
-      <button
-        type="button"
-        class="btn-action btn-action-primary"
-        :disabled="local.importing"
-        @click="pickFiles"
-      >
-        {{ local.importing ? '导入中…' : '添加文件' }}
-      </button>
-      <button
-        type="button"
-        class="btn-action"
-        :disabled="local.importing"
-        @click="pickFolder"
-      >
-        添加文件夹
-      </button>
-      <button
-        type="button"
-        class="btn-action"
-        :disabled="!local.filteredSongs.length"
-        @click="playAll(local.filteredSongs)"
-      >
-        播放全部
-      </button>
-      <button
-        type="button"
-        class="btn-action"
-        :disabled="!local.songs.length || local.importing"
-        @click="clearLibrary"
-      >
-        清空
-      </button>
-      <span v-if="local.count > 0" class="local-count">{{ local.count }} 首</span>
-      <input
-        v-model="local.query"
-        class="local-search"
-        type="search"
-        placeholder="筛选歌名 / 歌手"
-        :disabled="!local.songs.length"
-      />
+      <div class="local-actions">
+        <button
+          type="button"
+          class="btn-action btn-action-primary"
+          :disabled="local.importing"
+          @click="pickFiles"
+        >
+          <svg class="toolbar-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8 3.5V12.5" />
+            <path d="M3.5 8H12.5" />
+            <path d="M2.5 2.5H13.5V13.5H2.5Z" />
+          </svg>
+          <span>{{ local.importing ? '导入中…' : '添加文件' }}</span>
+        </button>
+        <button
+          type="button"
+          class="btn-action"
+          :disabled="local.importing"
+          @click="pickFolder"
+        >
+          <SketchIcon class="toolbar-icon" name="folder" :size="14" />
+          <span>添加文件夹</span>
+        </button>
+        <button
+          type="button"
+          class="btn-action"
+          :disabled="!local.filteredSongs.length"
+          @click="playAll(local.filteredSongs)"
+        >
+          <svg class="toolbar-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 2.5V13.5L12.5 8L4 2.5Z" />
+          </svg>
+          <span>播放全部</span>
+        </button>
+        <button
+          type="button"
+          class="btn-action"
+          :disabled="!local.songs.length || local.importing"
+          @click="clearLibrary"
+        >
+          <svg class="toolbar-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 4.5H12.5" />
+            <path d="M6 4.5V3.5C6 2.95 6.45 2.5 7 2.5H9C9.55 2.5 10 2.95 10 3.5V4.5" />
+            <path d="M5 6.5V12C5 12.83 5.67 13.5 6.5 13.5H9.5C10.33 13.5 11 12.83 11 12V6.5" />
+            <path d="M7 7.5V11" />
+            <path d="M9 7.5V11" />
+          </svg>
+          <span>清空</span>
+        </button>
+      </div>
+      <label class="local-search-wrap">
+        <SketchIcon class="toolbar-icon local-search-icon" name="search" :size="14" />
+        <input
+          v-model="local.query"
+          class="local-search"
+          type="search"
+          placeholder="筛选歌名 / 歌手"
+          :disabled="!local.songs.length"
+        />
+      </label>
       <input
         ref="fileInput"
         type="file"
@@ -73,7 +88,9 @@
       />
     </div>
 
-    <p v-if="statusTip" class="local-status">{{ statusTip }}</p>
+    <div v-if="statusTip" class="local-meta">
+      <p v-if="statusTip" class="local-status">{{ statusTip }}</p>
+    </div>
     <p v-if="local.error" class="local-error">{{ local.error }}</p>
 
     <div class="local-body main-scroll">
@@ -137,7 +154,13 @@
               title="从本地删除"
               @click.stop="removeTrack(song)"
             >
-              删
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3.5 4.5H12.5" />
+                <path d="M6 4.5V3.5C6 2.95 6.45 2.5 7 2.5H9C9.55 2.5 10 2.95 10 3.5V4.5" />
+                <path d="M5 6.5V12C5 12.83 5.67 13.5 6.5 13.5H9.5C10.33 13.5 11 12.83 11 12V6.5" />
+                <path d="M7 7.5V11" />
+                <path d="M9 7.5V11" />
+              </svg>
             </button>
             <button
               type="button"
@@ -284,8 +307,8 @@ function clearLibrary() {
 
 <style scoped>
 .local-section {
-  padding: 16px 18px 12px;
-  gap: 14px;
+  padding: 10px 14px 10px;
+  gap: 8px;
   min-width: 0;
   max-width: 100%;
   position: relative;
@@ -308,59 +331,78 @@ function clearLibrary() {
   pointer-events: none;
 }
 
-.local-hero {
-  flex-shrink: 0;
-  animation: brandIn 0.4s ease-out;
-}
-
-.local-brand {
-  margin: 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(36px, 7vw, 48px);
-  font-weight: normal;
-  letter-spacing: 0.12em;
-  color: var(--ink);
-  line-height: 1.05;
-}
-
-.local-tagline {
-  margin: 6px 0 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 14px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-}
-
 .local-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.local-count {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 13px;
-  color: var(--faint);
+.local-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.local-toolbar .btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-icon {
+  flex-shrink: 0;
+}
+
+.local-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.local-search-wrap {
+  flex: 1 1 260px;
+  width: auto;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px dashed var(--line-mid);
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  padding: 0 10px;
 }
 
 .local-search {
-  min-width: min(180px, 100%);
+  min-width: 0;
   flex: 1;
-  max-width: 240px;
-  border: 2px dashed var(--border);
-  border-radius: 8px;
-  background: var(--surface);
+  max-width: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: var(--ink);
-  padding: 7px 10px;
+  padding: 7px 0;
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 13px;
   outline: none;
 }
 
-.local-search:focus {
+.local-search-wrap:focus-within {
   border-color: var(--accent);
+}
+
+.local-search-icon {
+  color: var(--faint);
 }
 
 .local-file-input {
@@ -370,7 +412,6 @@ function clearLibrary() {
 .local-status,
 .local-error {
   margin: 0;
-  flex-shrink: 0;
   font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
   font-size: 13px;
 }
@@ -438,14 +479,27 @@ function clearLibrary() {
     gap: 12px;
   }
 
-  .local-brand {
-    font-size: 34px;
+  .local-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
   }
 
-  .local-search {
-    max-width: none;
-    order: 10;
+  .local-meta {
+    gap: 6px 10px;
+  }
+
+  .local-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .local-search-wrap {
+    flex: none;
     width: 100%;
+    min-width: 0;
   }
 }
 </style>

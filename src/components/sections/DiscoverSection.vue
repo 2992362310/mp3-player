@@ -2,7 +2,6 @@
   <div class="content-section discover-section">
     <div v-if="search.error" class="search-error" role="alert">{{ search.error }}</div>
 
-    <!-- 结果区：仅内部滚动 -->
     <div
       v-if="search.results.length > 0 || search.loading"
       class="results-panel sketch-card sketch-card-ghost"
@@ -17,36 +16,53 @@
 
       <template v-else>
         <div class="filter-bar">
-          <select v-model="filterSourceId" class="filter-select">
-            <option value="">全部音源</option>
-            <option v-for="s in resultSources" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </select>
-          <select v-model="filterArtist" class="filter-select">
-            <option value="">全部歌手</option>
-            <option v-for="artist in resultArtists" :key="artist" :value="artist">{{ artist }}</option>
-          </select>
-          <label class="playable-toggle" title="开启后会探测播放地址（消耗请求额度）">
-            <input
-              type="checkbox"
-              :checked="search.onlyPlayable"
-              @change="onOnlyPlayableChange(($event.target as HTMLInputElement).checked)"
-            />
-            <span>仅可播</span>
-          </label>
-          <span class="filter-count">
-            {{ filteredResults.length }}/{{ search.results.length }}
-            <em v-if="search.probingPlayable">检测中</em>
-          </span>
+          <SketchSelect
+            v-model="filterSourceId"
+            class="filter-select-wrap"
+            trigger-class="filter-select"
+            menu-class="filter-select-menu"
+            :options="sourceFilterOptions"
+          />
+          <SketchSelect
+            v-model="filterArtist"
+            class="filter-select-wrap"
+            trigger-class="filter-select"
+            menu-class="filter-select-menu"
+            :options="artistFilterOptions"
+          />
+          <button
+            type="button"
+            class="discover-reset-btn"
+            title="返回推荐歌手"
+            @click="backToDiscover"
+          >
+            <svg
+              class="discover-reset-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2.5 8h7.5" />
+              <path d="M6 4.5L2.5 8L6 11.5" />
+              <path d="M9.5 4.5h2a2 2 0 0 1 2 2v3" />
+            </svg>
+            <span class="discover-reset-text">推荐歌手</span>
+          </button>
         </div>
 
         <div class="results-scroll main-scroll">
-          <div v-if="filteredResults.length === 0" class="filter-empty">
-            {{
-              search.onlyPlayable
-                ? (search.probingPlayable ? '正在检测可播放歌曲…' : '没有检测到可播放歌曲')
-                : '没有符合筛选条件的歌曲'
-            }}
+          <div v-if="search.results.length === 0" class="filter-empty search-empty-tip">
+            <p>未找到「{{ search.keyword }}」相关歌曲</p>
+            <p class="search-empty-sub">可尝试切换关键词，或返回推荐歌手继续探索</p>
           </div>
+
+          <div v-else-if="filteredResults.length === 0" class="filter-empty">没有符合筛选条件的歌曲</div>
 
           <VirtualSongList
             v-else-if="useVirtual"
@@ -59,6 +75,7 @@
             @toggle-favorite="player.toggleFavorite"
             @toggle-play="player.togglePlay()"
             @add-to-playlist="playlists.openAddToPlaylist"
+            @reach-end="maybeLoadMore"
           />
 
           <template v-else>
@@ -105,52 +122,52 @@
           </template>
         </div>
 
-        <div v-if="search.results.length > 0 && search.hasMore" class="results-footer">
-          <button
-            type="button"
-            class="load-more-btn"
-            :disabled="search.isLoadingMore"
-            @click="search.loadMore()"
-          >
-            {{ search.isLoadingMore ? '加载中...' : '加载更多 ↓' }}
-          </button>
-        </div>
+        <div
+          v-if="search.results.length > 0 && search.hasMore"
+          ref="loadMoreSentinel"
+          class="load-more-sentinel"
+          aria-hidden="true"
+        ></div>
       </template>
     </div>
 
-    <div
-      v-else-if="!search.loading"
-      class="discover-empty"
-    >
-      <div class="discover-empty-mark" aria-hidden="true">墨</div>
-      <p>搜索你喜欢的歌</p>
-      <p class="discover-empty-hint">点下面快捷词，或到顶部搜索框输入</p>
-      <div class="hot-chips" role="list">
-        <button
-          v-for="kw in HOT_KEYWORDS"
-          :key="kw"
-          type="button"
-          class="hot-chip"
-          role="listitem"
-          @click="searchHot(kw)"
+    <div v-else class="discover-empty">
+      <div class="hot-groups">
+        <section
+          v-for="group in HOT_KEYWORD_GROUPS"
+          :key="group.key"
+          class="hot-group"
         >
-          {{ kw }}
-        </button>
+          <h3 class="hot-group-title">{{ group.label }}</h3>
+          <div class="hot-chips" role="list">
+            <button
+              v-for="kw in group.keywords"
+              :key="kw"
+              type="button"
+              class="hot-chip"
+              role="listitem"
+              @click="void searchHot(kw)"
+            >
+              {{ kw }}
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
+import SketchSelect from '../SketchSelect.vue';
 import { useAudio } from '../../composables/useAudio';
 import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 import { useSearchStore } from '../../stores/search';
-import { HOT_KEYWORDS } from '../../constants/hotKeywords';
+import { HOT_KEYWORD_GROUPS } from '../../constants/hotKeywords';
 
 const player = usePlayerStore();
 const playlists = usePlaylistStore();
@@ -159,12 +176,15 @@ const { playFromList } = useAudio();
 
 const filterSourceId = ref('');
 const filterArtist = ref('');
+const loadMoreSentinel = ref<HTMLElement | null>(null);
+let loadMoreObserver: IntersectionObserver | null = null;
 
 watch(
   () => search.results,
   () => {
     filterSourceId.value = '';
     filterArtist.value = '';
+    void nextTick(setupLoadMoreObserver);
   },
 );
 
@@ -172,6 +192,11 @@ const resultSources = computed(() => {
   const ids = new Set(search.results.map((s) => s.sourceId));
   return search.sources.filter((s) => ids.has(s.id));
 });
+
+const sourceFilterOptions = computed(() => [
+  { label: '全部音源', value: '' },
+  ...resultSources.value.map((s) => ({ label: s.name, value: s.id })),
+]);
 
 const resultArtists = computed(() => {
   const pool = filterSourceId.value
@@ -185,6 +210,11 @@ const resultArtists = computed(() => {
   return Array.from(artists).sort((a, b) => a.localeCompare(b, 'zh')).slice(0, 80);
 });
 
+const artistFilterOptions = computed(() => [
+  { label: '全部歌手', value: '' },
+  ...resultArtists.value.map((artist) => ({ label: artist, value: artist })),
+]);
+
 watch(filterSourceId, () => {
   if (filterArtist.value && !resultArtists.value.includes(filterArtist.value)) {
     filterArtist.value = '';
@@ -195,13 +225,48 @@ const filteredResults = computed(() =>
   search.results.filter((song) => {
     if (filterSourceId.value && song.sourceId !== filterSourceId.value) return false;
     if (filterArtist.value && song.artist !== filterArtist.value) return false;
-    // 仅可播：隐藏已确认不可播；检测中仍显示未知项
-    if (search.onlyPlayable && search.isPlayableKnown(song) === false) return false;
     return true;
   }),
 );
 
 const useVirtual = computed(() => filteredResults.value.length > 40);
+
+watch(
+  () => [useVirtual.value, search.hasMore, search.isLoadingMore, filteredResults.value.length] as const,
+  () => {
+    void nextTick(setupLoadMoreObserver);
+  },
+  { immediate: true },
+);
+
+onBeforeUnmount(() => {
+  loadMoreObserver?.disconnect();
+});
+
+function maybeLoadMore() {
+  if (!search.hasMore || search.isLoadingMore || search.loading) return;
+  void search.loadMore();
+}
+
+function setupLoadMoreObserver() {
+  loadMoreObserver?.disconnect();
+  loadMoreObserver = null;
+  if (useVirtual.value || !search.hasMore) return;
+  if (!loadMoreSentinel.value || typeof IntersectionObserver === 'undefined') return;
+
+  loadMoreObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) maybeLoadMore();
+    },
+    {
+      root: null,
+      rootMargin: '0px 0px 240px 0px',
+      threshold: 0,
+    },
+  );
+
+  loadMoreObserver.observe(loadMoreSentinel.value);
+}
 
 function sourceName(sourceId: string) {
   return search.sources.find((s) => s.id === sourceId)?.name || sourceId;
@@ -215,27 +280,33 @@ function playTrack(track: Song) {
   playFromList(filteredResults.value, track);
 }
 
-function onOnlyPlayableChange(checked: boolean) {
-  void search.setOnlyPlayable(checked);
+function backToDiscover() {
+  search.error = '';
+  search.keyword = '';
+  search.results = [];
+  search.sourceResults.clear();
+  search.sourceHasMore.clear();
+  search.hasMore = false;
+  search.isLoadingMore = false;
+  filterSourceId.value = '';
+  filterArtist.value = '';
 }
 
 async function searchHot(kw: string) {
   const keyword = kw.trim();
   if (!keyword) return;
 
-  const currentEnabled =
-    !!search.currentSource && search.enabledSources.some((s) => s.id === search.currentSource);
-  const source = currentEnabled ? search.currentSource : '';
-
-  search.addSearchHistory(keyword, source);
-  await search.searchSongs(keyword, source);
+  if (!search.sources.length) search.loadSources();
+  search.addSearchHistory(keyword, '');
+  if (search.restoreQuickSearch(keyword, '')) return;
+  await search.searchSongs(keyword, '');
 }
 </script>
 
 <style scoped>
 .discover-section {
-  padding: 12px 16px;
-  gap: 10px;
+  padding: 10px 14px;
+  gap: 8px;
 }
 
 .results-panel {
@@ -265,6 +336,7 @@ async function searchHot(kw: string) {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overflow-anchor: none;
 }
 
 .results-scroll :deep(.virtual-song-list.fill) {
@@ -272,27 +344,42 @@ async function searchHot(kw: string) {
   min-height: 100%;
 }
 
-.results-footer {
+.load-more-sentinel {
+  height: 2px;
   flex-shrink: 0;
-  padding: 10px 12px;
-  text-align: center;
-  border-top: 1px dashed var(--border-soft);
 }
 
-.playable-toggle {
+.discover-reset-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-shrink: 0;
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 13px;
   color: var(--ink-soft);
   cursor: pointer;
   white-space: nowrap;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, white);
+  border-radius: 999px;
+  padding: 4px 10px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.playable-toggle input {
-  accent-color: var(--accent);
+.discover-reset-btn:hover {
+  background: var(--hover);
+  border-color: var(--accent);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.discover-reset-icon {
+  display: block;
+  opacity: 0.82;
+}
+
+.discover-reset-text {
+  letter-spacing: 0.04em;
 }
 
 .filter-count em {
@@ -302,61 +389,123 @@ async function searchHot(kw: string) {
   font-size: 12px;
 }
 
+.search-empty-tip {
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, white);
+  margin: 12px;
+  border-radius: 10px;
+}
+
+.search-empty-tip p {
+  margin: 0;
+}
+
+.search-empty-sub {
+  margin-top: 4px !important;
+  font-size: 12px;
+  color: var(--faint);
+}
+
 .discover-empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 0;
   color: var(--muted);
   font-family: 'Ma Shan Zheng', cursive;
-  padding: 12px 8px 24px;
-}
-
-.discover-empty-mark {
-  font-size: 56px;
-  line-height: 1;
-  color: var(--ink);
-  opacity: 0.28;
-  letter-spacing: 0.08em;
-  animation: brandIn 0.45s ease-out;
-}
-
-.discover-empty p {
-  font-size: 18px;
-  color: var(--ink-soft);
-}
-
-.discover-empty-hint {
-  font-size: 13px !important;
-  color: var(--faint) !important;
+  padding: 8px 12px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .hot-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  max-width: 420px;
-  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.hot-groups {
+  width: min(820px, 100%);
+  margin-top: 2px;
+  display: grid;
+  gap: 12px;
+}
+
+.hot-group {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  border: 1px dashed var(--border-soft);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper-bg) 88%, white);
+}
+
+.hot-group-title {
+  font-size: 16px;
+  color: var(--faint);
+  font-family: 'Ma Shan Zheng', cursive;
+  letter-spacing: 0.12em;
+  text-align: center;
 }
 
 .hot-chip {
   border: 1px dashed var(--border);
   border-radius: 999px;
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 92%, white);
   color: var(--ink-soft);
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: 14px;
-  padding: 6px 12px;
+  font-size: 16px;
+  line-height: 1;
+  padding: 9px 12px;
+  min-height: 40px;
+  width: 100%;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .hot-chip:hover {
   background: var(--hover);
   border-color: var(--accent);
   color: var(--ink);
+}
+
+@media (max-width: 1080px) {
+  .hot-groups {
+    width: min(720px, 100%);
+  }
+}
+
+@media (max-width: 768px) {
+  .discover-empty {
+    padding: 8px 10px 12px;
+  }
+
+  .hot-groups {
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .hot-group-title {
+    font-size: 14px;
+    letter-spacing: 0.1em;
+  }
+
+  .hot-chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .hot-chip {
+    font-size: 14px;
+    min-height: 36px;
+    padding: 7px 10px;
+  }
 }
 </style>

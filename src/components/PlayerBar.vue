@@ -127,17 +127,17 @@
           <span>{{ player.error }}</span>
           <button type="button" class="player-error-close" @click="player.clearError()" aria-label="关闭">×</button>
         </div>
-        <div class="progress-times">
+        <div class="progress-row">
           <span class="time">{{ player.formattedCurrentTime }}</span>
+          <div
+            ref="progressEl"
+            class="progress-container"
+            :class="{ dragging: isDragging }"
+            @pointerdown="onPointerDown"
+          >
+            <div class="progress-bar" :style="{ width: `${displayProgress}%` }"></div>
+          </div>
           <span class="time">{{ player.formattedDuration }}</span>
-        </div>
-        <div
-          ref="progressEl"
-          class="progress-container"
-          :class="{ dragging: isDragging }"
-          @pointerdown="onPointerDown"
-        >
-          <div class="progress-bar" :style="{ width: `${displayProgress}%` }"></div>
         </div>
       </div>
     </div>
@@ -218,6 +218,7 @@ function onPointerDown(e: PointerEvent) {
 function toggleLyricPanel() {
   ui.toggleLyricPanel();
 }
+
 </script>
 
 <style scoped>

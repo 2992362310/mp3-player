@@ -25,8 +25,33 @@ export interface SearchHistoryItem {
   source: string;
 }
 
+interface QuickSearchCacheItem {
+  keyword: string;
+  sourceId: string;
+  results: Song[];
+  sourceResults: Record<string, Song[]>;
+  sourceHasMore: Record<string, boolean>;
+  hasMore: boolean;
+  page: number;
+  updatedAt: number;
+}
+
+interface SearchSnapshot {
+  keyword: string;
+  scope: string;
+  results: Song[];
+  sourceResults: Map<string, Song[]>;
+  sourceHasMore: Map<string, boolean>;
+  page: number;
+  hasMore: boolean;
+}
+
 function songKey(song: Song) {
   return `${song.sourceId}-${song.id}`;
+}
+
+function quickSearchKey(keyword: string, sourceId: string) {
+  return `${sourceId || 'all'}::${keyword.trim().toLowerCase()}`;
 }
 
 export const useSearchStore = defineStore('search', () => {
@@ -54,6 +79,15 @@ export const useSearchStore = defineStore('search', () => {
   const onlyPlayable = ref(false);
   const playableMap = ref<Record<string, boolean>>({});
   const probingPlayable = ref(false);
+  const quickSearchCache = ref<Record<string, QuickSearchCacheItem>>(
+    storage.get<Record<string, QuickSearchCacheItem>>('quickSearchCache', {}),
+  );
+
+  const activeScope = ref('');
+  const activeQueryKey = ref('');
+  const querySnapshots = new Map<string, SearchSnapshot>();
+  const querySnapshotOrder: string[] = [];
+  const querySnapshotLimit = 16;
 
   const enabledSources = computed(() => sources.value.filter((s) => s.enabled));
   const recommendationSourceLimit = 1;
@@ -91,6 +125,72 @@ export const useSearchStore = defineStore('search', () => {
     return picked;
   }
 
+  function normalizeKw(kw: string) {
+    return kw.trim().toLowerCase();
+  }
+
+  function makeQueryKey(kw: string, scope: string) {
+    return `${scope || '__all__'}::${normalizeKw(kw)}`;
+  }
+
+  function touchSnapshotKey(key: string) {
+    const idx = querySnapshotOrder.indexOf(key);
+    if (idx !== -1) querySnapshotOrder.splice(idx, 1);
+    querySnapshotOrder.push(key);
+  }
+
+  function setSnapshot(key: string, snapshot: SearchSnapshot) {
+    querySnapshots.set(key, snapshot);
+    touchSnapshotKey(key);
+    while (querySnapshotOrder.length > querySnapshotLimit) {
+      const oldKey = querySnapshotOrder.shift();
+      if (oldKey) querySnapshots.delete(oldKey);
+    }
+  }
+
+  function cloneMapOfSongs(input: Map<string, Song[]>) {
+    const out = new Map<string, Song[]>();
+    input.forEach((songs, sid) => {
+      out.set(sid, songs.slice());
+    });
+    return out;
+  }
+
+  function saveActiveSnapshot() {
+    if (!activeQueryKey.value || !keyword.value || results.value.length === 0) return;
+    setSnapshot(activeQueryKey.value, {
+      keyword: keyword.value,
+      scope: activeScope.value,
+      results: results.value.slice(),
+      sourceResults: cloneMapOfSongs(sourceResults.value),
+      sourceHasMore: new Map(sourceHasMore.value),
+      page: page.value,
+      hasMore: hasMore.value,
+    });
+  }
+
+  function tryRestoreSnapshot(kw: string, scope: string): boolean {
+    const key = makeQueryKey(kw, scope);
+    const snapshot = querySnapshots.get(key);
+    if (!snapshot) return false;
+
+    touchSnapshotKey(key);
+    keyword.value = snapshot.keyword;
+    results.value = snapshot.results.slice();
+    sourceResults.value = cloneMapOfSongs(snapshot.sourceResults);
+    sourceHasMore.value = new Map(snapshot.sourceHasMore);
+    page.value = snapshot.page;
+    hasMore.value = snapshot.hasMore;
+    error.value = '';
+    loading.value = false;
+    isLoadingMore.value = false;
+    activeScope.value = snapshot.scope;
+    activeQueryKey.value = key;
+
+    if (onlyPlayable.value) void probePlayable(results.value);
+    return true;
+  }
+
   function addSearchHistory(kw: string, source: string) {
     const exists = searchHistory.value.findIndex((h) => h.keyword === kw);
     if (exists !== -1) searchHistory.value.splice(exists, 1);
@@ -104,6 +204,69 @@ export const useSearchStore = defineStore('search', () => {
   function clearSearchHistory() {
     searchHistory.value = [];
     storage.remove('searchHistory');
+  }
+
+  function persistQuickSearchCache() {
+    storage.set('quickSearchCache', quickSearchCache.value);
+  }
+
+  function cacheCurrentQuickSearch(keywordText: string, sourceId: string) {
+    const keywordTrimmed = keywordText.trim();
+    if (!keywordTrimmed || results.value.length === 0) return;
+
+    const key = quickSearchKey(keywordTrimmed, sourceId);
+    const sourceResultsRecord: Record<string, Song[]> = {};
+    sourceResults.value.forEach((songs, sid) => {
+      sourceResultsRecord[sid] = songs;
+    });
+
+    const sourceHasMoreRecord: Record<string, boolean> = {};
+    sourceHasMore.value.forEach((more, sid) => {
+      sourceHasMoreRecord[sid] = more;
+    });
+
+    quickSearchCache.value[key] = {
+      keyword: keywordTrimmed,
+      sourceId,
+      results: [...results.value],
+      sourceResults: sourceResultsRecord,
+      sourceHasMore: sourceHasMoreRecord,
+      hasMore: hasMore.value,
+      page: page.value,
+      updatedAt: Date.now(),
+    };
+
+    const entries = Object.entries(quickSearchCache.value)
+      .sort((a, b) => b[1].updatedAt - a[1].updatedAt);
+    if (entries.length > 10) {
+      quickSearchCache.value = Object.fromEntries(entries.slice(0, 10));
+    }
+
+    persistQuickSearchCache();
+  }
+
+  function restoreQuickSearch(keywordText: string, sourceId: string): boolean {
+    const keywordTrimmed = keywordText.trim();
+    if (!keywordTrimmed) return false;
+
+    const key = quickSearchKey(keywordTrimmed, sourceId);
+    const cached = quickSearchCache.value[key];
+    if (!cached || !cached.results.length) return false;
+
+    searchAbort?.abort();
+    searchGen += 1;
+    loading.value = false;
+    isLoadingMore.value = false;
+    error.value = '';
+
+    keyword.value = cached.keyword;
+    results.value = [...cached.results];
+    sourceResults.value = new Map(Object.entries(cached.sourceResults));
+    sourceHasMore.value = new Map(Object.entries(cached.sourceHasMore));
+    hasMore.value = cached.hasMore;
+    page.value = cached.page || 1;
+
+    return true;
   }
 
   function loadSources() {
@@ -263,9 +426,26 @@ export const useSearchStore = defineStore('search', () => {
 
   async function searchSongs(kw: string, sourceId?: string) {
     if (!kw.trim()) return;
-    const source = sourceId || currentSource.value;
+    const source = sourceId === undefined ? currentSource.value : sourceId;
+    const scope = source || '';
+    const normalizedKeyword = kw.trim();
+
+    if (
+      keyword.value === normalizedKeyword
+      && activeScope.value === scope
+      && results.value.length > 0
+      && !loading.value
+    ) {
+      return;
+    }
+
+    if (tryRestoreSnapshot(normalizedKeyword, scope)) {
+      return;
+    }
+
     if (!source) {
-      await searchAllSources(kw);
+      saveActiveSnapshot();
+      await searchAllSources(normalizedKeyword);
       return;
     }
 
@@ -276,7 +456,8 @@ export const useSearchStore = defineStore('search', () => {
     }
 
     const { signal, gen } = beginRequest();
-    keyword.value = kw;
+    saveActiveSnapshot();
+    keyword.value = normalizedKeyword;
     loading.value = true;
     isLoadingMore.value = false;
     error.value = '';
@@ -297,7 +478,11 @@ export const useSearchStore = defineStore('search', () => {
       sourceHasMore.value.set(source, result.hasMore || result.songs.length === pageSize);
       results.value = mergeResults();
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
+      cacheCurrentQuickSearch(kw, source);
       if (onlyPlayable.value) void probePlayable(results.value);
+      activeScope.value = scope;
+      activeQueryKey.value = makeQueryKey(normalizedKeyword, scope);
+      saveActiveSnapshot();
     } catch (e) {
       if (isAbortError(e) || isStale(gen)) return;
       console.error('[Search] 搜索失败:', e);
@@ -310,13 +495,29 @@ export const useSearchStore = defineStore('search', () => {
   async function searchAllSources(kw: string) {
     if (!kw.trim()) return;
 
+    const normalizedKeyword = kw.trim();
+    const scope = '';
+    if (
+      keyword.value === normalizedKeyword
+      && activeScope.value === scope
+      && results.value.length > 0
+      && !loading.value
+    ) {
+      return;
+    }
+
+    if (tryRestoreSnapshot(normalizedKeyword, scope)) {
+      return;
+    }
+
     if (sources.value.length === 0) {
       await new Promise((r) => setTimeout(r, 500));
       if (sources.value.length === 0) return;
     }
 
     const { signal, gen } = beginRequest();
-    keyword.value = kw;
+    saveActiveSnapshot();
+    keyword.value = normalizedKeyword;
     loading.value = true;
     isLoadingMore.value = false;
     error.value = '';
@@ -361,7 +562,11 @@ export const useSearchStore = defineStore('search', () => {
 
       if (isStale(gen)) return;
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
+      cacheCurrentQuickSearch(kw, '');
       if (onlyPlayable.value) void probePlayable(results.value);
+      activeScope.value = scope;
+      activeQueryKey.value = makeQueryKey(normalizedKeyword, scope);
+      saveActiveSnapshot();
     } catch (e) {
       if (isAbortError(e) || isStale(gen)) return;
       console.error('[Search] 多源搜索失败:', e);
@@ -415,7 +620,9 @@ export const useSearchStore = defineStore('search', () => {
 
       if (isStale(gen)) return;
       hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
+      cacheCurrentQuickSearch(keyword.value, activeScope.value);
       if (onlyPlayable.value) void probePlayable(results.value);
+      saveActiveSnapshot();
     } catch {
       if (!isStale(gen)) page.value--;
     } finally {
@@ -484,6 +691,8 @@ export const useSearchStore = defineStore('search', () => {
     setSourceEnabled,
     addSearchHistory,
     clearSearchHistory,
+    restoreQuickSearch,
+    cacheCurrentQuickSearch,
     setOnlyPlayable,
     markPlayable,
     isPlayableKnown,
