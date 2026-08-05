@@ -218,7 +218,13 @@ function toggleLyricPanel() {
 
 @media (max-width: 768px) {
   .player-toast {
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 8px);
+    bottom: calc(82px + 24px + env(safe-area-inset-bottom, 0px) + 8px);
+  }
+}
+
+@media (max-width: 420px) {
+  .player-toast {
+    bottom: calc(80px + 28px + env(safe-area-inset-bottom, 0px) + 8px);
   }
 }
 

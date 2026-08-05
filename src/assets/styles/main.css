@@ -803,16 +803,17 @@ body {
   height: calc(80px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   background: var(--bg-raised);
 }
 
 .controller-container {
   flex: 1;
   padding: 6px 12px;
-  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .main-controls {
@@ -2053,20 +2054,31 @@ body {
   }
 
   .bottom-controller {
-    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    /* 不改布局：仅加大底垫，躲开 Home 条 / 浏览器底栏 */
+    height: auto;
+    min-height: calc(82px + 24px + env(safe-area-inset-bottom, 0px));
+    padding-top: 6px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   }
 
   .controller-container {
-    padding: 4px 10px;
+    min-height: 78px;
+    padding: 6px 10px 4px;
     gap: 4px;
   }
 
   .main-controls {
-    gap: 6px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .left-controls {
+    gap: 4px;
   }
 
   .center-controls {
     min-width: 0;
+    padding: 0 6px;
   }
 
   .track-title {
@@ -2075,7 +2087,7 @@ body {
 
   .track-title-wrap,
   .track-title {
-    max-width: 140px;
+    max-width: 120px;
   }
 
   .track-artist {
@@ -2084,7 +2096,8 @@ body {
 
   .right-controls {
     flex-wrap: nowrap;
-    gap: 2px;
+    gap: 0;
+    flex-shrink: 0;
   }
 
   .track-info {
@@ -2095,16 +2108,30 @@ body {
   .volume-slider { width: 50px; }
 
   .sketch-icon {
-    padding: 3px;
+    padding: 2px;
+  }
+
+  .sketch-icon-play {
+    padding: 4px;
   }
 
   .progress-row {
     font-size: 10px;
-    gap: 6px;
+    gap: 4px;
+  }
+
+  .progress-row .time {
+    min-width: 28px;
   }
 
   .progress-section {
-    margin-top: 2px;
+    margin-top: 0;
+    flex-shrink: 0;
+    padding-bottom: 2px;
+  }
+
+  .progress-container {
+    height: 6px;
   }
 
   .search-history-tags { grid-template-columns: 1fr; }
@@ -2126,6 +2153,23 @@ body {
     padding: 6px 8px;
   }
 
+  .top-nav .nav-right {
+    gap: 0;
+  }
+
+  .nav-icon-btn {
+    padding: 3px;
+  }
+
+  .top-nav .search-box .search-source-select-wrap {
+    width: 100px;
+  }
+
+  .search-source-select {
+    max-width: 100px;
+    padding: 7px 18px 7px 8px;
+  }
+
   .content-area {
     padding: 8px;
   }
@@ -2135,16 +2179,61 @@ body {
     font-size: 12px;
   }
 
-  .right-controls {
+  .bottom-controller {
+    min-height: calc(80px + 28px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .controller-container {
+    min-height: 76px;
+    padding: 4px 8px 2px;
     gap: 2px;
   }
 
+  .main-controls {
+    gap: 2px;
+  }
+
+  .left-controls {
+    gap: 2px;
+  }
+
+  .center-controls {
+    padding: 0 4px;
+  }
+
+  .track-title {
+    font-size: 12px;
+  }
+
+  .track-title-wrap,
+  .track-title {
+    max-width: 96px;
+  }
+
+  .right-controls {
+    gap: 0;
+  }
+
   .volume-controls {
-    gap: 4px;
+    gap: 2px;
   }
 
   .volume-slider {
-    width: 48px;
+    width: 40px;
+  }
+
+  .sketch-icon {
+    padding: 1px;
+  }
+
+  .progress-row {
+    font-size: 9px;
+    gap: 3px;
+  }
+
+  .progress-row .time {
+    min-width: 24px;
   }
 }
 
