@@ -7,7 +7,7 @@
       :options="sourceOptions"
     />
 
-    <div class="search-input-wrap">
+    <div ref="inputWrapEl" class="search-input-wrap">
       <input
         ref="inputEl"
         v-model="searchInput"
@@ -35,10 +35,13 @@
       <button type="button" class="search-btn" @click="handleSearch">
         <SketchIcon name="search" :size="20" />
       </button>
+    </div>
 
+    <Teleport to="body">
       <div
         v-if="showSearchHistory && historyPanelVisible"
         class="search-history-dropdown"
+        :style="historyStyle"
         @pointerdown.prevent
       >
         <div class="search-history-dropdown-header">
@@ -78,12 +81,12 @@
           </span>
         </button>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, inject, watch } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, inject, watch, nextTick } from 'vue';
 import SketchIcon from './icons/SketchIcon.vue';
 import { useSearchStore, type SearchHistoryItem } from '../stores/search';
 import SketchSelect from './SketchSelect.vue';
@@ -93,12 +96,13 @@ const searchInput = ref('');
 const showSearchHistory = ref(false);
 const activeIndex = ref(-1);
 const inputEl = ref<HTMLInputElement | null>(null);
+const inputWrapEl = ref<HTMLElement | null>(null);
+const historyStyle = ref<Record<string, string>>({});
 const goDiscover = inject<() => void>('goDiscover');
 
-const sourceOptions = computed(() => [
-  { label: '全部音源', value: '' },
-  ...search.enabledSources.map((s) => ({ label: s.name, value: s.id })),
-]);
+const sourceOptions = computed(() =>
+  search.enabledSources.map((s) => ({ label: s.name, value: s.id })),
+);
 
 const currentSource = computed({
   get: () => search.currentSource,
@@ -127,12 +131,44 @@ const historyTitle = computed(() => {
 
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
+function updateHistoryPosition() {
+  const wrap = inputWrapEl.value;
+  if (!wrap) return;
+  const rect = wrap.getBoundingClientRect();
+  const viewportH = window.innerHeight || document.documentElement.clientHeight;
+  const maxHeight = Math.min(320, Math.max(160, viewportH - rect.bottom - 12));
+  historyStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 6}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    maxHeight: `${maxHeight}px`,
+    zIndex: '2300',
+  };
+}
+
 onMounted(() => {
   if (search.keyword) searchInput.value = search.keyword;
-  if (search.currentSource && !search.enabledSources.some((s) => s.id === search.currentSource)) {
-    search.switchSource('');
+  if (!search.currentSource || !search.enabledSources.some((s) => s.id === search.currentSource)) {
+    const fallback = search.enabledSources.find((s) => s.id === 'netease')?.id
+      || search.enabledSources[0]?.id;
+    if (fallback) search.switchSource(fallback);
   }
+  window.addEventListener('resize', updateHistoryPosition);
+  window.addEventListener('scroll', updateHistoryPosition, true);
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateHistoryPosition);
+  window.removeEventListener('scroll', updateHistoryPosition, true);
+});
+
+watch(
+  () => showSearchHistory.value && historyPanelVisible.value,
+  (visible) => {
+    if (visible) void nextTick(updateHistoryPosition);
+  },
+);
 
 watch(filteredHistory, () => {
   if (activeIndex.value >= filteredHistory.value.length) {
@@ -141,7 +177,11 @@ watch(filteredHistory, () => {
 });
 
 function sourceLabel(sourceId: string) {
-  if (!sourceId) return '全部';
+  if (!sourceId) {
+    return search.currentSource
+      ? (search.sources.find((s) => s.id === search.currentSource)?.name || search.currentSource)
+      : '—';
+  }
   return search.sources.find((s) => s.id === sourceId)?.name || sourceId;
 }
 
@@ -156,6 +196,7 @@ function openHistory() {
   clearHideTimer();
   showSearchHistory.value = true;
   activeIndex.value = -1;
+  void nextTick(updateHistoryPosition);
 }
 
 function onInputChange() {
@@ -163,6 +204,7 @@ function onInputChange() {
     showSearchHistory.value = true;
   }
   activeIndex.value = -1;
+  void nextTick(updateHistoryPosition);
 }
 
 function onInputBlur() {
@@ -260,11 +302,8 @@ function selectHistory(item: SearchHistoryItem) {
   showSearchHistory.value = false;
   activeIndex.value = -1;
 
-  if (item.source) {
-    const enabled = search.enabledSources.some((s) => s.id === item.source);
-    search.switchSource(enabled ? item.source : '');
-  } else {
-    search.switchSource('');
+  if (item.source && search.enabledSources.some((s) => s.id === item.source)) {
+    search.switchSource(item.source);
   }
 
   inputEl.value?.focus();

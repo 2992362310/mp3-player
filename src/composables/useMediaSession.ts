@@ -24,6 +24,7 @@ export function useMediaSession() {
 
     const req = ++coverRequestId;
     try {
+      if (gdMusicApi.getCooldownSeconds() > 0) return [] as MediaImage[];
       const pic = await gdMusicApi.getPicUrl(source, picId, 300);
       if (req !== coverRequestId || !pic?.url) return [] as MediaImage[];
       return [

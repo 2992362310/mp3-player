@@ -197,7 +197,6 @@ watch(
   () => {
     filterSourceId.value = '';
     filterArtist.value = '';
-    void nextTick(setupLoadMoreObserver);
   },
 );
 
@@ -207,7 +206,7 @@ const resultSources = computed(() => {
 });
 
 const sourceFilterOptions = computed(() => [
-  { label: '全部音源', value: '' },
+  { label: '全部', value: '' },
   ...resultSources.value.map((s) => ({ label: s.name, value: s.id })),
 ]);
 
@@ -244,19 +243,38 @@ const filteredResults = computed(() =>
 
 const useVirtual = computed(() => filteredResults.value.length > 40);
 
+/** 搜索刚结束时不要立刻自动翻页，避免二次请求把列表刷一遍并打满限流 */
+const LOAD_MORE_GUARD_MS = 1500;
+let loadMoreReadyAt = 0;
+let loadMoreTimer: ReturnType<typeof setTimeout> | null = null;
+
 watch(
-  () => [useVirtual.value, search.hasMore, search.isLoadingMore, filteredResults.value.length] as const,
-  () => {
+  () => [useVirtual.value, search.hasMore, search.isLoadingMore, search.loading, filteredResults.value.length] as const,
+  ([, hasMore, , loading]) => {
+    if (loadMoreTimer) {
+      clearTimeout(loadMoreTimer);
+      loadMoreTimer = null;
+    }
+    if (!loading && hasMore && filteredResults.value.length > 0) {
+      loadMoreReadyAt = Date.now() + LOAD_MORE_GUARD_MS;
+      loadMoreTimer = setTimeout(() => {
+        loadMoreTimer = null;
+        void nextTick(setupLoadMoreObserver);
+      }, LOAD_MORE_GUARD_MS);
+      return;
+    }
     void nextTick(setupLoadMoreObserver);
   },
   { immediate: true },
 );
 
 onBeforeUnmount(() => {
+  if (loadMoreTimer) clearTimeout(loadMoreTimer);
   loadMoreObserver?.disconnect();
 });
 
 function maybeLoadMore() {
+  if (Date.now() < loadMoreReadyAt) return;
   if (!search.hasMore || search.isLoadingMore || search.loading) return;
   void search.loadMore();
 }
@@ -265,6 +283,7 @@ function setupLoadMoreObserver() {
   loadMoreObserver?.disconnect();
   loadMoreObserver = null;
   if (useVirtual.value || !search.hasMore) return;
+  if (Date.now() < loadMoreReadyAt) return;
   if (!loadMoreSentinel.value || typeof IntersectionObserver === 'undefined') return;
 
   loadMoreObserver = new IntersectionObserver(
@@ -273,7 +292,7 @@ function setupLoadMoreObserver() {
     },
     {
       root: null,
-      rootMargin: '0px 0px 240px 0px',
+      rootMargin: '0px 0px 80px 0px',
       threshold: 0,
     },
   );
@@ -316,9 +335,10 @@ async function searchHot(kw: string) {
   if (!keyword) return;
 
   if (!search.sources.length) search.loadSources();
-  search.addSearchHistory(keyword, '');
-  if (search.restoreQuickSearch(keyword, '')) return;
-  await search.searchSongs(keyword, '');
+  const source = search.currentSource || search.enabledSources[0]?.id || 'netease';
+  search.addSearchHistory(keyword, source);
+  if (search.restoreQuickSearch(keyword, source)) return;
+  await search.searchSongs(keyword, source);
 }
 </script>
 

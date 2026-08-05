@@ -4,11 +4,12 @@
  */
 
 import type { ISourcePlugin, Song, SearchResult } from './types';
+import gdMusicApi from '../../services/GDMusicApi';
 
 type AudioQuality = 'low' | 'medium' | 'high' | 'lossless';
-const QUALITY_FALLBACK: AudioQuality[] = ['lossless', 'high', 'medium', 'low'];
+const QUALITY_FALLBACK: AudioQuality[] = ['high', 'medium', 'low'];
 
-/** 保证最终会尝试到 low，减少“搜得到却播不了” */
+/** 保证最终会尝试到 low，减少“搜得到却播不了”；最多 3 档，避免打满限流 */
 function ensureQualityFallback(qualities: AudioQuality[]): AudioQuality[] {
   const seen = new Set<AudioQuality>();
   const ordered: AudioQuality[] = [];
@@ -16,6 +17,7 @@ function ensureQualityFallback(qualities: AudioQuality[]): AudioQuality[] {
     if (seen.has(q)) continue;
     seen.add(q);
     ordered.push(q);
+    if (ordered.length >= 3) break;
   }
   return ordered;
 }
@@ -101,6 +103,13 @@ class SourceManager {
     const source = this.sources.get(song.sourceId);
     if (!source) throw new Error(`音源不可用：${song.sourceId}`);
 
+    if (song.sourceId !== 'local') {
+      const cooldown = gdMusicApi.getCooldownSeconds();
+      if (cooldown > 0) {
+        throw new Error(`请求频率超限，请约 ${cooldown} 秒后再试`);
+      }
+    }
+
     // 本地音源无音质档位，避免无意义的多次尝试/告警
     const qualityList = song.sourceId === 'local'
       ? (['high'] as const)
@@ -115,6 +124,9 @@ class SourceManager {
         lastError = new Error(`无可用地址 (${quality})`);
       } catch (error) {
         lastError = error;
+        const msg = error instanceof Error ? error.message : String(error ?? '');
+        // 限流时立刻停，不要继续消耗配额
+        if (msg.includes('请求频率超限')) break;
         console.warn(`[SourceManager] 音质 ${quality} 失败，尝试降级:`, error);
       }
     }

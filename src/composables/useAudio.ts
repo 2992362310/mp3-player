@@ -4,6 +4,7 @@ import { useSearchStore } from '../stores/search';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
 import { LOCAL_SOURCE_ID } from '../core/sources/LocalSource';
+import gdMusicApi from '../services/GDMusicApi';
 
 let initialized = false;
 let playGeneration = 0;
@@ -109,6 +110,8 @@ export function useAudio() {
   }
 
   async function prefetchSequentialNext() {
+    if (gdMusicApi.getCooldownSeconds() > 0) return;
+
     const nextSong = getSequentialNextSong();
     if (!nextSong) {
       clearNextPrefetch();
@@ -175,9 +178,16 @@ export function useAudio() {
       return;
     }
 
+    // 已限流时不要连环尝试其他版本，否则更播不了
+    if (gdMusicApi.getCooldownSeconds() > 0) {
+      holdOnUserPick = false;
+      return;
+    }
+
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
       if (generation !== playGeneration) return;
+      if (gdMusicApi.getCooldownSeconds() > 0) break;
       // 同源同名回退时保持“用户点选”语义，避免中途又自动连跳
       const fallbackUrl = await player.playSong(candidate, undefined, options);
       if (generation !== playGeneration) return;
@@ -336,8 +346,16 @@ export function useAudio() {
     });
 
     watch(() => player.isPlaying, (playing) => {
-      if (playing) audioEngine.play();
-      else audioEngine.pause();
+      if (!playing) {
+        audioEngine.pause();
+        return;
+      }
+      // URL 解析失败时没有音轨，再点播放应重试而不是空转
+      if (!audioEngine.hasTrack() && player.currentSong) {
+        void playSong(player.currentSong, undefined, { autoSkipOnFail: false });
+        return;
+      }
+      audioEngine.play();
     });
 
     watch(

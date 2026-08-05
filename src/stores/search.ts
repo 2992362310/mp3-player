@@ -288,6 +288,9 @@ export const useSearchStore = defineStore('search', () => {
     sourceHasMore.value = new Map(Object.entries(cached.sourceHasMore));
     hasMore.value = cached.hasMore;
     page.value = cached.page || 1;
+    activeScope.value = sourceId;
+    activeQueryKey.value = makeQueryKey(keywordTrimmed, sourceId);
+    saveActiveSnapshot();
 
     return true;
   }
@@ -449,8 +452,17 @@ export const useSearchStore = defineStore('search', () => {
 
   async function searchSongs(kw: string, sourceId?: string, options?: { force?: boolean }) {
     if (!kw.trim()) return;
-    const source = sourceId === undefined ? currentSource.value : sourceId;
-    const scope = source || '';
+    let source = sourceId === undefined ? currentSource.value : sourceId;
+    // 不再支持「全部音源」并行搜；空值回落到当前/默认音源
+    if (!source) {
+      source = currentSource.value || pickDefaultSourceId();
+      if (!source) return;
+      if (!currentSource.value) {
+        currentSource.value = source;
+        storage.set('searchCurrentSource', source);
+      }
+    }
+    const scope = source;
     const normalizedKeyword = kw.trim();
     const force = Boolean(options?.force);
 
@@ -468,12 +480,6 @@ export const useSearchStore = defineStore('search', () => {
       return;
     }
 
-    if (!source) {
-      saveActiveSnapshot();
-      await searchAllSources(normalizedKeyword, { force });
-      return;
-    }
-
     const sourceInfo = sources.value.find((s) => s.id === source);
     if (sourceInfo && !sourceInfo.enabled) {
       error.value = `音源 ${sourceInfo.name} 已禁用，请先启用或切换音源`;
@@ -482,6 +488,7 @@ export const useSearchStore = defineStore('search', () => {
 
     const { signal, gen } = beginRequest();
     saveActiveSnapshot();
+    const keywordChanged = keyword.value !== normalizedKeyword;
     keyword.value = normalizedKeyword;
     loading.value = true;
     isLoadingMore.value = false;
@@ -489,7 +496,10 @@ export const useSearchStore = defineStore('search', () => {
     page.value = 1;
     sourceResults.value.clear();
     sourceHasMore.value.clear();
-    results.value = [];
+    // 关键字变了才清空列表，避免“已有结果又闪一下空白再刷”
+    if (keywordChanged || force) {
+      results.value = [];
+    }
     hasMore.value = false;
 
     try {
@@ -544,6 +554,7 @@ export const useSearchStore = defineStore('search', () => {
 
     const { signal, gen } = beginRequest();
     saveActiveSnapshot();
+    const keywordChanged = keyword.value !== normalizedKeyword;
     keyword.value = normalizedKeyword;
     loading.value = true;
     isLoadingMore.value = false;
@@ -551,7 +562,9 @@ export const useSearchStore = defineStore('search', () => {
     page.value = 1;
     sourceResults.value.clear();
     sourceHasMore.value.clear();
-    results.value = [];
+    if (keywordChanged || force) {
+      results.value = [];
+    }
 
     try {
       const enabledIds = sources.value.filter((s) => s.enabled).map((s) => s.id);
@@ -660,16 +673,19 @@ export const useSearchStore = defineStore('search', () => {
     }
   }
 
+  function pickDefaultSourceId(): string {
+    return sources.value.find((s) => s.id === 'netease' && s.enabled)?.id
+      || enabledSources.value[0]?.id
+      || '';
+  }
+
   function switchSource(sourceId: string) {
-    if (!sourceId) {
-      currentSource.value = '';
-      storage.set('searchCurrentSource', '');
-      return;
-    }
-    const sourceInfo = sources.value.find((s) => s.id === sourceId);
+    const next = sourceId || pickDefaultSourceId();
+    if (!next) return;
+    const sourceInfo = sources.value.find((s) => s.id === next);
     if (!sourceInfo?.enabled) return;
-    currentSource.value = sourceId;
-    storage.set('searchCurrentSource', sourceId);
+    currentSource.value = next;
+    storage.set('searchCurrentSource', next);
     if (keyword.value && sourceResults.value.size > 0) {
       results.value = mergeResults();
     }

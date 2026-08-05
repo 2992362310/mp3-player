@@ -83,6 +83,11 @@ class AudioEngine {
     if (this.howl && !this.howl.playing()) this.howl.play();
   }
 
+  /** 当前是否已加载可播音轨 */
+  hasTrack(): boolean {
+    return this.howl != null;
+  }
+
   pause(): void {
     this.howl?.pause();
   }
