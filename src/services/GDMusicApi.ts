@@ -29,22 +29,26 @@ export type MusicQuality = 128 | 192 | 320 | 740 | 999;
 // 图片尺寸
 export type PicSize = 300 | 500;
 
-// 搜索结果项
+// 搜索结果项（与文档字段对齐）
 export interface GDSong {
-  id: string;
+  id: string | number;
   name: string;
-  artist: string[];
+  artist: string[] | string;
   album: string;
-  pic_id: string;
-  lyric_id: string;
+  pic_id?: string;
+  /** 文档标注废弃，仍可能返回，与 id 通常相同 */
+  url_id?: string | number;
+  lyric_id?: string | number;
   source: MusicSource;
+  from?: string;
 }
 
 // 播放地址响应
 export interface GDPlayUrlResponse {
-  url: string;
-  br: number;
-  size: number;
+  url?: string | null;
+  br?: number;
+  size?: number;
+  from?: string;
 }
 
 // 歌词响应
@@ -223,7 +227,28 @@ class GDMusicApiService {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return response.json() as Promise<T>;
+    const text = await response.text();
+    if (!text.trim()) {
+      return null as T;
+    }
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      throw new Error('接口返回格式异常');
+    }
+  }
+
+  /** 空播放地址 / 空搜索结果不写入缓存，避免“搜得到却一直播不了” */
+  private shouldCache(params: Record<string, string | number>, data: unknown): boolean {
+    if (data == null) return false;
+    if (params.types === 'search') {
+      return Array.isArray(data);
+    }
+    if (params.types === 'url') {
+      const url = (data as GDPlayUrlResponse)?.url;
+      return typeof url === 'string' && url.trim().length > 0;
+    }
+    return true;
   }
 
   private async request<T>(
@@ -246,7 +271,9 @@ class GDMusicApiService {
       if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
       try {
         const data = await this.requestOnce<T>(cacheKey, signal);
-        this.saveToCache(cacheKey, data);
+        if (this.shouldCache(params, data)) {
+          this.saveToCache(cacheKey, data);
+        }
         return data;
       } catch (error) {
         lastError = error;
@@ -262,7 +289,7 @@ class GDMusicApiService {
   async search(params: SearchParams): Promise<SearchResult> {
     const { keyword, source = 'netease', page = 1, limit = 20, signal } = params;
 
-    const response = await this.request<GDSong[]>(
+    const response = await this.request<GDSong[] | null>(
       {
         types: 'search',
         source,
@@ -273,9 +300,13 @@ class GDMusicApiService {
       signal,
     );
 
+    const songs = Array.isArray(response)
+      ? response.filter((item) => item && (item.id != null || item.url_id != null))
+      : [];
+
     return {
-      songs: response,
-      total: response.length,
+      songs,
+      total: songs.length,
       page,
       limit,
       source,
@@ -288,7 +319,7 @@ class GDMusicApiService {
     br: MusicQuality = 320,
     signal?: AbortSignal,
   ): Promise<GDPlayUrlResponse> {
-    return this.request<GDPlayUrlResponse>(
+    const response = await this.request<GDPlayUrlResponse | string | null>(
       {
         types: 'url',
         source,
@@ -297,6 +328,20 @@ class GDMusicApiService {
       },
       signal,
     );
+
+    // 兼容少数返回纯 URL 字符串的情况
+    if (typeof response === 'string') {
+      return { url: response, br, size: 0 };
+    }
+    if (!response || typeof response !== 'object') {
+      return { url: '', br, size: 0 };
+    }
+    return {
+      url: typeof response.url === 'string' ? response.url.trim() : '',
+      br: Number(response.br) || br,
+      size: Number(response.size) || 0,
+      from: response.from,
+    };
   }
 
   async getPicUrl(
@@ -346,9 +391,9 @@ class GDMusicApiService {
     raw: GDSong;
   } {
     return {
-      id: String(song.id),
+      id: String(song.id ?? song.url_id ?? ''),
       title: song.name,
-      artist: Array.isArray(song.artist) ? song.artist.join(', ') : song.artist,
+      artist: Array.isArray(song.artist) ? song.artist.join(', ') : String(song.artist || ''),
       album: song.album || '',
       cover: '',
       sourceId: song.source,

@@ -23,8 +23,17 @@ export type PlayOptions = {
 
 function audioFormatFor(song: Song | null | undefined, url: string): string[] | undefined {
   if (!song) return undefined;
-  // blob: URL 没有扩展名，Howler 需要显式 format，否则首次加载会误报失败
-  if (!url.startsWith('blob:') && song.sourceId !== LOCAL_SOURCE_ID) return undefined;
+
+  // 远端 URL：按后缀推断（lossless 常为 .flac）
+  if (!url.startsWith('blob:') && song.sourceId !== LOCAL_SOURCE_ID) {
+    const path = url.split('?')[0].toLowerCase();
+    const m = path.match(/\.([a-z0-9]+)$/);
+    if (m) {
+      const ext = m[1] === 'mp4' ? 'm4a' : m[1];
+      return [ext];
+    }
+    return undefined;
+  }
 
   const mime = String(song.raw?.mimeType || song.raw?.mime || '').toLowerCase();
   const mimeMap: Record<string, string> = {

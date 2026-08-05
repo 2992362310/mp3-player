@@ -111,27 +111,38 @@ export class GDMusicSource implements ISourcePlugin {
 
   /**
    * 获取播放地址
+   * 文档：types=url&source=&id=track_id&br=128|192|320|740|999
    */
   async getPlayUrl(song: Song, quality?: string): Promise<PlayUrl> {
     const br = this.parseQuality(quality);
-    const response = await gdMusicApi.getPlayUrl(this.source, String(song.id), br);
-    if (!response?.url) throw new Error(`无可用地址 (${quality || 'high'})`);
+    const raw = song.raw as GDSong | undefined;
+    const source = (raw?.source || this.source) as MusicSource;
+    const trackId = String(raw?.id ?? raw?.url_id ?? song.id);
+    if (!trackId) throw new Error('缺少曲目 ID');
+
+    const response = await gdMusicApi.getPlayUrl(source, trackId, br);
+    const url = response?.url?.trim() || '';
+    if (!url) throw new Error(`无可用地址 (${quality || 'high'})`);
+
     return {
-      url: response.url,
+      url,
       quality: this.getQualityLabel(br),
-      size: response.size * 1024,
-      format: "mp3",
+      // API 返回的 size 已是字节
+      size: Number(response.size) || 0,
+      format: this.formatFromUrl(url),
     };
   }
 
   /**
    * 获取歌词
+   * 文档：types=lyric&source=&id=lyric_id
    */
   async getLyric(song: Song): Promise<Lyric> {
     try {
       const raw = song.raw as GDSong | undefined;
-      const lyricId = raw?.lyric_id || String(song.id);
-      const response = await gdMusicApi.getLyric(this.source, lyricId);
+      const source = (raw?.source || this.source) as MusicSource;
+      const lyricId = String(raw?.lyric_id || raw?.id || song.id);
+      const response = await gdMusicApi.getLyric(source, lyricId);
       return {
         text: response.lyric || "",
         translation: response.tlyric || "",
@@ -201,15 +212,26 @@ export class GDMusicSource implements ISourcePlugin {
     }
 
     return {
-      id: String(song.id),
+      id: String(song.id ?? song.url_id ?? ''),
       title: title,
       artist: artist,
       album: song.album || "",
       cover: "", // 不再自动获取封面，避免跨域和请求过多
       duration: 0,
-      sourceId: this.id,
+      sourceId: song.source || this.id,
       raw: song,
     };
+  }
+
+  /** 从播放地址后缀推断格式（br=999 常返回 flac） */
+  private formatFromUrl(url: string): string {
+    const clean = url.split('?')[0].toLowerCase();
+    if (clean.endsWith('.flac')) return 'flac';
+    if (clean.endsWith('.m4a') || clean.endsWith('.mp4')) return 'm4a';
+    if (clean.endsWith('.aac')) return 'aac';
+    if (clean.endsWith('.ogg') || clean.endsWith('.oga')) return 'ogg';
+    if (clean.endsWith('.wav')) return 'wav';
+    return 'mp3';
   }
 
   /**
