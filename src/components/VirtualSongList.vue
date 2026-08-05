@@ -43,7 +43,19 @@
             @click.stop="isCurrent(item.song) ? emit('toggle-play') : emit('play', item.song)"
           >
             <svg
-              v-if="isCurrent(item.song) && isPlaying"
+              v-if="isCurrent(item.song) && loading"
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            >
+              <circle cx="8" cy="8" r="6" stroke-dasharray="3,2" />
+            </svg>
+            <svg
+              v-else-if="isCurrent(item.song) && isPlaying"
               width="14"
               height="14"
               viewBox="0 0 16 16"
@@ -85,6 +97,7 @@ const props = withDefaults(
     overscan?: number;
     currentSong: Song | null;
     isPlaying: boolean;
+    loading?: boolean;
     isFavorite: (song: Song) => boolean;
     showAddToPlaylist?: boolean;
     /** 填满父级高度，由父级负责滚动区域 */
@@ -95,6 +108,7 @@ const props = withDefaults(
   {
     itemHeight: 52,
     overscan: 6,
+    loading: false,
     showAddToPlaylist: true,
     fill: false,
     loadMoreThreshold: 140,

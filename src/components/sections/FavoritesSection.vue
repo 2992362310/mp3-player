@@ -64,6 +64,7 @@
               :songs="filteredRecentPlays"
               :current-song="player.currentSong"
               :is-playing="player.isPlaying"
+              :loading="player.loading"
               :is-favorite="player.isFavorite"
               @play="playRecent"
               @toggle-favorite="player.toggleFavorite"
@@ -125,6 +126,7 @@
             :songs="player.favorites"
             :current-song="player.currentSong"
             :is-playing="player.isPlaying"
+            :loading="player.loading"
             :is-favorite="player.isFavorite"
             @play="playFavorite"
             @toggle-favorite="player.toggleFavorite"
@@ -376,7 +378,7 @@ function playFromActive(song: Song) {
   display: flex;
   flex-shrink: 0;
   gap: 4px;
-  border-bottom: 1px dashed var(--border-soft);
+  border-bottom: var(--stroke-divider);
   padding-bottom: 2px;
 }
 
@@ -469,7 +471,7 @@ function playFromActive(song: Song) {
   align-items: center;
   gap: 6px;
   padding: 0 10px;
-  border: 2px dashed var(--line-mid);
+  border: var(--stroke-control);
   border-radius: 8px;
   background: var(--bg-subtle);
 }
@@ -553,7 +555,7 @@ function playFromActive(song: Song) {
   display: flex;
   align-items: stretch;
   gap: 4px;
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 8px 14px 6px 12px;
   background: transparent;
   overflow: hidden;

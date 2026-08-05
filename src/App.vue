@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex flex-col overflow-hidden">
+  <div class="app-shell flex flex-col overflow-hidden">
     <PwaInstallBanner :active-section="activeSection" />
 
     <div v-if="ui.showOnboarding" class="guide-backdrop" @click.self="ui.closeOnboarding()">
@@ -53,6 +53,8 @@
       <PlayerBar />
     </div>
 
+    <StickerLayer />
+    <DeskPet />
     <AddToPlaylistModal />
   </div>
 </template>
@@ -76,6 +78,8 @@ import PlayerBar from './components/PlayerBar.vue';
 import LyricPanel from './components/LyricPanel.vue';
 import AddToPlaylistModal from './components/AddToPlaylistModal.vue';
 import PwaInstallBanner from './components/PwaInstallBanner.vue';
+import DeskPet from './components/DeskPet.vue';
+import StickerLayer from './components/StickerLayer.vue';
 import DiscoverSection from './components/sections/DiscoverSection.vue';
 import LocalSection from './components/sections/LocalSection.vue';
 import FavoritesSection from './components/sections/FavoritesSection.vue';
@@ -166,6 +170,12 @@ onMounted(async () => {
   margin-top: 14px;
   display: flex;
   justify-content: flex-end;
+}
+
+.app-shell {
+  height: 100%;
+  min-height: 100dvh;
+  min-height: 100vh;
 }
 
 .app-stage {

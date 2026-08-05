@@ -67,6 +67,7 @@
         {{ opt.label }}
       </button>
     </div>
+    <p class="setting-hint">虚线偏手绘装饰，实线更利落。顶栏/底栏与播放状态始终用实线；粗=主结构，细=分割；深=近，浅=远。</p>
 
     <p class="setting-lead spaced">圆角</p>
     <div class="chip-row">
@@ -159,8 +160,8 @@ const fontOptions: Array<{ id: UiFont; label: string }> = [
 ];
 
 const borderOptions: Array<{ id: UiBorder; label: string }> = [
-  { id: 'dashed', label: '虚线' },
-  { id: 'solid', label: '实线' },
+  { id: 'dashed', label: '手绘虚线' },
+  { id: 'solid', label: '利落实线' },
 ];
 
 const radiusOptions: Array<{ id: UiRadius; label: string }> = [
@@ -177,7 +178,7 @@ const patternOptions: Array<{ id: UiPattern; label: string }> = [
 ];
 
 const currentPresetAccent = computed(
-  () => THEME_PRESETS.find((p) => p.id === ui.theme)?.accent || '#c0392b',
+  () => THEME_PRESETS.find((p) => p.id === ui.theme)?.accent || '#b83228',
 );
 
 function onCustomAccent(e: Event) {

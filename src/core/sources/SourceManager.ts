@@ -5,6 +5,21 @@
 
 import type { ISourcePlugin, Song, SearchResult } from './types';
 
+type AudioQuality = 'low' | 'medium' | 'high' | 'lossless';
+const QUALITY_FALLBACK: AudioQuality[] = ['lossless', 'high', 'medium', 'low'];
+
+/** 保证最终会尝试到 low，减少“搜得到却播不了” */
+function ensureQualityFallback(qualities: AudioQuality[]): AudioQuality[] {
+  const seen = new Set<AudioQuality>();
+  const ordered: AudioQuality[] = [];
+  for (const q of [...qualities, ...QUALITY_FALLBACK]) {
+    if (seen.has(q)) continue;
+    seen.add(q);
+    ordered.push(q);
+  }
+  return ordered;
+}
+
 class SourceManager {
   private sources: Map<string, ISourcePlugin> = new Map();
   private initialized = false;
@@ -87,7 +102,9 @@ class SourceManager {
     if (!source) throw new Error(`音源不可用：${song.sourceId}`);
 
     // 本地音源无音质档位，避免无意义的多次尝试/告警
-    const qualityList = song.sourceId === 'local' ? (['high'] as const) : qualities;
+    const qualityList = song.sourceId === 'local'
+      ? (['high'] as const)
+      : ensureQualityFallback(qualities);
 
     let lastError: unknown = new Error('无法获取播放地址');
 

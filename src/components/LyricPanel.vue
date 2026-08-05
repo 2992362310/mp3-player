@@ -215,7 +215,7 @@ function handleLineClick(time: number) {
 
 <style scoped>
 .lyrics-sidebar {
-  border-left: 2px dashed var(--border);
+  border-left: var(--stroke-chrome);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -253,7 +253,7 @@ function handleLineClick(time: number) {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: var(--stroke-divider);
   flex-shrink: 0;
   background: transparent;
 }
@@ -315,7 +315,7 @@ function handleLineClick(time: number) {
 .lyrics-signature {
   padding: 12px 16px;
   text-align: right;
-  border-top: 1px dashed var(--border);
+  border-top: var(--stroke-divider);
   flex-shrink: 0;
   background: transparent;
 }
@@ -374,7 +374,7 @@ function handleLineClick(time: number) {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  border: 2px solid var(--border);
+  border: var(--stroke-control-strong);
   border-radius: 8px;
   background: var(--surface);
   color: var(--ink-soft);
@@ -393,7 +393,7 @@ function handleLineClick(time: number) {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 12px;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: var(--stroke-divider);
   background: var(--accent-soft);
   color: var(--ink-soft);
   font-family: 'Ma Shan Zheng', cursive;
@@ -403,7 +403,7 @@ function handleLineClick(time: number) {
 
 .lyrics-seek-hint-ok {
   flex-shrink: 0;
-  border: 1px solid var(--border);
+  border: var(--stroke-control);
   border-radius: 6px;
   background: var(--surface-strong);
   color: var(--ink);
@@ -432,10 +432,11 @@ function handleLineClick(time: number) {
     height: 100% !important;
     border-left: none;
     border-top: none;
+    /* 移动端必须遮住下方歌单，半透明会导致歌词与列表文字重叠 */
     background-color: var(--paper-bg);
     background-image:
-      linear-gradient(var(--paper-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+      linear-gradient(var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px);
     background-size: 28px 28px;
     box-shadow: inset 0 1px 0 var(--border-soft);
     z-index: 40;
@@ -443,6 +444,7 @@ function handleLineClick(time: number) {
     padding-top: max(2px, env(safe-area-inset-top, 0px));
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+    isolation: isolate;
   }
 
   .lyrics-edge-spacer {

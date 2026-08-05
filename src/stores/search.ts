@@ -25,6 +25,12 @@ export interface SearchHistoryItem {
   source: string;
 }
 
+const SEARCH_HISTORY_LIMIT = 20;
+
+function normalizeHistoryKeyword(kw: string) {
+  return kw.trim().toLowerCase();
+}
+
 interface QuickSearchCacheItem {
   keyword: string;
   sourceId: string;
@@ -192,13 +198,30 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   function addSearchHistory(kw: string, source: string) {
-    const exists = searchHistory.value.findIndex((h) => h.keyword === kw);
+    const keyword = kw.trim();
+    if (!keyword) return;
+
+    const key = normalizeHistoryKeyword(keyword);
+    const exists = searchHistory.value.findIndex(
+      (h) => normalizeHistoryKeyword(h.keyword) === key,
+    );
     if (exists !== -1) searchHistory.value.splice(exists, 1);
-    searchHistory.value.unshift({ keyword: kw, source });
-    if (searchHistory.value.length > 15) {
-      searchHistory.value = searchHistory.value.slice(0, 15);
+    searchHistory.value.unshift({ keyword, source });
+    if (searchHistory.value.length > SEARCH_HISTORY_LIMIT) {
+      searchHistory.value = searchHistory.value.slice(0, SEARCH_HISTORY_LIMIT);
     }
     storage.set('searchHistory', searchHistory.value);
+  }
+
+  function removeSearchHistory(keyword: string) {
+    const key = normalizeHistoryKeyword(keyword);
+    const next = searchHistory.value.filter(
+      (h) => normalizeHistoryKeyword(h.keyword) !== key,
+    );
+    if (next.length === searchHistory.value.length) return;
+    searchHistory.value = next;
+    if (next.length) storage.set('searchHistory', next);
+    else storage.remove('searchHistory');
   }
 
   function clearSearchHistory() {
@@ -424,14 +447,16 @@ export const useSearchStore = defineStore('search', () => {
     return Array.from(merged.values());
   }
 
-  async function searchSongs(kw: string, sourceId?: string) {
+  async function searchSongs(kw: string, sourceId?: string, options?: { force?: boolean }) {
     if (!kw.trim()) return;
     const source = sourceId === undefined ? currentSource.value : sourceId;
     const scope = source || '';
     const normalizedKeyword = kw.trim();
+    const force = Boolean(options?.force);
 
     if (
-      keyword.value === normalizedKeyword
+      !force
+      && keyword.value === normalizedKeyword
       && activeScope.value === scope
       && results.value.length > 0
       && !loading.value
@@ -439,13 +464,13 @@ export const useSearchStore = defineStore('search', () => {
       return;
     }
 
-    if (tryRestoreSnapshot(normalizedKeyword, scope)) {
+    if (!force && tryRestoreSnapshot(normalizedKeyword, scope)) {
       return;
     }
 
     if (!source) {
       saveActiveSnapshot();
-      await searchAllSources(normalizedKeyword);
+      await searchAllSources(normalizedKeyword, { force });
       return;
     }
 
@@ -492,13 +517,15 @@ export const useSearchStore = defineStore('search', () => {
     }
   }
 
-  async function searchAllSources(kw: string) {
+  async function searchAllSources(kw: string, options?: { force?: boolean }) {
     if (!kw.trim()) return;
 
     const normalizedKeyword = kw.trim();
     const scope = '';
+    const force = Boolean(options?.force);
     if (
-      keyword.value === normalizedKeyword
+      !force
+      && keyword.value === normalizedKeyword
       && activeScope.value === scope
       && results.value.length > 0
       && !loading.value
@@ -506,7 +533,7 @@ export const useSearchStore = defineStore('search', () => {
       return;
     }
 
-    if (tryRestoreSnapshot(normalizedKeyword, scope)) {
+    if (!force && tryRestoreSnapshot(normalizedKeyword, scope)) {
       return;
     }
 
@@ -690,6 +717,7 @@ export const useSearchStore = defineStore('search', () => {
     switchSource,
     setSourceEnabled,
     addSearchHistory,
+    removeSearchHistory,
     clearSearchHistory,
     restoreQuickSearch,
     cacheCurrentQuickSearch,

@@ -3,7 +3,7 @@
     <div v-if="search.error" class="search-error" role="alert">{{ search.error }}</div>
 
     <div
-      v-if="search.results.length > 0 || search.loading"
+      v-if="showResultsPanel"
       class="results-panel sketch-card sketch-card-ghost"
     >
       <div
@@ -59,7 +59,11 @@
         <div class="results-scroll main-scroll">
           <div v-if="search.results.length === 0" class="filter-empty search-empty-tip">
             <p>未找到「{{ search.keyword }}」相关歌曲</p>
-            <p class="search-empty-sub">可尝试切换关键词，或返回推荐歌手继续探索</p>
+            <p class="search-empty-sub">试试换个关键词、切换顶部音源，或返回推荐歌手继续探索</p>
+            <div class="search-empty-actions">
+              <button type="button" class="btn-action" @click="retrySearch">再搜一次</button>
+              <button type="button" class="discover-reset-btn" @click="backToDiscover">推荐歌手</button>
+            </div>
           </div>
 
           <div v-else-if="filteredResults.length === 0" class="filter-empty">没有符合筛选条件的歌曲</div>
@@ -70,6 +74,7 @@
             :songs="filteredResults"
             :current-song="player.currentSong"
             :is-playing="player.isPlaying"
+            :loading="player.loading"
             :is-favorite="player.isFavorite"
             @play="playTrack"
             @toggle-favorite="player.toggleFavorite"
@@ -111,7 +116,10 @@
                 class="play-btn"
                 @click.stop="isCurrent(track) ? player.togglePlay() : playTrack(track)"
               >
-                <svg v-if="isCurrent(track) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
+                <svg v-if="isCurrent(track) && player.loading" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                  <circle cx="8" cy="8" r="6" stroke-dasharray="3,2"/>
+                </svg>
+                <svg v-else-if="isCurrent(track) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
                   <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
                 </svg>
                 <svg v-else width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -178,6 +186,11 @@ const filterSourceId = ref('');
 const filterArtist = ref('');
 const loadMoreSentinel = ref<HTMLElement | null>(null);
 let loadMoreObserver: IntersectionObserver | null = null;
+
+/** 有关键词或结果时保持结果面板，避免空搜索瞬间退回热词页 */
+const showResultsPanel = computed(
+  () => search.results.length > 0 || search.loading || Boolean(search.keyword.trim()),
+);
 
 watch(
   () => search.results,
@@ -277,7 +290,7 @@ function isCurrent(track: Song) {
 }
 
 function playTrack(track: Song) {
-  playFromList(filteredResults.value, track);
+  playFromList(filteredResults.value, track, { autoSkipOnFail: false });
 }
 
 function backToDiscover() {
@@ -290,6 +303,12 @@ function backToDiscover() {
   search.isLoadingMore = false;
   filterSourceId.value = '';
   filterArtist.value = '';
+}
+
+async function retrySearch() {
+  const kw = search.keyword.trim();
+  if (!kw) return;
+  await search.searchSongs(kw, search.currentSource, { force: true });
 }
 
 async function searchHot(kw: string) {
@@ -359,8 +378,8 @@ async function searchHot(kw: string) {
   color: var(--ink-soft);
   cursor: pointer;
   white-space: nowrap;
-  border: 1px dashed var(--border);
-  background: color-mix(in srgb, var(--surface) 92%, white);
+  border: 1px var(--stroke-style-decor) var(--border);
+  background: var(--surface);
   border-radius: 999px;
   padding: 4px 10px;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -390,8 +409,8 @@ async function searchHot(kw: string) {
 }
 
 .search-empty-tip {
-  border: 1px dashed var(--border);
-  background: color-mix(in srgb, var(--surface) 92%, white);
+  border: 1px var(--stroke-style-decor) var(--border);
+  background: var(--bg-subtle);
   margin: 12px;
   border-radius: 10px;
 }
@@ -404,6 +423,15 @@ async function searchHot(kw: string) {
   margin-top: 4px !important;
   font-size: 12px;
   color: var(--faint);
+}
+
+.search-empty-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .discover-empty {
@@ -438,9 +466,9 @@ async function searchHot(kw: string) {
   display: grid;
   gap: 10px;
   padding: 10px 12px 12px;
-  border: 1px dashed var(--border-soft);
+  border: 1px var(--stroke-style-decor) var(--border-soft);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--paper-bg) 88%, white);
+  background: var(--bg-subtle);
 }
 
 .hot-group-title {
@@ -452,9 +480,9 @@ async function searchHot(kw: string) {
 }
 
 .hot-chip {
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 92%, white);
+  background: var(--surface);
   color: var(--ink-soft);
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 16px;

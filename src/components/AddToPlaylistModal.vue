@@ -105,7 +105,7 @@ function createAndAdd() {
 .modal-card {
   width: min(92vw, 420px);
   background: var(--paper-bg);
-  border: 2px dashed var(--border);
+  border: 2px var(--stroke-style-decor) var(--border);
   border-radius: 12px;
   padding: 16px;
   color: var(--ink);
@@ -160,7 +160,7 @@ function createAndAdd() {
   align-items: center;
   width: 100%;
   padding: 10px 12px;
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 8px;
   background: var(--surface);
   cursor: pointer;
@@ -194,7 +194,7 @@ function createAndAdd() {
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
-  border: 2px solid var(--border);
+  border: var(--stroke-focus);
   border-radius: 8px;
   background: transparent;
   font-family: 'Ma Shan Zheng', cursive;

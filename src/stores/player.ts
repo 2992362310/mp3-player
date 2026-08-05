@@ -143,14 +143,18 @@ export const usePlayerStore = defineStore('player', () => {
   async function playSong(song: Song, resolvedUrl?: string, options?: { addToHistory?: boolean }): Promise<string | null> {
     loading.value = true;
     error.value = '';
+    // 先切换当前曲，避免等 URL 时列表无高亮、像“没反应”
+    currentSong.value = serializeSong(song);
+    const idx = queue.value.findIndex(
+      (s) => s.id === song.id && s.sourceId === song.sourceId,
+    );
+    if (idx !== -1) currentIndex.value = idx;
+    isPlaying.value = false;
+    persistSession();
+
     try {
       const url = resolvedUrl || await sourceManager.getPlayUrl(song, qualityCascade.value);
       if (!url) throw new Error('无法获取播放地址');
-      currentSong.value = serializeSong(song);
-      const idx = queue.value.findIndex(
-        (s) => s.id === song.id && s.sourceId === song.sourceId,
-      );
-      if (idx !== -1) currentIndex.value = idx;
       if (options?.addToHistory !== false) addToHistory(song);
       loadLyric(song);
       persistSession();

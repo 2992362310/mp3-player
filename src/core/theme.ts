@@ -49,15 +49,15 @@ export const THEME_PRESETS: Array<{
   swatch: string;
   accent: string;
 }> = [
-  { id: 'paper', label: '宣纸', swatch: '#fdf6e3', accent: '#c0392b' },
-  { id: 'breeze', label: '清风', swatch: '#eef8f5', accent: '#2aa89a' },
-  { id: 'gadgetcat', label: '蓝喵', swatch: '#eef8ff', accent: '#169bd5' },
-  { id: 'matrix', label: '矩阵', swatch: '#0d0d0d', accent: '#00ff41' },
+  { id: 'paper', label: '宣纸', swatch: '#f7efdc', accent: '#b83228' },
+  { id: 'breeze', label: '清风', swatch: '#e8f6f1', accent: '#1f9a8c' },
+  { id: 'gadgetcat', label: '蓝喵', swatch: '#eef5fa', accent: '#169bd5' },
+  { id: 'matrix', label: '矩阵', swatch: '#050805', accent: '#00ff41' },
 ];
 
 export const ACCENT_PRESETS = [
-  '#c0392b',
-  '#2aa89a',
+  '#b83228',
+  '#1f9a8c',
   '#169bd5',
   '#00ff41',
 ] as const;

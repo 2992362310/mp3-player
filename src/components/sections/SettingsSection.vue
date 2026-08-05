@@ -55,6 +55,73 @@
         </section>
 
         <section class="settings-section">
+          <h2>桌宠与贴图</h2>
+          <div class="sketch-card">
+            <label class="source-item">
+              <span>显示桌宠</span>
+              <input
+                class="source-toggle"
+                type="checkbox"
+                :checked="pet.enabled"
+                @change="pet.setEnabled(($event.target as HTMLInputElement).checked)"
+              />
+            </label>
+
+            <p class="setting-lead spaced">选择桌宠</p>
+            <div class="pet-pick-row">
+              <button
+                v-for="opt in PET_OPTIONS"
+                :key="opt.id"
+                type="button"
+                :class="['pet-pick', pet.petId === opt.id ? 'active' : '']"
+                :disabled="!pet.enabled"
+                @click="pet.setPetId(opt.id)"
+              >
+                <PetSprites kind="pet" :pet-id="opt.id" :size="44" />
+                <span>{{ opt.label }}</span>
+              </button>
+            </div>
+
+            <p class="setting-lead spaced">摆放贴图</p>
+            <div class="sticker-pick-row">
+              <button
+                v-for="opt in STICKER_OPTIONS"
+                :key="opt.id"
+                type="button"
+                :class="['sticker-pick', pet.placingStickerId === opt.id ? 'active' : '']"
+                :title="`放置${opt.label}`"
+                @click="togglePlace(opt.id)"
+              >
+                <PetSprites kind="sticker" :sticker-id="opt.id" :size="28" />
+                <span>{{ opt.label }}</span>
+              </button>
+            </div>
+
+            <div class="action-row pet-actions">
+              <button
+                type="button"
+                class="btn-action"
+                :disabled="!pet.placingStickerId"
+                @click="pet.cancelPlacing()"
+              >
+                取消放置
+              </button>
+              <button
+                type="button"
+                class="btn-action"
+                :disabled="pet.stickers.length === 0"
+                @click="pet.clearStickers()"
+              >
+                清空贴图（{{ pet.stickers.length }}）
+              </button>
+            </div>
+            <p class="setting-hint">
+              点选贴纸后到页面空白处点击放置；拖动可移动，点 × 或右键可删除。不影响播放与搜索。
+            </p>
+          </div>
+        </section>
+
+        <section class="settings-section">
           <h2>主题设置器</h2>
           <div class="sketch-card">
             <ThemeCustomizer />
@@ -134,16 +201,19 @@
 
 <script setup lang="ts">
 import SketchIcon from '../icons/SketchIcon.vue';
+import PetSprites from '../icons/PetSprites.vue';
 import ThemeCustomizer from '../ThemeCustomizer.vue';
 import { useSearchStore } from '../../stores/search';
 import { usePlayerStore, type AudioQuality } from '../../stores/player';
 import { useUIStore } from '../../stores/ui';
+import { PET_OPTIONS, STICKER_OPTIONS, usePetStore, type StickerId } from '../../stores/pet';
 import storage from '../../core/storage';
 import { APP_BUILD_TIME, APP_VERSION, UPDATE_NOTES } from '../../version';
 
 const search = useSearchStore();
 const player = usePlayerStore();
 const ui = useUIStore();
+const pet = usePetStore();
 
 const wakeLockSupported =
   typeof navigator !== 'undefined' && 'wakeLock' in navigator;
@@ -159,6 +229,11 @@ function toggleSource(sourceId: string, enabled: boolean) {
   const enabledCount = search.enabledSources.length;
   if (!enabled && enabledCount <= 1) return;
   search.setSourceEnabled(sourceId, enabled);
+}
+
+function togglePlace(stickerId: StickerId) {
+  if (pet.placingStickerId === stickerId) pet.cancelPlacing();
+  else pet.startPlacing(stickerId);
 }
 
 function clearSearchHistory() {
@@ -195,7 +270,7 @@ function resetPwaPrompt() {
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 8px;
   font-family: 'Ma Shan Zheng', cursive;
   color: var(--ink-soft);
@@ -207,7 +282,7 @@ function resetPwaPrompt() {
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border);
+  border: var(--stroke-control-strong);
   border-radius: 5px;
   background: var(--paper-bg);
   position: relative;
@@ -236,6 +311,53 @@ function resetPwaPrompt() {
   margin: 6px 0 12px;
 }
 
+.pet-pick-row,
+.sticker-pick-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+
+.pet-pick,
+.sticker-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border: 1px var(--stroke-style-decor, dashed) var(--border);
+  border-radius: var(--ui-radius-sm, 8px);
+  background: var(--bg-subtle);
+  color: var(--ink-soft);
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.pet-pick:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pet-pick:hover:not(:disabled),
+.sticker-pick:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.pet-pick.active,
+.sticker-pick.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pet-actions {
+  margin-top: 4px;
+}
+
 .settings-scroll {
   -webkit-overflow-scrolling: touch;
 }
@@ -256,7 +378,7 @@ function resetPwaPrompt() {
   min-width: 1.6em;
   padding: 1px 6px;
   margin-right: 2px;
-  border: 1px solid var(--border);
+  border: var(--stroke-control);
   border-radius: 4px;
   background: var(--surface-strong);
   font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;

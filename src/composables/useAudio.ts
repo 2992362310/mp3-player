@@ -11,6 +11,14 @@ let consecutiveFailures = 0;
 let restoring = false;
 let nextPrefetchTask: Promise<void> | null = null;
 let prefetchedNext: { key: string; url: string } | null = null;
+/** 用户点选播放失败时不自动跳曲，避免列表高亮乱跳像闪烁 */
+let holdOnUserPick = false;
+
+export type PlayOptions = {
+  addToHistory?: boolean;
+  /** 失败时是否自动尝试下一首；点选列表时默认 false */
+  autoSkipOnFail?: boolean;
+};
 
 function audioFormatFor(song: Song | null | undefined, url: string): string[] | undefined {
   if (!song) return undefined;
@@ -128,17 +136,24 @@ export function useAudio() {
   }
 
   function skipAfterFailure() {
+    if (holdOnUserPick) return;
+
     consecutiveFailures += 1;
     const limit = Math.max(1, Math.min(player.queue.length, 5));
     if (consecutiveFailures >= limit) {
       consecutiveFailures = 0;
+      if (!player.error) {
+        player.error = '连续多首无法播放，已暂停自动跳过';
+      }
       return;
     }
-    playNext();
+    void playNext({ autoSkipOnFail: true });
   }
 
-  async function playSong(song: Song, resolvedUrl?: string, options?: { addToHistory?: boolean }) {
+  async function playSong(song: Song, resolvedUrl?: string, options?: PlayOptions) {
     const generation = ++playGeneration;
+    const autoSkipOnFail = options?.autoSkipOnFail !== false;
+    holdOnUserPick = !autoSkipOnFail;
     clearNextPrefetch();
 
     const url = await player.playSong(song, resolvedUrl, options);
@@ -155,11 +170,15 @@ export function useAudio() {
     search.markPlayable(song, false);
 
     // 本地曲无需跨音源回退
-    if (song.sourceId === LOCAL_SOURCE_ID) return;
+    if (song.sourceId === LOCAL_SOURCE_ID) {
+      holdOnUserPick = false;
+      return;
+    }
 
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
       if (generation !== playGeneration) return;
+      // 同源同名回退时保持“用户点选”语义，避免中途又自动连跳
       const fallbackUrl = await player.playSong(candidate, undefined, options);
       if (generation !== playGeneration) return;
       if (fallbackUrl) {
@@ -172,18 +191,25 @@ export function useAudio() {
       search.markPlayable(candidate, false);
     }
 
-    if (generation === playGeneration) skipAfterFailure();
+    if (generation !== playGeneration) return;
+
+    if (!player.error) {
+      player.error = '暂无可用播放地址，试试其他版本或音源';
+    }
+
+    if (autoSkipOnFail) skipAfterFailure();
+    else holdOnUserPick = false;
   }
 
-  function playFromList(songs: Song[], song: Song, options?: { addToHistory?: boolean }) {
+  function playFromList(songs: Song[], song: Song, options?: PlayOptions) {
     player.setQueue(songs);
-    playSong(song, undefined, options);
+    void playSong(song, undefined, { autoSkipOnFail: false, ...options });
   }
 
-  async function playNext() {
+  async function playNext(options?: PlayOptions) {
     const list = player.queue;
     if (list.length === 0) return;
-    if (player.playMode === 'random') { playRandom(); return; }
+    if (player.playMode === 'random') { playRandom(options); return; }
     let idx: number;
     if (player.currentIndex < list.length - 1) idx = player.currentIndex + 1;
     else if (player.playMode === 'loop') idx = 0;
@@ -197,11 +223,11 @@ export function useAudio() {
     if (prefetchedNext?.key === key) {
       const { url } = prefetchedNext;
       clearNextPrefetch();
-      playSong(target, url);
+      void playSong(target, url, { autoSkipOnFail: true, ...options });
       return;
     }
 
-    playSong(target);
+    void playSong(target, undefined, { autoSkipOnFail: true, ...options });
   }
 
   function playPrevious() {
@@ -212,28 +238,28 @@ export function useAudio() {
     if (player.currentIndex > 0) idx = player.currentIndex - 1;
     else if (player.playMode === 'loop') idx = list.length - 1;
     else return;
-    playSong(list[idx]);
+    void playSong(list[idx], undefined, { autoSkipOnFail: false });
   }
 
-  function playRandom() {
+  function playRandom(options?: PlayOptions) {
     const list = player.queue;
     if (list.length === 0) return;
     let idx: number;
     do { idx = Math.floor(Math.random() * list.length); }
     while (idx === player.currentIndex && list.length > 1);
-    playSong(list[idx]);
+    void playSong(list[idx], undefined, { autoSkipOnFail: true, ...options });
   }
 
   function playAtIndex(index: number) {
     const list = player.queue;
     if (index < 0 || index >= list.length) return;
-    playSong(list[index]);
+    void playSong(list[index], undefined, { autoSkipOnFail: false });
   }
 
   function playAll(songs: Song[]) {
     if (songs.length === 0) return;
     player.setQueue(songs);
-    playSong(songs[0]);
+    void playSong(songs[0], undefined, { autoSkipOnFail: false });
   }
 
   function seekTo(time: number) {
@@ -276,6 +302,8 @@ export function useAudio() {
     audioEngine.setCallbacks({
       onPlay: () => {
         player.isPlaying = true;
+        holdOnUserPick = false;
+        consecutiveFailures = 0;
         player.clearError();
       },
       onPause: () => { player.isPlaying = false; },
@@ -285,7 +313,7 @@ export function useAudio() {
           audioEngine.seek(0);
           audioEngine.play();
         } else {
-          void playNext();
+          void playNext({ autoSkipOnFail: true });
         }
       },
       onTimeUpdate: (ct, dur) => player.updateTime(ct, dur),
@@ -296,6 +324,7 @@ export function useAudio() {
             ? '本地音频格式不受当前浏览器支持'
             : '本地音频加载失败，请尝试重新导入';
           player.isPlaying = false;
+          holdOnUserPick = false;
           return;
         }
         player.error = msg.includes('失败')

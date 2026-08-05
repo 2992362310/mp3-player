@@ -114,6 +114,7 @@
           :songs="local.filteredSongs"
           :current-song="player.currentSong"
           :is-playing="player.isPlaying"
+          :loading="player.loading"
           :is-favorite="player.isFavorite"
           @play="playLocal"
           @toggle-favorite="player.toggleFavorite"
@@ -322,9 +323,9 @@ function clearLibrary() {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px dashed var(--accent);
+  border: var(--stroke-focus);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--paper-bg) 88%, var(--accent-soft));
+  background: color-mix(in srgb, var(--paper-bg) 55%, transparent);
   color: var(--accent);
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 22px;
@@ -377,7 +378,7 @@ function clearLibrary() {
   display: flex;
   align-items: center;
   gap: 6px;
-  border: 2px dashed var(--line-mid);
+  border: var(--stroke-control);
   border-radius: 8px;
   background: var(--bg-subtle);
   padding: 0 10px;
@@ -458,7 +459,7 @@ function clearLibrary() {
 }
 
 .local-dropzone {
-  border: 2px dashed var(--border);
+  border: var(--stroke-frame);
   border-radius: 12px;
   margin-top: 4px;
 }
