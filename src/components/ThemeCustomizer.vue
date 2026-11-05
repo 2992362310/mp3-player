@@ -1,5 +1,21 @@
 <template>
   <div class="theme-customizer">
+    <p class="setting-lead">听歌人格氛围</p>
+    <div class="mood-grid">
+      <button
+        v-for="mood in LISTENING_MOODS"
+        :key="mood.id"
+        type="button"
+        :class="['mood-card', ui.theme === mood.theme ? 'active' : '']"
+        @click="ui.setTheme(mood.theme)"
+      >
+        <span class="mood-types">{{ mood.types }}</span>
+        <strong>{{ mood.title }}</strong>
+        <span class="mood-description">{{ mood.description }}</span>
+      </button>
+    </div>
+    <p class="setting-hint">MBTI 仅作氛围灵感，不代表人格测评。</p>
+
     <p class="setting-lead">底色预设</p>
     <div class="preset-grid">
       <button
@@ -124,6 +140,41 @@
       </label>
     </div>
 
+    <p class="setting-lead spaced">全局背景图</p>
+    <div class="background-controls">
+      <label class="background-upload">
+        <input type="file" accept="image/*" @change="onBackgroundFile" />
+        <span>{{ ui.backgroundUrl ? '更换图片' : '上传图片' }}</span>
+      </label>
+      <input
+        v-model="backgroundUrlDraft"
+        class="background-url"
+        type="url"
+        placeholder="或粘贴 https 图片地址"
+        aria-label="背景图片地址"
+      />
+      <button type="button" class="background-apply" :disabled="!backgroundUrlDraft.trim()" @click="applyBackgroundUrl">
+        应用
+      </button>
+      <button type="button" class="background-clear" :disabled="!ui.backgroundUrl" @click="clearBackground">
+        清除
+      </button>
+    </div>
+    <label class="background-opacity">
+      <span>背景浓度</span>
+      <input
+        type="range"
+        min="0.08"
+        max="0.8"
+        step="0.01"
+        :value="ui.backgroundOpacity"
+        :disabled="!ui.backgroundUrl"
+        @input="onBackgroundOpacity"
+      />
+      <output>{{ Math.round(ui.backgroundOpacity * 100) }}%</output>
+    </label>
+    <p v-if="backgroundError" class="setting-hint background-error" role="alert">{{ backgroundError }}</p>
+
     <div class="theme-actions">
       <button type="button" class="btn-action" @click="ui.resetCustomize()">恢复当前预设默认</button>
     </div>
@@ -132,9 +183,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import {
   ACCENT_PRESETS,
+  LISTENING_MOODS,
   THEME_PRESETS,
   type UiBorder,
   type UiFont,
@@ -145,6 +197,73 @@ import {
 import { useUIStore } from '../stores/ui';
 
 const ui = useUIStore();
+const backgroundUrlDraft = ref(ui.backgroundUrl);
+const backgroundError = ref('');
+
+async function onBackgroundFile(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  backgroundError.value = '';
+  try {
+    const imageUrl = await compressImage(file);
+    ui.setBackgroundUrl(imageUrl);
+    backgroundUrlDraft.value = imageUrl;
+  } catch {
+    backgroundError.value = '图片读取失败，请换一张图片再试。';
+  } finally {
+    input.value = '';
+  }
+}
+
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext('2d');
+      if (!context) {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('Canvas unavailable'));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(objectUrl);
+      resolve(canvas.toDataURL('image/jpeg', 0.78));
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Image decode failed'));
+    };
+    image.src = objectUrl;
+  });
+}
+
+function applyBackgroundUrl() {
+  const value = backgroundUrlDraft.value.trim();
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') throw new Error('Unsupported protocol');
+    backgroundError.value = '';
+    ui.setBackgroundUrl(url.href);
+  } catch {
+    backgroundError.value = '请输入有效的图片网址。';
+  }
+}
+
+function clearBackground() {
+  ui.setBackgroundUrl('');
+  backgroundUrlDraft.value = '';
+  backgroundError.value = '';
+}
+
+function onBackgroundOpacity(e: Event) {
+  ui.setBackgroundOpacity(Number((e.target as HTMLInputElement).value));
+}
 
 const styleOptions: Array<{ id: UiStyle; label: string }> = [
   { id: 'sketch', label: '手绘' },
@@ -192,6 +311,34 @@ function onCustomAccent(e: Event) {
   display: flex;
   flex-direction: column;
 }
+
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mood-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.mood-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.mood-card.active { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.mood-card strong { font-size: 14px; }
+.mood-types { color: var(--accent); font-size: 11px; }
+.mood-description { color: var(--muted); font-size: 11px; line-height: 1.4; }
 
 .setting-lead {
   margin: 0 0 8px;
@@ -357,9 +504,74 @@ function onCustomAccent(e: Event) {
   margin-top: 14px;
 }
 
+.background-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.background-upload,
+.background-apply,
+.background-clear {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.background-upload input { display: none; }
+.background-apply:hover:not(:disabled),
+.background-clear:hover:not(:disabled),
+.background-upload:hover { border-color: var(--accent); color: var(--accent); }
+.background-apply:disabled,
+.background-clear:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.background-url {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.background-opacity {
+  display: grid;
+  grid-template-columns: auto minmax(80px, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.background-opacity input { width: 100%; accent-color: var(--accent); }
+.background-opacity output { color: var(--muted); text-align: right; }
+.background-error { color: var(--accent); }
+
 .setting-hint {
   margin-top: 10px;
   color: var(--muted);
   font-size: 13px;
+}
+
+@media (max-width: 520px) {
+  .background-controls { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .background-clear { grid-column: 3; }
+  .background-url { grid-column: 1 / 3; grid-row: 2; }
+  .background-apply { grid-column: 3; grid-row: 2; }
 }
 </style>

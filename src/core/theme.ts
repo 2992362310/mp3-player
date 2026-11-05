@@ -53,6 +53,23 @@ export const THEME_PRESETS: Array<{
   { id: 'breeze', label: '清风', swatch: '#e8f6f1', accent: '#1f9a8c' },
   { id: 'gadgetcat', label: '蓝喵', swatch: '#eef5fa', accent: '#169bd5' },
   { id: 'matrix', label: '矩阵', swatch: '#050805', accent: '#00ff41' },
+  { id: 'maruko', label: '梦游', swatch: '#fff7ea', accent: '#ff9bb0' },
+  { id: 'ink', label: '夜航', swatch: '#171c22', accent: '#d8ab76' },
+  { id: 'cyberpunk', label: '现场', swatch: '#080808', accent: '#fcee09' },
+  { id: 'celadon', label: '静听', swatch: '#dde8e3', accent: '#35685a' },
+];
+
+export const LISTENING_MOODS: Array<{
+  id: 'dream' | 'night' | 'live' | 'focus';
+  title: string;
+  types: string;
+  description: string;
+  theme: AppTheme;
+}> = [
+  { id: 'dream', title: '梦游收藏家', types: 'INFP / ENFP', description: '把旋律收进自己的小宇宙', theme: 'maruko' },
+  { id: 'night', title: '夜航感受派', types: 'INFJ / ISFP', description: '在夜色里慢慢听见情绪', theme: 'ink' },
+  { id: 'live', title: '现场能量派', types: 'ESFP / ENTP', description: '让节拍把今天点亮', theme: 'cyberpunk' },
+  { id: 'focus', title: '深度聆听者', types: 'INTJ / ISTJ', description: '沿着细节听完整张专辑', theme: 'celadon' },
 ];
 
 export const ACCENT_PRESETS = [

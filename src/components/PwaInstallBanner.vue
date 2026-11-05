@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible && activeSection === 'discover'" class="pwa-banner" role="status" aria-live="polite">
+  <div v-if="showUpdate || (!updateAvailable && visible && activeSection === 'discover')" :class="['pwa-banner', showUpdate ? 'pwa-update-banner' : '']" role="status" aria-live="polite">
     <div class="pwa-banner-content">
       <strong>{{ title }}</strong>
       <p>{{ message }}</p>
@@ -7,20 +7,28 @@
 
     <div class="pwa-banner-actions">
       <button
-        v-if="canInstall"
+        v-if="showUpdate"
+        type="button"
+        class="btn-action btn-action-primary"
+        @click="applyUpdate"
+      >
+        立即更新
+      </button>
+      <button
+        v-else-if="canInstall"
         type="button"
         class="btn-action btn-action-primary"
         @click="installNow"
       >
         立即安装
       </button>
-      <button type="button" class="btn-action" @click="dismiss">稍后再说</button>
+      <button type="button" class="btn-action" @click="dismiss">{{ showUpdate ? '稍后' : '稍后再说' }}</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import storage from '../core/storage';
 
 type BeforeInstallPromptEvent = Event & {
@@ -39,18 +47,23 @@ const props = defineProps<{
 
 const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null);
 const visible = ref(false);
+const updateAvailable = ref(false);
+const updatePromptDismissed = ref(false);
 const isIos = ref(false);
 const isStandalone = ref(false);
 const isMobile = ref(false);
 
 const canInstall = computed(() => !isIos.value && !!deferredPrompt.value);
+const showUpdate = computed(() => updateAvailable.value && !updatePromptDismissed.value);
 
 const title = computed(() => {
+  if (showUpdate.value) return '发现新版本';
   if (isIos.value) return '安装到主屏幕';
   return '安装 MoYun 应用';
 });
 
 const message = computed(() => {
+  if (showUpdate.value) return '新版本已准备好，立即刷新即可使用。';
   if (isIos.value) {
     return '在 Safari 点分享按钮，再点“添加到主屏幕”，下次可像 App 一样打开。';
   }
@@ -93,8 +106,16 @@ function evaluateVisibility() {
 }
 
 function dismiss() {
+  if (updateAvailable.value) {
+    updatePromptDismissed.value = true;
+    return;
+  }
   visible.value = false;
   storage.set(DISMISS_KEY, Date.now());
+}
+
+function applyUpdate() {
+  window.dispatchEvent(new Event('pwa-apply-update'));
 }
 
 async function installNow() {
@@ -112,6 +133,7 @@ async function installNow() {
 
 onMounted(() => {
   detectEnv();
+  window.addEventListener('pwa-update-available', onUpdateAvailable);
 
   const currentVisitCount = storage.get<number>(VISIT_COUNT_KEY, 0) + 1;
   storage.set(VISIT_COUNT_KEY, currentVisitCount);
@@ -130,6 +152,15 @@ onMounted(() => {
 
   evaluateVisibility();
 });
+
+function onUpdateAvailable() {
+  updateAvailable.value = true;
+  updatePromptDismissed.value = false;
+}
+
+onBeforeUnmount(() => {
+  window.removeEventListener('pwa-update-available', onUpdateAvailable);
+});
 </script>
 
 <style scoped>
@@ -142,6 +173,14 @@ onMounted(() => {
   border-bottom: 1px dashed #c4b5a0;
   background: rgba(255, 255, 255, 0.68);
 }
+
+.pwa-update-banner {
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--paper-bg) 92%, var(--accent-soft));
+}
+
+.pwa-update-banner .pwa-banner-content strong { color: var(--accent); }
+.pwa-update-banner .pwa-banner-content p { color: var(--ink-soft); }
 
 .pwa-banner-content {
   min-width: 0;

@@ -1,5 +1,14 @@
 <template>
   <div class="app-shell flex flex-col overflow-hidden">
+    <div
+      v-if="ui.backgroundUrl"
+      class="global-background"
+      :style="{
+        backgroundImage: `url(${JSON.stringify(ui.backgroundUrl)})`,
+        opacity: ui.backgroundOpacity,
+      }"
+      aria-hidden="true"
+    />
     <PwaInstallBanner :active-section="activeSection" />
 
     <div v-if="ui.showOnboarding" class="guide-backdrop" @click.self="ui.closeOnboarding()">
@@ -173,9 +182,22 @@ onMounted(async () => {
 }
 
 .app-shell {
+  position: relative;
+  isolation: isolate;
   height: 100%;
   min-height: 100dvh;
   min-height: 100vh;
+}
+
+.global-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 
 .app-stage {

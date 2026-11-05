@@ -21,6 +21,8 @@ export const useUIStore = defineStore('ui', () => {
   const guideDismissed = ref(storage.get<boolean>('guideDismissed', false));
   const showOnboarding = ref(!guideDismissed.value);
   const keepScreenOn = ref(storage.get<boolean>('keepScreenOn', false));
+  const backgroundUrl = ref(storage.get<string>('globalBackgroundUrl', ''));
+  const backgroundOpacity = ref(storage.get<number>('globalBackgroundOpacity', 0.28));
 
   applyThemeToDocument(theme.value, customize.value);
 
@@ -62,6 +64,16 @@ export const useUIStore = defineStore('ui', () => {
     storage.set('keepScreenOn', next);
   }
 
+  function setBackgroundUrl(next: string) {
+    backgroundUrl.value = next;
+    storage.set('globalBackgroundUrl', next);
+  }
+
+  function setBackgroundOpacity(next: number) {
+    backgroundOpacity.value = Math.max(0.08, Math.min(0.8, next));
+    storage.set('globalBackgroundOpacity', backgroundOpacity.value);
+  }
+
   function closeOnboarding() {
     showOnboarding.value = false;
     guideDismissed.value = true;
@@ -78,12 +90,16 @@ export const useUIStore = defineStore('ui', () => {
     customize,
     showOnboarding,
     keepScreenOn,
+    backgroundUrl,
+    backgroundOpacity,
     toggleLyricPanel,
     closeLyricPanel,
     setTheme,
     patchCustomize,
     resetCustomize,
     setKeepScreenOn,
+    setBackgroundUrl,
+    setBackgroundOpacity,
     closeOnboarding,
     openOnboarding,
   };

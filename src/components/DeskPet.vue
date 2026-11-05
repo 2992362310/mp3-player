@@ -6,9 +6,14 @@
   >
     <div
       class="desk-pet"
-      :class="{ listening: isPlaying, dragging: isDragging, bubbled: Boolean(bubble) }"
+      :class="{ listening: isPlaying, dragging: isDragging, bubbled: Boolean(bubble), talking: Boolean(bubble) }"
       :style="petStyle"
+      role="button"
+      tabindex="0"
+      :aria-label="`${petLabel}，点击互动，拖动可移动`"
       @pointerdown="onPointerDown"
+      @keydown.enter.stop.prevent="interactWithPet"
+      @keydown.space.stop.prevent="interactWithPet"
     >
       <div v-if="bubble" class="desk-pet-bubble" role="status">{{ bubble }}</div>
       <PetSprites
@@ -79,6 +84,11 @@ function showBubble(text: string) {
   }, 2200);
 }
 
+function interactWithPet() {
+  const line = PET_LINES[Math.floor(Math.random() * PET_LINES.length)];
+  showBubble(line);
+}
+
 function clientToPercent(clientX: number, clientY: number) {
   const w = window.innerWidth || 1;
   const h = window.innerHeight || 1;
@@ -113,8 +123,7 @@ function onPointerDown(e: PointerEvent) {
     pointerId = null;
 
     if (!dragMoved) {
-      const line = PET_LINES[Math.floor(Math.random() * PET_LINES.length)];
-      showBubble(line);
+      interactWithPet();
     }
   };
 
@@ -155,6 +164,8 @@ onBeforeUnmount(() => {
   animation: none;
   z-index: 2;
 }
+
+.desk-pet.talking .pet-sprite { animation: petReact 0.42s ease; }
 
 .desk-pet.listening {
   animation: petBob 1.1s ease-in-out infinite;
@@ -207,9 +218,15 @@ onBeforeUnmount(() => {
   }
 }
 
+@keyframes petReact {
+  35% { transform: scale(1.12) rotate(-5deg); }
+  70% { transform: scale(1.06) rotate(4deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .desk-pet,
-  .desk-pet.listening {
+  .desk-pet.listening,
+  .desk-pet.talking .pet-sprite {
     animation: none;
   }
 }

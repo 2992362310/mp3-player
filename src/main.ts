@@ -21,11 +21,25 @@ sourceManager.init().then(() => {
   console.log('[Main] 音源管理器初始化完成');
 });
 
-registerSW({
+const updateSW = registerSW({
   immediate: true,
+  onNeedRefresh() {
+    window.dispatchEvent(new Event('pwa-update-available'));
+  },
   onRegistered() {
     console.log('[PWA] Service worker registered');
   },
+});
+
+window.addEventListener('pwa-apply-update', () => {
+  void updateSW(true);
+});
+
+window.addEventListener('load', () => {
+  window.setInterval(() => {
+    if (!navigator.onLine) return;
+    void navigator.serviceWorker?.getRegistration().then((registration) => registration?.update());
+  }, 60 * 60 * 1000);
 });
 
 app.mount('#app');

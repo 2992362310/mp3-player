@@ -140,6 +140,26 @@
     </div>
 
     <div v-else class="discover-empty">
+      <section class="listening-hero">
+        <div class="listening-hero-copy">
+          <span class="listening-eyebrow">MOYUN / LISTENING MOOD</span>
+          <h1>今天，想怎么听歌？</h1>
+          <p>{{ activeMood.title }} · {{ activeMood.description }}</p>
+        </div>
+        <div class="mood-quick-picks" aria-label="选择听歌人格主题">
+          <button
+            v-for="mood in LISTENING_MOODS"
+            :key="mood.id"
+            type="button"
+            :class="['mood-quick-pick', ui.theme === mood.theme ? 'active' : '']"
+            :title="`${mood.types} · ${mood.description}`"
+            @click="ui.setTheme(mood.theme)"
+          >
+            <span>{{ mood.title }}</span>
+            <small>{{ mood.types }}</small>
+          </button>
+        </div>
+      </section>
       <div class="hot-groups">
         <section
           v-for="group in HOT_KEYWORD_GROUPS"
@@ -175,12 +195,18 @@ import type { Song } from '../../core/sources/types';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 import { useSearchStore } from '../../stores/search';
+import { useUIStore } from '../../stores/ui';
 import { HOT_KEYWORD_GROUPS } from '../../constants/hotKeywords';
+import { LISTENING_MOODS } from '../../core/theme';
 
 const player = usePlayerStore();
 const playlists = usePlaylistStore();
 const search = useSearchStore();
+const ui = useUIStore();
 const { playFromList } = useAudio();
+const activeMood = computed(
+  () => LISTENING_MOODS.find((mood) => mood.theme === ui.theme) || LISTENING_MOODS[0],
+);
 
 const filterSourceId = ref('');
 const filterArtist = ref('');
@@ -468,6 +494,65 @@ async function searchHot(kw: string) {
   overflow-y: auto;
 }
 
+.listening-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.9fr);
+  align-items: end;
+  gap: 20px;
+  width: min(820px, 100%);
+  padding: 18px 20px;
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  background: linear-gradient(115deg, var(--surface-strong), var(--surface));
+  animation: slideUp 0.45s ease both;
+}
+
+.listening-eyebrow {
+  color: var(--accent);
+  font-family: var(--ui-font, sans-serif);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.listening-hero h1 {
+  margin: 5px 0 3px;
+  color: var(--ink);
+  font-family: var(--ui-display, serif);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.listening-hero p { color: var(--muted); font-size: 13px; }
+
+.mood-quick-picks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mood-quick-pick {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 7px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--paper-bg) 62%, transparent);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+
+.mood-quick-pick:hover { transform: translateY(-1px); border-color: var(--accent); }
+.mood-quick-pick.active { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.mood-quick-pick small { color: var(--muted); font-size: 9px; white-space: nowrap; }
+
 .hot-chips {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
@@ -480,6 +565,12 @@ async function searchHot(kw: string) {
   margin-top: 2px;
   display: grid;
   gap: 12px;
+}
+
+@media (max-width: 620px) {
+  .listening-hero { grid-template-columns: 1fr; gap: 12px; padding: 14px; }
+  .listening-hero h1 { font-size: 21px; }
+  .mood-quick-pick { align-items: flex-start; flex-direction: column; }
 }
 
 .hot-group {

@@ -19,9 +19,10 @@
       v-for="item in pet.stickers"
       :key="item.id"
       class="placed-sticker"
-      :class="{ dragging: dragId === item.id }"
+      :class="{ dragging: dragId === item.id, tapped: tappedId === item.id }"
       :style="{ left: `${item.x}%`, top: `${item.y}%` }"
       @pointerdown.stop="onStickerPointerDown($event, item.id)"
+      @click.stop="onStickerClick(item.id)"
       @contextmenu.prevent="pet.removeSticker(item.id)"
     >
       <PetSprites kind="sticker" :sticker-id="item.stickerId" :size="36" />
@@ -46,8 +47,10 @@ import { STICKER_OPTIONS, usePetStore } from '../stores/pet';
 
 const pet = usePetStore();
 const dragId = ref<string | null>(null);
+const tappedId = ref<string | null>(null);
 let dragMoved = false;
 let pointerId: number | null = null;
+let tapTimer: ReturnType<typeof setTimeout> | null = null;
 
 const placingLabel = computed(
   () => STICKER_OPTIONS.find((s) => s.id === pet.placingStickerId)?.label || '贴图',
@@ -94,13 +97,21 @@ function onStickerPointerDown(e: PointerEvent, id: string) {
     el.removeEventListener('pointercancel', onUp);
     dragId.value = null;
     pointerId = null;
-    // 未拖动时单击不删，避免误触；删除用 × 或右键
-    void dragMoved;
   };
 
   el.addEventListener('pointermove', onMove);
   el.addEventListener('pointerup', onUp);
   el.addEventListener('pointercancel', onUp);
+}
+
+function onStickerClick(id: string) {
+  if (dragMoved) return;
+  if (tapTimer) clearTimeout(tapTimer);
+  tappedId.value = id;
+  tapTimer = setTimeout(() => {
+    tappedId.value = null;
+    tapTimer = null;
+  }, 360);
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -115,6 +126,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown);
+  if (tapTimer) clearTimeout(tapTimer);
 });
 </script>
 
@@ -176,7 +188,10 @@ onBeforeUnmount(() => {
   touch-action: none;
   user-select: none;
   padding: 4px;
+  animation: stickerDrop 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+.placed-sticker.tapped .sticker-sprite { animation: stickerTap 0.32s ease; }
 
 .placed-sticker.dragging {
   cursor: grabbing;
@@ -210,5 +225,20 @@ onBeforeUnmount(() => {
 .sticker-remove:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+@keyframes stickerDrop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.55) rotate(-12deg); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+}
+
+@keyframes stickerTap {
+  35% { transform: rotate(-9deg) scale(1.16); }
+  70% { transform: rotate(7deg) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placed-sticker,
+  .placed-sticker.tapped .sticker-sprite { animation: none; }
 }
 </style>
