@@ -13,10 +13,10 @@ export type AppTheme =
   | 'matrix'
   | 'cyberpunk';
 
-export type UiStyle = 'glass' | 'solid' | 'minimal';
-export type UiBorder = 'subtle' | 'visible';
-export type UiPattern = 'gradient' | 'grid' | 'dots' | 'none';
-export type UiFont = 'sans' | 'serif' | 'mono';
+export type UiStyle = 'sketch' | 'fresh' | 'minimal';
+export type UiBorder = 'dashed' | 'solid';
+export type UiPattern = 'grid' | 'dots' | 'wash' | 'none';
+export type UiFont = 'hand' | 'kai' | 'sans' | 'mono';
 export type UiRadius = 'sharp' | 'soft' | 'round';
 
 export interface ThemeCustomize {
@@ -86,26 +86,26 @@ export const ACCENT_PRESETS = [
 ] as const;
 
 export const DEFAULT_CUSTOMIZE: ThemeCustomize = {
-  style: 'glass',
-  border: 'subtle',
-  pattern: 'gradient',
-  font: 'sans',
+  style: 'sketch',
+  border: 'dashed',
+  pattern: 'grid',
+  font: 'hand',
   radius: 'soft',
   accent: '',
 };
 
 const STYLE_DEFAULTS: Record<AppTheme, Partial<ThemeCustomize>> = {
-  paper:     { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  sand:      { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  mint:      { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  ink:       { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  celadon:   { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  cinnabar:  { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  breeze:    { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
-  gadgetcat: { style: 'solid', border: 'subtle', pattern: 'grid',    font: 'sans', radius: 'round' },
-  maruko:    { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'round' },
-  matrix:    { style: 'minimal', border: 'visible', pattern: 'grid',  font: 'mono', radius: 'sharp' },
-  cyberpunk: { style: 'minimal', border: 'visible', pattern: 'grid',  font: 'mono', radius: 'sharp' },
+  paper:     { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  sand:      { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  mint:      { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  ink:       { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  celadon:   { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  cinnabar:  { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  breeze:    { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  gadgetcat: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
+  maruko:    { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'round' },
+  matrix:    { style: 'minimal', border: 'solid', pattern: 'grid', font: 'mono', radius: 'sharp' },
+  cyberpunk: { style: 'minimal', border: 'solid', pattern: 'grid', font: 'mono', radius: 'sharp' },
 };
 
 export function normalizeTheme(value: string | null | undefined): AppTheme {
@@ -114,17 +114,17 @@ export function normalizeTheme(value: string | null | undefined): AppTheme {
 
 export function normalizeCustomize(raw: Partial<ThemeCustomize> | null | undefined): ThemeCustomize {
   const base = { ...DEFAULT_CUSTOMIZE, ...(raw || {}) };
-  const styles: UiStyle[] = ['glass', 'solid', 'minimal'];
-  const borders: UiBorder[] = ['subtle', 'visible'];
-  const patterns: UiPattern[] = ['gradient', 'grid', 'dots', 'none'];
-  const fonts: UiFont[] = ['sans', 'serif', 'mono'];
+  const styles: UiStyle[] = ['sketch', 'fresh', 'minimal'];
+  const borders: UiBorder[] = ['dashed', 'solid'];
+  const patterns: UiPattern[] = ['grid', 'dots', 'wash', 'none'];
+  const fonts: UiFont[] = ['hand', 'kai', 'sans', 'mono'];
   const radii: UiRadius[] = ['sharp', 'soft', 'round'];
 
-  // 兼容旧值映射
-  const legacyStyle: Record<string, UiStyle> = { sketch: 'glass', fresh: 'solid' };
-  const legacyBorder: Record<string, UiBorder> = { dashed: 'subtle', solid: 'visible' };
-  const legacyPattern: Record<string, UiPattern> = { wash: 'gradient' };
-  const legacyFont: Record<string, UiFont> = { hand: 'sans', kai: 'serif' };
+  // 兼容上一轮 Aurora 风格值
+  const legacyStyle: Record<string, UiStyle> = { glass: 'sketch', solid: 'fresh' };
+  const legacyBorder: Record<string, UiBorder> = { subtle: 'dashed', visible: 'solid' };
+  const legacyPattern: Record<string, UiPattern> = { gradient: 'wash' };
+  const legacyFont: Record<string, UiFont> = { serif: 'kai' };
 
   const rawStyle = legacyStyle[base.style] || base.style;
   const rawBorder = legacyBorder[base.border] || base.border;

@@ -266,20 +266,21 @@ function onBackgroundOpacity(e: Event) {
 }
 
 const styleOptions: Array<{ id: UiStyle; label: string }> = [
-  { id: 'glass', label: '玻璃' },
-  { id: 'solid', label: '实体' },
+  { id: 'sketch', label: '手绘' },
+  { id: 'fresh', label: '清新' },
   { id: 'minimal', label: '极简' },
 ];
 
 const fontOptions: Array<{ id: UiFont; label: string }> = [
+  { id: 'hand', label: '手写' },
+  { id: 'kai', label: '楷体' },
   { id: 'sans', label: '无衬线' },
-  { id: 'serif', label: '衬线' },
   { id: 'mono', label: '等宽' },
 ];
 
 const borderOptions: Array<{ id: UiBorder; label: string }> = [
-  { id: 'subtle', label: '细腻' },
-  { id: 'visible', label: '清晰' },
+  { id: 'dashed', label: '手绘虚线' },
+  { id: 'solid', label: '利落实线' },
 ];
 
 const radiusOptions: Array<{ id: UiRadius; label: string }> = [
@@ -289,9 +290,9 @@ const radiusOptions: Array<{ id: UiRadius; label: string }> = [
 ];
 
 const patternOptions: Array<{ id: UiPattern; label: string }> = [
-  { id: 'gradient', label: '渐变' },
   { id: 'grid', label: '网格' },
   { id: 'dots', label: '点阵' },
+  { id: 'wash', label: '柔光' },
   { id: 'none', label: '纯色' },
 ];
 

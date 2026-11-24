@@ -319,14 +319,19 @@ html[data-theme='cyberpunk'] {
   --ui-card-shadow: var(--shadow);
 }
 
+html[data-ui-font='hand'] {
+  --ui-font: "Ma Shan Zheng", "ZCOOL KuaiLe", "Noto Sans SC", cursive;
+  --ui-display: "Ma Shan Zheng", "ZCOOL KuaiLe", "Noto Sans SC", cursive;
+}
+
+html[data-ui-font='kai'] {
+  --ui-font: "Noto Serif SC", "KaiTi", "STKaiti", serif;
+  --ui-display: "Noto Serif SC", "KaiTi", "STKaiti", serif;
+}
+
 html[data-ui-font='sans'] {
   --ui-font: "Inter", "Noto Sans SC", system-ui, -apple-system, sans-serif;
   --ui-display: "Inter", "Noto Sans SC", system-ui, -apple-system, sans-serif;
-}
-
-html[data-ui-font='serif'] {
-  --ui-font: "Noto Serif SC", "Georgia", serif;
-  --ui-display: "Noto Serif SC", "Georgia", serif;
 }
 
 html[data-ui-font='mono'] {
@@ -350,52 +355,61 @@ html[data-ui-radius='round'] {
 }
 
 /* ========== 自定义令牌：边框 ========== */
-html[data-ui-border='subtle'] {
-  --ui-border-style: solid;
-  --border-alpha: 0.06;
+html[data-ui-border='dashed'] {
+  --ui-border-style: dashed;
+  --border-alpha: 0.12;
 }
 
-html[data-ui-border='visible'] {
+html[data-ui-border='solid'] {
   --ui-border-style: solid;
   --border-alpha: 0.14;
 }
 
 /* ========== 自定义令牌：风格 ========== */
-html[data-ui-style='glass'] {
-  --ui-card-shadow: var(--shadow);
-  --panel-bg: var(--surface);
-  --panel-blur: 16px;
-}
-
-html[data-ui-style='solid'] {
-  --ui-card-shadow: var(--shadow-sm);
+html[data-ui-style='sketch'] {
+  --ui-card-shadow: 3px 3px 0 var(--border-strong);
   --panel-bg: var(--surface-strong);
   --panel-blur: 0px;
+  --sketch-radius: 8px 14px 6px 12px;
+  --sketch-radius-sm: 5px 9px 4px 8px;
+  --sketch-border-w: 2px;
+}
+
+html[data-ui-style='fresh'] {
+  --ui-card-shadow: var(--shadow-sm);
+  --panel-bg: var(--surface-strong);
+  --panel-blur: 4px;
+  --sketch-radius: var(--ui-radius);
+  --sketch-radius-sm: var(--ui-radius-sm);
+  --sketch-border-w: 1px;
 }
 
 html[data-ui-style='minimal'] {
   --ui-card-shadow: none;
   --panel-bg: transparent;
   --panel-blur: 0px;
+  --sketch-radius: 4px;
+  --sketch-radius-sm: 3px;
+  --sketch-border-w: 1px;
 }
 
 /* ========== 自定义令牌：背景纹理 ========== */
-html[data-ui-pattern='gradient'] body {
-  background-image: var(--gradient-bg);
-  background-attachment: fixed;
-}
-
 html[data-ui-pattern='grid'] body {
   background-image:
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-size: 28px 28px;
   background-attachment: fixed;
 }
 
 html[data-ui-pattern='dots'] body {
   background-image: radial-gradient(var(--border-strong) 0.8px, transparent 1px);
-  background-size: 20px 20px;
+  background-size: 18px 18px;
+  background-attachment: fixed;
+}
+
+html[data-ui-pattern='wash'] body {
+  background-image: var(--gradient-bg);
   background-attachment: fixed;
 }
 
@@ -517,7 +531,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--stroke-chrome, 2px dashed var(--border-strong));
   flex-shrink: 0;
   gap: 12px;
   overflow: visible;
@@ -851,7 +865,7 @@ body {
 
 /* ========== 底部控制器 ========== */
 .bottom-controller {
-  border-top: 1px solid var(--border);
+  border-top: var(--stroke-chrome, 2px dashed var(--border-strong));
   z-index: 1000;
   flex-shrink: 0;
   height: calc(80px + env(safe-area-inset-bottom, 0px));
@@ -1319,8 +1333,8 @@ body {
   padding: 6px 14px;
   font-family: var(--ui-font);
   font-weight: 500;
-  border: 1px solid var(--border);
-  border-radius: var(--ui-radius-sm);
+  border: var(--stroke-control, 1.5px dashed var(--border-strong));
+  border-radius: var(--sketch-radius-sm, var(--ui-radius-sm));
   background: var(--surface);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1375,22 +1389,23 @@ body {
 }
 .btn-favorite.active { color: var(--accent); }
 
-/* ========== 卡片容器（sketch-card 改为 glass-card） ========== */
+/* ========== 卡片容器（手绘风格） ========== */
 .sketch-card {
-  border: 1px solid var(--border);
-  border-radius: var(--ui-radius);
+  border: var(--sketch-border-w, 2px) var(--ui-border-style, dashed) var(--border-strong);
+  border-radius: var(--sketch-radius, 8px 14px 6px 12px);
   padding: 20px;
   position: relative;
-  background: var(--panel-bg, var(--surface));
-  backdrop-filter: blur(var(--panel-blur, 16px));
-  -webkit-backdrop-filter: blur(var(--panel-blur, 16px));
+  background: var(--panel-bg, var(--surface-strong));
+  backdrop-filter: blur(var(--panel-blur, 0px));
+  -webkit-backdrop-filter: blur(var(--panel-blur, 0px));
   box-shadow: var(--ui-card-shadow);
   transition: all 0.25s ease;
 }
 
 .sketch-card-ghost {
   background: transparent;
-  border: 1px solid var(--border);
+  border: var(--sketch-border-w, 2px) var(--ui-border-style, dashed) var(--border);
+  border-radius: var(--sketch-radius, 8px 14px 6px 12px);
   box-shadow: none;
   backdrop-filter: none;
 }
@@ -1413,8 +1428,8 @@ body {
 .sketch-select__trigger {
   padding: 8px 12px;
   font-family: var(--ui-font);
-  border: 1px solid var(--border);
-  border-radius: var(--ui-radius-sm);
+  border: var(--stroke-control, 1.5px dashed var(--border-strong));
+  border-radius: var(--sketch-radius-sm, var(--ui-radius-sm));
   font-size: 14px;
   background: var(--surface-strong);
   color: var(--text);
@@ -2571,15 +2586,15 @@ html[data-theme] {
   --bg-subtle: var(--surface-glass);
 
   /* 旧描边系统 → 现代实线 */
-  --stroke-style-chrome: solid;
-  --stroke-style-state: solid;
-  --stroke-style-decor: solid;
-  --stroke-chrome: 1px solid var(--border-strong);
-  --stroke-frame: 1px solid var(--border);
-  --stroke-soft: 1px solid var(--border);
-  --stroke-divider: 1px solid var(--border);
-  --stroke-control: 1px solid var(--border);
-  --stroke-control-strong: 2px solid var(--border-strong);
+  --stroke-style-chrome: var(--ui-border-style, dashed);
+  --stroke-style-state: var(--ui-border-style, dashed);
+  --stroke-style-decor: var(--ui-border-style, dashed);
+  --stroke-chrome: 2px var(--ui-border-style, dashed) var(--border-strong);
+  --stroke-frame: 2px var(--ui-border-style, dashed) var(--border-strong);
+  --stroke-soft: 1px var(--ui-border-style, dashed) var(--border);
+  --stroke-divider: 1px var(--ui-border-style, dashed) var(--border);
+  --stroke-control: 1.5px var(--ui-border-style, dashed) var(--border-strong);
+  --stroke-control-strong: 2px var(--ui-border-style, dashed) var(--border-strong);
   --stroke-focus: 2px solid var(--accent);
   --stroke-rail: 3px solid var(--accent);
   --stroke-rail-idle: 3px solid transparent;
