@@ -109,6 +109,65 @@ export const usePlaylistStore = defineStore('playlist', () => {
     addSongTarget.value = null;
   }
 
+  /** 导出所有歌单 + 收藏为 JSON */
+  function exportData(favorites: Song[]): string {
+    return JSON.stringify({
+      app: 'moyun',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      playlists: playlists.value,
+      favorites,
+    }, null, 2);
+  }
+
+  /** 导入 JSON 备份（合并模式，不覆盖已有） */
+  function importData(json: string): { playlistsAdded: number; songsAdded: number; favoritesAdded: number } {
+    let parsed: any;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      throw new Error('文件格式不正确，请选择墨韵导出的 JSON 文件');
+    }
+
+    if (parsed?.app !== 'moyun') {
+      throw new Error('不是墨韵导出的数据文件');
+    }
+
+    let playlistsAdded = 0;
+    let songsAdded = 0;
+
+    if (Array.isArray(parsed.playlists)) {
+      for (const imported of parsed.playlists) {
+        if (!imported?.name || !Array.isArray(imported.songs)) continue;
+        const existing = playlists.value.find((p) => p.name === imported.name);
+        if (existing) {
+          // 合并歌曲（去重）
+          for (const song of imported.songs) {
+            const key = songKey(song);
+            if (!existing.songs.some((s) => songKey(s) === key)) {
+              existing.songs.push(serializeSong(song));
+              songsAdded++;
+            }
+          }
+          existing.updatedAt = Date.now();
+        } else {
+          playlists.value.push({
+            id: createId(),
+            name: String(imported.name).slice(0, 40),
+            songs: imported.songs.map((s: Song) => serializeSong(s)),
+            createdAt: imported.createdAt || Date.now(),
+            updatedAt: Date.now(),
+          });
+          playlistsAdded++;
+          songsAdded += imported.songs.length;
+        }
+      }
+    }
+
+    persist();
+    return { playlistsAdded, songsAdded, favoritesAdded: 0 };
+  }
+
   return {
     playlists,
     activePlaylistId,
@@ -123,5 +182,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
     removeSongFromPlaylist,
     openAddToPlaylist,
     closeAddToPlaylist,
+    exportData,
+    importData,
   };
 });

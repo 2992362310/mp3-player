@@ -327,7 +327,7 @@ function clearLibrary() {
   border-radius: 12px;
   background: color-mix(in srgb, var(--paper-bg) 55%, transparent);
   color: var(--accent);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 22px;
   pointer-events: none;
 }
@@ -393,7 +393,7 @@ function clearLibrary() {
   background: transparent;
   color: var(--ink);
   padding: 7px 0;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   outline: none;
 }
@@ -413,7 +413,7 @@ function clearLibrary() {
 .local-status,
 .local-error {
   margin: 0;
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
 }
 
@@ -454,7 +454,7 @@ function clearLibrary() {
   justify-content: center;
   gap: 6px;
   padding: 32px 16px;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   color: var(--ink-soft);
 }
 

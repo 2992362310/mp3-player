@@ -75,6 +75,57 @@
           <button @click="player.togglePlayMode()" class="sketch-icon" :title="player.playModeLabel" style="padding: 2px;" :disabled="!player.currentSong">
             <SketchIcon :name="modeIcon" :size="17" />
           </button>
+          <!-- 睡眠定时 -->
+          <div class="popover-anchor">
+            <button
+              @click="showSleepMenu = !showSleepMenu"
+              class="sketch-icon"
+              :class="{ active: sleepTimer.active }"
+              :title="sleepTimer.active ? `定时 ${sleepTimer.formattedRemaining}` : '睡眠定时'"
+              style="padding: 2px;"
+            >
+              <SketchIcon name="clock" :size="17" />
+            </button>
+            <Teleport to="body">
+              <div v-if="showSleepMenu" class="popover-overlay" @click="showSleepMenu = false" />
+              <div v-if="showSleepMenu" class="sleep-popover">
+                <div class="sleep-popover-header">
+                  <span>睡眠定时</span>
+                  <button class="sleep-popover-close" @click="showSleepMenu = false">
+                    <SketchIcon name="x" :size="14" />
+                  </button>
+                </div>
+                <div v-if="sleepTimer.active" class="sleep-active-info">
+                  <span class="sleep-countdown">{{ sleepTimer.formattedRemaining }}</span>
+                  <button class="btn-action btn-action-sm" @click="sleepTimer.stop(); showSleepMenu = false">取消</button>
+                </div>
+                <div v-else class="sleep-presets">
+                  <button
+                    v-for="opt in sleepTimer.presetOptions"
+                    :key="opt.value"
+                    class="sleep-preset-btn"
+                    @click="startSleep(opt.value)"
+                  >
+                    {{ opt.label }}
+                  </button>
+                </div>
+                <label class="sleep-fade-toggle">
+                  <input type="checkbox" :checked="sleepTimer.fadeOut" @change="sleepTimer.setFadeOut(($event.target as HTMLInputElement).checked)" />
+                  <span>到时渐弱音量</span>
+                </label>
+              </div>
+            </Teleport>
+          </div>
+          <!-- 播放队列 -->
+          <button
+            @click="toggleQueuePanel"
+            class="sketch-icon"
+            :class="{ active: showQueuePanel }"
+            title="播放队列 (Q)"
+            style="padding: 2px;"
+          >
+            <SketchIcon name="queue" :size="17" />
+          </button>
         </div>
       </div>
 
@@ -101,24 +152,63 @@
         <button type="button" class="player-toast-close" @click="player.clearError()" aria-label="关闭">×</button>
       </div>
     </Teleport>
+
+    <!-- 播放队列面板 -->
+    <Teleport to="body">
+      <div v-if="showQueuePanel" class="queue-overlay" @click.self="showQueuePanel = false">
+        <div class="queue-panel">
+          <div class="queue-header">
+            <h3>播放队列 <em>{{ player.queue.length }} 首</em></h3>
+            <div class="queue-header-actions">
+              <button v-if="player.queue.length > 0" class="btn-action btn-action-sm" @click="clearQueue">清空</button>
+              <button class="queue-close-btn" @click="showQueuePanel = false">
+                <SketchIcon name="x" :size="16" />
+              </button>
+            </div>
+          </div>
+          <div class="queue-list main-scroll">
+            <div v-if="player.queue.length === 0" class="queue-empty">队列是空的</div>
+            <div
+              v-for="(song, idx) in player.queue"
+              :key="`${song.sourceId}-${song.id}`"
+              :class="['queue-item', idx === player.currentIndex ? 'current' : '']"
+              @click="playQueueItem(idx)"
+            >
+              <span class="queue-item-index">{{ idx === player.currentIndex ? '♪' : idx + 1 }}</span>
+              <div class="queue-item-info">
+                <div class="queue-item-title">{{ song.title }}</div>
+                <div class="queue-item-artist">{{ song.artist }}</div>
+              </div>
+              <button class="queue-item-remove" title="移出队列" @click.stop="removeFromQueue(idx)">
+                <SketchIcon name="x" :size="13" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </footer>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useUIStore } from '../stores/ui';
+import { useSleepTimerStore } from '../stores/sleepTimer';
 import { useAudio } from '../composables/useAudio';
 import SketchIcon from './icons/SketchIcon.vue';
 import type { SketchIconName } from './icons/SketchIcon.vue';
 
 const player = usePlayerStore();
 const ui = useUIStore();
-const { playNext, playPrevious, seekTo } = useAudio();
+const sleepTimer = useSleepTimerStore();
+const { playNext, playPrevious, seekTo, playAtIndex } = useAudio();
 
 const progressEl = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
 const dragProgress = ref(0);
+const showSleepMenu = ref(false);
+const showQueuePanel = ref(false);
 
 const displayProgress = computed(() =>
   isDragging.value ? dragProgress.value : player.progress,
@@ -135,6 +225,38 @@ const modeIcon = computed<SketchIconName>(() => {
   };
   return map[player.playMode] || 'mode-order';
 });
+
+// 睡眠定时：到时由 useAudio 处理暂停，这里只关菜单
+watch(() => sleepTimer.active, (val) => {
+  if (!val) showSleepMenu.value = false;
+});
+
+function startSleep(minutes: number) {
+  sleepTimer.start(minutes);
+  showSleepMenu.value = false;
+}
+
+function toggleQueuePanel() {
+  showQueuePanel.value = !showQueuePanel.value;
+}
+
+function playQueueItem(idx: number) {
+  playAtIndex(idx);
+}
+
+function removeFromQueue(idx: number) {
+  const q = [...player.queue];
+  q.splice(idx, 1);
+  player.setQueue(q);
+  if (idx < player.currentIndex) {
+    player.currentIndex = player.currentIndex - 1;
+  }
+}
+
+function clearQueue() {
+  player.setQueue([]);
+  player.currentIndex = -1;
+}
 
 let errorTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -191,6 +313,9 @@ function toggleLyricPanel() {
   ui.toggleLyricPanel();
 }
 
+onBeforeUnmount(() => {
+  if (errorTimer) clearTimeout(errorTimer);
+});
 </script>
 
 <style scoped>
@@ -210,7 +335,7 @@ function toggleLyricPanel() {
   background: color-mix(in srgb, var(--paper-bg) 92%, var(--accent-soft));
   color: var(--accent);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 14px;
   line-height: 1.35;
   animation: toastIn 0.2s ease-out;
@@ -273,5 +398,271 @@ function toggleLyricPanel() {
 
 @keyframes iconSpin {
   to { transform: rotate(360deg); }
+}
+
+/* ===== 睡眠定时弹出层 ===== */
+.popover-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.popover-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+}
+
+.sleep-popover {
+  position: fixed;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  right: 16px;
+  z-index: 1510;
+  width: 220px;
+  border: var(--stroke-control, 1px solid var(--border, #ddd));
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  padding: 12px;
+  animation: sleepPopIn 0.18s ease-out;
+}
+
+@keyframes sleepPopIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sleep-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--ui-font, inherit);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink, #222);
+  margin-bottom: 10px;
+}
+
+.sleep-popover-close {
+  background: none;
+  border: none;
+  color: var(--muted, #888);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+}
+
+.sleep-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.sleep-preset-btn {
+  padding: 8px 6px;
+  border: var(--stroke-control, 1px solid var(--border, #ddd));
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--ink-soft, #444);
+  font-family: var(--ui-font, inherit);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sleep-preset-btn:hover {
+  background: var(--hover, #f5f5f5);
+  border-color: var(--accent, #6366f1);
+}
+
+.sleep-active-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.sleep-countdown {
+  font-family: var(--ui-font, inherit);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent, #6366f1);
+  font-variant-numeric: tabular-nums;
+}
+
+.sleep-fade-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft, #eee);
+  font-family: var(--ui-font, inherit);
+  font-size: 12px;
+  color: var(--muted, #888);
+  cursor: pointer;
+}
+
+/* ===== 播放队列面板 ===== */
+.queue-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.queue-panel {
+  width: min(360px, 88vw);
+  height: 100%;
+  background: var(--surface, #fff);
+  border-left: var(--stroke-control, 1px solid var(--border, #ddd));
+  display: flex;
+  flex-direction: column;
+  animation: queueSlideIn 0.22s ease-out;
+}
+
+@keyframes queueSlideIn {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft, #eee);
+  flex-shrink: 0;
+}
+
+.queue-header h3 {
+  margin: 0;
+  font-family: var(--ui-font, inherit);
+  font-size: 17px;
+  color: var(--ink, #222);
+}
+
+.queue-header h3 em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--muted, #888);
+  margin-left: 6px;
+}
+
+.queue-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-close-btn {
+  background: none;
+  border: none;
+  color: var(--muted, #888);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  border-radius: 6px;
+}
+
+.queue-close-btn:hover {
+  background: var(--hover, #f5f5f5);
+  color: var(--ink, #222);
+}
+
+.queue-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.queue-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--muted, #888);
+  font-family: var(--ui-font, inherit);
+  font-size: 14px;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.queue-item:hover {
+  background: var(--hover, #f5f5f5);
+}
+
+.queue-item.current {
+  background: var(--accent-soft, rgba(99, 102, 241, 0.08));
+}
+
+.queue-item-index {
+  width: 22px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted, #888);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-item.current .queue-item-index {
+  color: var(--accent, #6366f1);
+  font-size: 15px;
+}
+
+.queue-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-item-title {
+  font-family: var(--ui-font, inherit);
+  font-size: 13px;
+  color: var(--ink, #222);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-artist {
+  font-family: var(--ui-font, inherit);
+  font-size: 11px;
+  color: var(--muted, #888);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-remove {
+  background: none;
+  border: none;
+  color: var(--muted, #aaa);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.queue-item:hover .queue-item-remove {
+  opacity: 1;
+}
+
+.queue-item-remove:hover {
+  color: var(--accent, #e11d48);
+}
+
+.btn-action-sm {
+  padding: 4px 10px;
+  font-size: 12px;
 }
 </style>

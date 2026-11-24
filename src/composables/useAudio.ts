@@ -1,6 +1,8 @@
 import { watch } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useSearchStore } from '../stores/search';
+import { useSleepTimerStore } from '../stores/sleepTimer';
+import { useStatsStore } from '../stores/stats';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
 import { LOCAL_SOURCE_ID } from '../core/sources/LocalSource';
@@ -59,6 +61,8 @@ function audioFormatFor(song: Song | null | undefined, url: string): string[] | 
 export function useAudio() {
   const player = usePlayerStore();
   const search = useSearchStore();
+  const sleepTimer = useSleepTimerStore();
+  const stats = useStatsStore();
 
   function normalizeText(value?: string): string {
     return (value || '')
@@ -318,16 +322,50 @@ export function useAudio() {
   if (!initialized) {
     initialized = true;
 
+    // 听歌统计：累计播放时长
+    let lastRecordedTime = 0;
+    let accumulatedSeconds = 0;
+    let lastFlushAt = Date.now();
+
+    function flushListenTime() {
+      if (accumulatedSeconds > 0 && player.currentSong) {
+        stats.recordListenTime(player.currentSong, accumulatedSeconds);
+        accumulatedSeconds = 0;
+      }
+      lastFlushAt = Date.now();
+    }
+
+    // 睡眠定时渐弱：到时前 30 秒线性降音量
+    sleepTimer.setOnFadeUpdate((scale) => {
+      const base = player.muted ? 0 : player.volume;
+      audioEngine.setVolume(base * scale);
+    });
+
+    // 睡眠定时结束：恢复音量并暂停播放
+    sleepTimer.setOnFinish(() => {
+      audioEngine.setVolume(player.muted ? 0 : player.volume);
+      player.setPlaying(false);
+    });
+
     audioEngine.setCallbacks({
       onPlay: () => {
         player.isPlaying = true;
         holdOnUserPick = false;
         consecutiveFailures = 0;
         player.clearError();
+        // 新歌开始播放时记录
+        if (player.currentSong) {
+          stats.recordPlay(player.currentSong);
+          lastRecordedTime = player.currentTime;
+        }
       },
-      onPause: () => { player.isPlaying = false; },
+      onPause: () => {
+        player.isPlaying = false;
+        flushListenTime();
+      },
       onEnd: () => {
         player.isPlaying = false;
+        flushListenTime();
         if (player.playMode === 'single') {
           audioEngine.seek(0);
           audioEngine.play();
@@ -335,7 +373,16 @@ export function useAudio() {
           void playNext({ autoSkipOnFail: true });
         }
       },
-      onTimeUpdate: (ct, dur) => player.updateTime(ct, dur),
+      onTimeUpdate: (ct, dur) => {
+        // 累计播放时长（只在播放中累加）
+        if (player.isPlaying && ct > lastRecordedTime) {
+          accumulatedSeconds += ct - lastRecordedTime;
+          // 每 60 秒落盘一次
+          if (Date.now() - lastFlushAt > 60000) flushListenTime();
+        }
+        lastRecordedTime = ct;
+        player.updateTime(ct, dur);
+      },
       onError: (msg) => {
         const isLocal = player.currentSong?.sourceId === LOCAL_SOURCE_ID;
         if (isLocal) {

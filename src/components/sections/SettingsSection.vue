@@ -181,13 +181,75 @@
         </section>
 
         <section class="settings-section">
+          <h2>听歌统计</h2>
+          <div class="sketch-card">
+            <div class="stats-overview">
+              <div class="stat-box">
+                <span class="stat-value">{{ stats.totalPlays }}</span>
+                <span class="stat-label">累计播放</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-value">{{ stats.totalHours }}<small>h</small></span>
+                <span class="stat-label">听歌时长</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-value">{{ stats.uniqueSongs }}</span>
+                <span class="stat-label">听过歌曲</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-value">{{ stats.uniqueArtists }}</span>
+                <span class="stat-label">涉及歌手</span>
+              </div>
+            </div>
+
+            <div v-if="stats.weeklyChart.some(d => d.minutes > 0)" class="stats-chart">
+              <p class="setting-lead spaced">近 7 天听歌（分钟）</p>
+              <div class="weekly-bars">
+                <div v-for="d in stats.weeklyChart" :key="d.day" class="weekly-bar-col">
+                  <div class="weekly-bar-track">
+                    <div
+                      class="weekly-bar-fill"
+                      :style="{ height: `${Math.min(100, (d.minutes / maxWeeklyMinutes) * 100)}%` }"
+                    />
+                  </div>
+                  <span class="weekly-bar-label">{{ d.label }}</span>
+                  <span class="weekly-bar-value">{{ d.minutes }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="stats.topSongs.length > 0" class="stats-top">
+              <p class="setting-lead spaced">最常听歌曲</p>
+              <ol class="stats-list">
+                <li v-for="s in stats.topSongs.slice(0, 5)" :key="s.key">
+                  <span class="stats-list-title">{{ s.title }}</span>
+                  <span class="stats-list-count">{{ s.count }} 次</span>
+                </li>
+              </ol>
+            </div>
+
+            <div v-if="stats.topArtists.length > 0" class="stats-top">
+              <p class="setting-lead spaced">最常听歌手</p>
+              <ol class="stats-list">
+                <li v-for="a in stats.topArtists.slice(0, 5)" :key="a.name">
+                  <span class="stats-list-title">{{ a.name }}</span>
+                  <span class="stats-list-count">{{ a.count }} 次</span>
+                </li>
+              </ol>
+            </div>
+
+            <p v-if="stats.totalPlays === 0" class="setting-hint">还没有播放记录，听几首歌后这里就会有数据啦。</p>
+          </div>
+        </section>
+
+        <section class="settings-section">
           <h2>关于</h2>
           <div class="sketch-card">
             <div class="about-brand">
               <SketchIcon name="music" :size="24" />
-              <span>墨韵 · 手绘播放器</span>
+              <span>墨韵 MoYun</span>
             </div>
-            <p class="about-desc">一个手绘风格的在线音乐播放器</p>
+            <p class="about-desc">现代风格的多音源在线音乐播放器</p>
             <p class="about-version">版本 {{ APP_VERSION }} · 构建 {{ APP_BUILD_TIME }}</p>
             <ul class="update-notes">
               <li v-for="note in UPDATE_NOTES" :key="note">{{ note }}</li>
@@ -206,14 +268,21 @@ import ThemeCustomizer from '../ThemeCustomizer.vue';
 import { useSearchStore } from '../../stores/search';
 import { usePlayerStore, type AudioQuality } from '../../stores/player';
 import { useUIStore } from '../../stores/ui';
+import { useStatsStore } from '../../stores/stats';
 import { PET_OPTIONS, STICKER_OPTIONS, usePetStore, type StickerId } from '../../stores/pet';
 import storage from '../../core/storage';
 import { APP_BUILD_TIME, APP_VERSION, UPDATE_NOTES } from '../../version';
+import { computed } from 'vue';
 
 const search = useSearchStore();
 const player = usePlayerStore();
 const ui = useUIStore();
 const pet = usePetStore();
+const stats = useStatsStore();
+
+const maxWeeklyMinutes = computed(() =>
+  Math.max(1, ...stats.weeklyChart.map((d) => d.minutes)),
+);
 
 const wakeLockSupported =
   typeof navigator !== 'undefined' && 'wakeLock' in navigator;
@@ -269,12 +338,17 @@ function resetPwaPrompt() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  border: 1px var(--stroke-style-decor) var(--border);
-  border-radius: 8px;
-  font-family: 'Ma Shan Zheng', cursive;
-  color: var(--ink-soft);
-  background: transparent;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--ui-radius-sm, 8px);
+  font-family: var(--ui-font, inherit);
+  color: var(--text-secondary, var(--ink-soft));
+  background: var(--surface, transparent);
+  transition: border-color 0.2s ease;
+}
+
+.source-item:hover {
+  border-color: var(--border-strong);
 }
 
 .source-toggle {
@@ -282,17 +356,18 @@ function resetPwaPrompt() {
   appearance: none;
   width: 20px;
   height: 20px;
-  border: var(--stroke-control-strong);
-  border-radius: 5px;
-  background: var(--paper-bg);
+  border: 2px solid var(--border-strong, var(--border));
+  border-radius: 6px;
+  background: var(--surface-strong, var(--bg, white));
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .source-toggle:checked {
-  background: var(--accent-green);
-  border-color: var(--accent-green-strong);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .source-toggle:checked::after {
@@ -300,8 +375,9 @@ function resetPwaPrompt() {
   position: absolute;
   left: 3px;
   top: -2px;
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
+  font-weight: 700;
 }
 
 .action-row {
@@ -326,14 +402,14 @@ function resetPwaPrompt() {
   align-items: center;
   gap: 4px;
   padding: 8px 6px;
-  border: 1px var(--stroke-style-decor, dashed) var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--ui-radius-sm, 8px);
-  background: var(--bg-subtle);
-  color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
+  background: var(--surface, transparent);
+  color: var(--text-secondary, var(--ink-soft));
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .pet-pick:disabled {
@@ -368,44 +444,184 @@ function resetPwaPrompt() {
   list-style: none;
   display: grid;
   gap: 8px;
-  font-family: 'Ma Shan Zheng', cursive;
-  color: var(--ink-soft);
-  font-size: 16px;
+  font-family: var(--ui-font, inherit);
+  color: var(--text-secondary, var(--ink-soft));
+  font-size: 14px;
 }
 
 .shortcut-list kbd {
   display: inline-block;
   min-width: 1.6em;
-  padding: 1px 6px;
+  padding: 2px 8px;
   margin-right: 2px;
-  border: var(--stroke-control);
-  border-radius: 4px;
-  background: var(--surface-strong);
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: 6px;
+  background: var(--surface-strong, var(--surface));
+  font-family: var(--ui-font, inherit);
   font-size: 12px;
+  font-weight: 600;
   text-align: center;
 }
 
 .setting-hint {
   margin-top: 10px;
+  color: var(--text-muted, var(--muted));
+  font-size: 13px;
+  font-family: var(--ui-font, inherit);
+}
+
+/* ===== 听歌统计 ===== */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--ui-radius-sm, 8px);
+  background: var(--surface, transparent);
+}
+
+.stat-value {
+  font-family: var(--ui-font, inherit);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.stat-value small {
+  font-size: 13px;
+  font-weight: 400;
   color: var(--muted);
-  font-size: 14px;
-  font-family: 'Ma Shan Zheng', cursive;
+}
+
+.stat-label {
+  font-family: var(--ui-font, inherit);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.stats-chart {
+  margin-top: 6px;
+}
+
+.weekly-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 100px;
+  padding: 8px 4px 0;
+}
+
+.weekly-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+}
+
+.weekly-bar-track {
+  flex: 1;
+  width: 100%;
+  max-width: 32px;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 4px 4px 0 0;
+  background: var(--bg-subtle, rgba(0, 0, 0, 0.04));
+  overflow: hidden;
+}
+
+.weekly-bar-fill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--accent);
+  transition: height 0.3s ease;
+  min-height: 2px;
+}
+
+.weekly-bar-label {
+  font-family: var(--ui-font, inherit);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.weekly-bar-value {
+  font-family: var(--ui-font, inherit);
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.stats-top {
+  margin-top: 4px;
+}
+
+.stats-list {
+  margin: 4px 0 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.stats-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-family: var(--ui-font, inherit);
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.stats-list li:nth-child(odd) {
+  background: var(--bg-subtle, rgba(0, 0, 0, 0.02));
+}
+
+.stats-list-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.stats-list-count {
+  color: var(--muted);
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .about-version {
   margin: 10px 0 0;
-  font-family: 'Ma Shan Zheng', cursive;
-  color: var(--faint);
-  font-size: 14px;
+  font-family: var(--ui-font, inherit);
+  color: var(--text-faint, var(--faint));
+  font-size: 13px;
 }
 
 .update-notes {
   margin: 12px 0 0;
   padding-left: 18px;
-  color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 14px;
+  color: var(--text-secondary, var(--ink-soft));
+  font-family: var(--ui-font, inherit);
+  font-size: 13px;
   line-height: 1.7;
 }
 

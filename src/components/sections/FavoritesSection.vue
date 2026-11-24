@@ -175,6 +175,26 @@
           <button type="submit" class="btn-action btn-action-primary">新建</button>
         </form>
 
+        <div class="playlist-tools">
+          <button type="button" class="btn-action" title="导出所有歌单为 JSON 文件" @click="exportPlaylists">
+            <SketchIcon name="download" :size="14" />
+            <span>导出</span>
+          </button>
+          <button type="button" class="btn-action" title="从 JSON 文件导入歌单" @click="importPlaylists">
+            <SketchIcon name="upload" :size="14" />
+            <span>导入</span>
+          </button>
+          <input
+            ref="importFileInput"
+            type="file"
+            accept=".json"
+            style="display: none;"
+            @change="onImportFile"
+          />
+        </div>
+
+        <div v-if="importMessage" class="import-message">{{ importMessage }}</div>
+
         <div v-if="playlists.playlists.length === 0" class="library-empty">
           <p>还没有歌单</p>
           <p class="library-empty-hint">建好后，在歌曲旁点 + 加入</p>
@@ -291,6 +311,8 @@ const libraryTab = ref<'favorites' | 'playlists' | 'recent'>('favorites');
 const newPlaylistName = ref('');
 const renameDraft = ref('');
 const recentQuery = ref('');
+const importFileInput = ref<HTMLInputElement | null>(null);
+const importMessage = ref('');
 
 const filteredRecentPlays = computed(() => {
   const query = recentQuery.value.trim().toLowerCase();
@@ -362,6 +384,41 @@ function playFromActive(song: Song) {
   if (!playlists.activePlaylist) return;
   playFromList(playlists.activePlaylist.songs, song);
 }
+
+function exportPlaylists() {
+  const json = playlists.exportData(player.favorites);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `moyun-playlists-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  importMessage.value = '已导出歌单文件';
+  setTimeout(() => { importMessage.value = ''; }, 3000);
+}
+
+function importPlaylists() {
+  importFileInput.value?.click();
+}
+
+function onImportFile(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const result = playlists.importData(String(reader.result));
+      importMessage.value = `导入完成：${result.playlistsAdded} 个新歌单，${result.songsAdded} 首歌`;
+    } catch (err: any) {
+      importMessage.value = err?.message || '导入失败';
+    }
+    input.value = '';
+    setTimeout(() => { importMessage.value = ''; }, 5000);
+  };
+  reader.readAsText(file);
+}
 </script>
 
 <style scoped>
@@ -393,7 +450,7 @@ function playFromActive(song: Song) {
   padding: 10px 8px;
   border: none;
   background: none;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 16px;
   color: var(--muted);
   cursor: pointer;
@@ -483,7 +540,7 @@ function playFromActive(song: Song) {
   background: transparent;
   color: var(--ink);
   padding: 7px 0;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   outline: none;
 }
@@ -514,7 +571,7 @@ function playFromActive(song: Song) {
   justify-content: center;
   gap: 6px;
   padding: 32px 16px;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   color: var(--ink-soft);
 }
 
@@ -540,6 +597,22 @@ function playFromActive(song: Song) {
 .rename-input {
   flex: 1;
   min-width: 0;
+}
+
+.playlist-tools {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.import-message {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--ui-font, inherit);
+  font-size: 12px;
+  animation: fadeIn 0.2s ease;
 }
 
 .playlist-grid {
@@ -579,7 +652,7 @@ function playFromActive(song: Song) {
   background: none;
   text-align: left;
   cursor: pointer;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
 }
 
 .playlist-tile-name {
@@ -609,7 +682,7 @@ function playFromActive(song: Song) {
   border: none;
   background: none;
   padding: 6px 10px;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   color: var(--muted);
   cursor: pointer;

@@ -169,18 +169,20 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 1px dashed #c4b5a0;
-  background: rgba(255, 255, 255, 0.68);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .pwa-update-banner {
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-  background: color-mix(in srgb, var(--paper-bg) 92%, var(--accent-soft));
+  border-bottom: 1px solid var(--accent-soft);
+  background: var(--accent-soft);
 }
 
 .pwa-update-banner .pwa-banner-content strong { color: var(--accent); }
-.pwa-update-banner .pwa-banner-content p { color: var(--ink-soft); }
+.pwa-update-banner .pwa-banner-content p { color: var(--text-secondary); }
 
 .pwa-banner-content {
   min-width: 0;
@@ -188,16 +190,17 @@ onBeforeUnmount(() => {
 
 .pwa-banner-content strong {
   display: block;
-  color: #2d2d2d;
-  font-family: 'KaiTi', 'STKaiti', serif;
-  font-size: 16px;
+  color: var(--text);
+  font-family: var(--ui-display, inherit);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .pwa-banner-content p {
   margin: 2px 0 0;
-  color: #666;
+  color: var(--text-muted);
   font-size: 13px;
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-family: var(--ui-font, inherit);
 }
 
 .pwa-banner-actions {

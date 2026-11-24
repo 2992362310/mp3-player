@@ -161,6 +161,61 @@
       <path d="M11.2 10.6V15.6" />
       <path d="M10.2 11.4L11.2 10.6L12.2 11.4" />
     </template>
+
+    <!-- sun -->
+    <template v-else-if="name === 'sun'">
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.8V5.2M12 18.8V21.2M21.2 12H18.8M5.2 12H2.8M18.4 5.6L16.8 7.2M7.2 16.8L5.6 18.4M18.4 18.4L16.8 16.8M7.2 7.2L5.6 5.6" />
+    </template>
+
+    <!-- moon -->
+    <template v-else-if="name === 'moon'">
+      <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" />
+    </template>
+
+    <!-- clock：睡眠定时 -->
+    <template v-else-if="name === 'clock'">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7V12L15.5 14" />
+    </template>
+
+    <!-- queue：播放队列 -->
+    <template v-else-if="name === 'queue'">
+      <path d="M4 6.5H16" />
+      <path d="M4 11H16" />
+      <path d="M4 15.5H12" />
+      <path d="M17.5 13.5L21 16L17.5 18.5Z" fill="currentColor" stroke="none" />
+      <path d="M21 16H15" />
+    </template>
+
+    <!-- download -->
+    <template v-else-if="name === 'download'">
+      <path d="M12 3V15" />
+      <path d="M7.5 10.5L12 15L16.5 10.5" />
+      <path d="M4 18.5H20" />
+    </template>
+
+    <!-- upload -->
+    <template v-else-if="name === 'upload'">
+      <path d="M12 15V3" />
+      <path d="M7.5 7.5L12 3L16.5 7.5" />
+      <path d="M4 18.5H20" />
+    </template>
+
+    <!-- trash -->
+    <template v-else-if="name === 'trash'">
+      <path d="M3.5 6H20.5" />
+      <path d="M8 6V4.5C8 3.7 8.7 3 9.5 3H14.5C15.3 3 16 3.7 16 4.5V6" />
+      <path d="M5.5 6L6.5 19.5C6.6 20.3 7.2 21 8 21H16C16.8 21 17.4 20.3 17.5 19.5L18.5 6" />
+      <path d="M10 10.5V16.5" />
+      <path d="M14 10.5V16.5" />
+    </template>
+
+    <!-- x / close -->
+    <template v-else-if="name === 'x'">
+      <path d="M6 6L18 18" />
+      <path d="M18 6L6 18" />
+    </template>
   </svg>
 </template>
 
@@ -184,7 +239,15 @@ export type SketchIconName =
   | 'mode-order'
   | 'mode-random'
   | 'mode-loop'
-  | 'mode-single';
+  | 'mode-single'
+  | 'sun'
+  | 'moon'
+  | 'clock'
+  | 'queue'
+  | 'download'
+  | 'upload'
+  | 'trash'
+  | 'x';
 
 withDefaults(
   defineProps<{

@@ -33,6 +33,13 @@
       </div>
       <div class="nav-right">
         <button
+          class="nav-icon-btn"
+          :title="isDarkTheme ? '切换到亮色主题' : '切换到暗色主题'"
+          @click="toggleDarkMode"
+        >
+          <SketchIcon :name="isDarkTheme ? 'sun' : 'moon'" :size="20" />
+        </button>
+        <button
           v-for="section in sections"
           :key="section.id"
           :class="['nav-icon-btn', activeSection === section.id ? 'active' : '']"
@@ -81,6 +88,7 @@ import { useWakeLock } from './composables/useWakeLock';
 import { useAudio } from './composables/useAudio';
 import SketchIcon from './components/icons/SketchIcon.vue';
 import type { SketchIconName } from './components/icons/SketchIcon.vue';
+import { THEME_PRESETS, type AppTheme } from './core/theme';
 
 import SearchBar from './components/SearchBar.vue';
 import PlayerBar from './components/PlayerBar.vue';
@@ -121,6 +129,22 @@ const sections = computed<Section[]>(() => [
 
 const keepAwakeActive = computed(() => isPlaying.value && keepScreenOn.value);
 
+const DARK_THEMES: AppTheme[] = ['ink', 'matrix', 'cyberpunk'];
+const isDarkTheme = computed(() => DARK_THEMES.includes(ui.theme));
+
+function toggleDarkMode() {
+  const presets = THEME_PRESETS;
+  if (isDarkTheme.value) {
+    // 切到亮色：找第一个非暗色主题
+    const light = presets.find((p) => !p.dark);
+    if (light) ui.setTheme(light.id);
+  } else {
+    // 切到暗色：找第一个暗色主题
+    const dark = presets.find((p) => p.dark);
+    if (dark) ui.setTheme(dark.id);
+  }
+}
+
 provide('goDiscover', () => {
   activeSection.value = 'discover';
 });
@@ -151,26 +175,27 @@ onMounted(async () => {
 
 .guide-card {
   width: min(92vw, 520px);
-  background: var(--paper-bg);
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 18px 18px 14px;
-  color: var(--ink);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  animation: modalIn 0.22s ease-out;
+  background: var(--surface-strong, var(--paper-bg));
+  border: 1px solid var(--border);
+  border-radius: var(--ui-radius, 16px);
+  padding: 20px 20px 16px;
+  color: var(--text, var(--ink));
+  box-shadow: var(--shadow-lg, 0 8px 30px rgba(0, 0, 0, 0.2));
+  animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .guide-card h2 {
-  margin: 0 0 10px;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 24px;
+  margin: 0 0 12px;
+  font-family: var(--ui-display, inherit);
+  font-size: 22px;
+  font-weight: 700;
 }
 
 .guide-card ol {
   margin: 0;
   padding-left: 20px;
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-  color: #5f5f5f;
+  font-family: var(--ui-font, inherit);
+  color: var(--text-secondary, #5f5f5f);
   line-height: 1.65;
   font-size: 14px;
 }

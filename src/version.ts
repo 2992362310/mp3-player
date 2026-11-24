@@ -3,8 +3,8 @@ export const APP_VERSION = __APP_VERSION__;
 export const APP_BUILD_TIME = __APP_BUILD_TIME__;
 
 export const UPDATE_NOTES = [
-  '桌宠与贴图：可开关、拖动桌宠，贴纸可摆放与删除',
-  '本地音乐：导入文件/文件夹、拖放、IndexedDB 持久化、同名 LRC 歌词',
-  '歌词面板优化：点击歌词可跳转，移动端显示更稳定',
-  '播放时可选保持屏幕常亮（前台生效）',
+  '睡眠定时：15/30/60/90 分钟定时关闭，支持渐弱音量',
+  '播放队列面板：查看待播列表、点击切歌、移除/清空',
+  '歌单导入导出：JSON 备份与恢复，跨设备迁移',
+  '听歌统计：播放次数、时长、最常听歌曲/歌手、7 日趋势',
 ] as const;

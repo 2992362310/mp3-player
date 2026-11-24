@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: color-mix(in srgb, var(--paper-bg) 90%, transparent);
   color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   white-space: nowrap;
   pointer-events: auto;
@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 12px;
   padding: 2px 10px;
   cursor: pointer;

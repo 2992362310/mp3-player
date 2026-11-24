@@ -1,6 +1,6 @@
 # 墨韵 MoYun
 
-Vue 3 + Vite + Pinia 多音源在线音乐播放器，支持 PWA、歌词、自建歌单与主题设置器。
+Vue 3 + Vite + Pinia 多音源在线音乐播放器。Aurora 设计体系：玻璃拟态、渐变强调色、现代排版。支持 PWA、歌词、自建歌单与主题设置器。
 
 ### 安装与运行
 
@@ -40,7 +40,11 @@ pnpm run preview
 - 本地音乐：导入文件/文件夹、拖放导入，IndexedDB 持久化，同名 `.lrc` 自动配对
 - 站点：应用内直接嵌入 GD Studio / QQMP3 网页（可新窗口打开）
 - 歌词面板（移动端全屏 / 横屏紧凑布局），点击歌词跳转
-- 主题设置器：底色预设 + 风格/字体/边框/圆角/纹理/强调色
+- 主题设置器：11 套现代主题 + 玻璃/实体/极简风格 + 渐变/网格/点阵纹理 + 自定义强调色
+- 睡眠定时：15/30/60/90 分钟定时关闭播放，支持渐弱音量
+- 播放队列面板：查看待播列表、点击切歌、移除/清空
+- 歌单导入导出：JSON 备份与恢复，方便跨设备迁移
+- 听歌统计：播放次数、时长、最常听歌曲/歌手、近 7 天趋势
 - 锁屏 Media Session（封面、进度、快进快退）
 - 可选「播放时不自动息屏」
 
@@ -68,8 +72,8 @@ GD Music API 封装：限流（约 5 分钟 50 次）、缓存、音质降级、
 
 ### 状态与界面
 
-- Pinia：`player` / `search` / `playlist` / `ui`
-- 样式：`src/assets/styles/main.css`（CSS 变量主题，无 DaisyUI）
+- Pinia：`player` / `search` / `playlist` / `ui` / `sleepTimer` / `stats` / `pet` / `local`
+- 样式：`src/assets/styles/main.css`（Aurora 设计体系，CSS 变量主题）
 
 ---
 
@@ -83,6 +87,7 @@ MIT License - 本项目仅供学习交流使用
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Howler.js](https://howlerjs.com/)
+- [Inter](https://rsms.me/inter/) / [Noto Sans SC](https://fonts.google.com/noto/specimen/Noto+Sans+SC)
 - [GD Music API](https://music-api.gdstudio.xyz/)
 
 > **提示**：请合理使用 API，支持正版音乐，尊重版权。

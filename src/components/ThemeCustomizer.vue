@@ -83,7 +83,7 @@
         {{ opt.label }}
       </button>
     </div>
-    <p class="setting-hint">虚线偏手绘装饰，实线更利落。顶栏/底栏与播放状态始终用实线；粗=主结构，细=分割；深=近，浅=远。</p>
+    <p class="setting-hint">细腻适合日常，清晰适合强调结构。</p>
 
     <p class="setting-lead spaced">圆角</p>
     <div class="chip-row">
@@ -266,21 +266,20 @@ function onBackgroundOpacity(e: Event) {
 }
 
 const styleOptions: Array<{ id: UiStyle; label: string }> = [
-  { id: 'sketch', label: '手绘' },
-  { id: 'fresh', label: '清新' },
+  { id: 'glass', label: '玻璃' },
+  { id: 'solid', label: '实体' },
   { id: 'minimal', label: '极简' },
 ];
 
 const fontOptions: Array<{ id: UiFont; label: string }> = [
-  { id: 'hand', label: '手写' },
-  { id: 'kai', label: '楷体' },
   { id: 'sans', label: '无衬线' },
+  { id: 'serif', label: '衬线' },
   { id: 'mono', label: '等宽' },
 ];
 
 const borderOptions: Array<{ id: UiBorder; label: string }> = [
-  { id: 'dashed', label: '手绘虚线' },
-  { id: 'solid', label: '利落实线' },
+  { id: 'subtle', label: '细腻' },
+  { id: 'visible', label: '清晰' },
 ];
 
 const radiusOptions: Array<{ id: UiRadius; label: string }> = [
@@ -290,14 +289,14 @@ const radiusOptions: Array<{ id: UiRadius; label: string }> = [
 ];
 
 const patternOptions: Array<{ id: UiPattern; label: string }> = [
+  { id: 'gradient', label: '渐变' },
   { id: 'grid', label: '网格' },
   { id: 'dots', label: '点阵' },
-  { id: 'wash', label: '柔光' },
   { id: 'none', label: '纯色' },
 ];
 
 const currentPresetAccent = computed(
-  () => THEME_PRESETS.find((p) => p.id === ui.theme)?.accent || '#b83228',
+  () => THEME_PRESETS.find((p) => p.id === ui.theme)?.accent || '#6366f1',
 );
 
 function onCustomAccent(e: Event) {

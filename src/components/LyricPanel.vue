@@ -294,7 +294,7 @@ function handleLineClick(time: number) {
   height: 100%;
   color: var(--muted);
   font-size: 14px;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   flex: 1;
 }
 
@@ -322,14 +322,14 @@ function handleLineClick(time: number) {
 
 .lyrics-signature-title {
   display: block;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 15px;
   color: var(--ink);
 }
 
 .lyrics-signature-artist {
   display: block;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   color: var(--muted);
   margin-top: 2px;
@@ -344,14 +344,14 @@ function handleLineClick(time: number) {
 .lyrics-desktop-title {
   flex: 1;
   min-width: 0;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 16px;
   color: var(--ink-soft);
 }
 
 .lyrics-mobile-title {
   display: block;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 16px;
   color: var(--ink);
   overflow: hidden;
@@ -361,7 +361,7 @@ function handleLineClick(time: number) {
 
 .lyrics-mobile-artist {
   display: block;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
@@ -396,7 +396,7 @@ function handleLineClick(time: number) {
   border-bottom: var(--stroke-divider);
   background: var(--accent-soft);
   color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -407,7 +407,7 @@ function handleLineClick(time: number) {
   border-radius: 6px;
   background: var(--surface-strong);
   color: var(--ink);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 12px;
   padding: 4px 10px;
   cursor: pointer;

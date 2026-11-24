@@ -51,7 +51,7 @@ function setLineRef(el: Element | ComponentPublicInstance | null) {
   padding: 10px 16px;
   font-size: 15px;
   line-height: 1.8;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   color: var(--muted);
   font-weight: normal;
   cursor: pointer;

@@ -386,7 +386,7 @@ async function searchHot(kw: string) {
 .results-loading {
   text-align: center;
   padding: 40px;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   color: var(--accent-green);
 }
 
@@ -419,7 +419,7 @@ async function searchHot(kw: string) {
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   color: var(--ink-soft);
   cursor: pointer;
@@ -488,7 +488,7 @@ async function searchHot(kw: string) {
   justify-content: flex-start;
   gap: 0;
   color: var(--muted);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   padding: 8px 12px 16px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -585,7 +585,7 @@ async function searchHot(kw: string) {
 .hot-group-title {
   font-size: 16px;
   color: var(--faint);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   letter-spacing: 0.12em;
   text-align: center;
 }
@@ -595,7 +595,7 @@ async function searchHot(kw: string) {
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 16px;
   line-height: 1;
   padding: 9px 12px;

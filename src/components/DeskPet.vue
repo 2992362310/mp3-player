@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
 }
 
 .desk-pet-name {
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 11px;
   color: var(--faint);
   letter-spacing: 0.08em;
@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
   border-radius: var(--ui-radius-sm, 8px);
   background: color-mix(in srgb, var(--paper-bg) 88%, transparent);
   color: var(--ink-soft);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 13px;
   white-space: nowrap;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);

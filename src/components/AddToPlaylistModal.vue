@@ -121,7 +121,7 @@ function createAndAdd() {
 
 .modal-header h3 {
   margin: 0;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 22px;
 }
 
@@ -130,19 +130,19 @@ function createAndAdd() {
   background: none;
   font-size: 22px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-muted, #666);
   line-height: 1;
 }
 
 .modal-song {
   margin: 0 0 12px;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 15px;
-  color: #444;
+  color: var(--text-secondary, #444);
 }
 
 .modal-song span {
-  color: #888;
+  color: var(--text-muted, #888);
   font-size: 13px;
 }
 
@@ -164,7 +164,7 @@ function createAndAdd() {
   border-radius: 8px;
   background: var(--surface);
   cursor: pointer;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   color: var(--ink);
   font-size: 16px;
 }
@@ -181,7 +181,7 @@ function createAndAdd() {
 .empty-hint {
   margin: 8px 0;
   color: var(--muted);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   text-align: center;
 }
 
@@ -197,14 +197,14 @@ function createAndAdd() {
   border: var(--stroke-focus);
   border-radius: 8px;
   background: transparent;
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   color: var(--ink);
 }
 
 .toast {
   margin: 10px 0 0;
   color: var(--accent-green);
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: var(--ui-font, inherit);
   font-size: 14px;
   text-align: center;
 }

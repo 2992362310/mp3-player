@@ -1,4 +1,4 @@
-/** 主题预设与自定义配置 */
+/** 主题预设与自定义配置 — Aurora 设计体系 */
 
 export type AppTheme =
   | 'paper'
@@ -13,10 +13,10 @@ export type AppTheme =
   | 'matrix'
   | 'cyberpunk';
 
-export type UiStyle = 'sketch' | 'fresh' | 'minimal';
-export type UiBorder = 'dashed' | 'solid';
-export type UiPattern = 'grid' | 'dots' | 'wash' | 'none';
-export type UiFont = 'hand' | 'kai' | 'sans' | 'mono';
+export type UiStyle = 'glass' | 'solid' | 'minimal';
+export type UiBorder = 'subtle' | 'visible';
+export type UiPattern = 'gradient' | 'grid' | 'dots' | 'none';
+export type UiFont = 'sans' | 'serif' | 'mono';
 export type UiRadius = 'sharp' | 'soft' | 'round';
 
 export interface ThemeCustomize {
@@ -48,15 +48,19 @@ export const THEME_PRESETS: Array<{
   label: string;
   swatch: string;
   accent: string;
+  dark?: boolean;
 }> = [
-  { id: 'paper', label: '宣纸', swatch: '#f7efdc', accent: '#b83228' },
-  { id: 'breeze', label: '清风', swatch: '#e8f6f1', accent: '#1f9a8c' },
-  { id: 'gadgetcat', label: '蓝喵', swatch: '#eef5fa', accent: '#169bd5' },
-  { id: 'matrix', label: '矩阵', swatch: '#050805', accent: '#00ff41' },
-  { id: 'maruko', label: '梦游', swatch: '#fff7ea', accent: '#ff9bb0' },
-  { id: 'ink', label: '夜航', swatch: '#171c22', accent: '#d8ab76' },
-  { id: 'cyberpunk', label: '现场', swatch: '#080808', accent: '#fcee09' },
-  { id: 'celadon', label: '静听', swatch: '#dde8e3', accent: '#35685a' },
+  { id: 'paper', label: '云白', swatch: '#f1f5f9', accent: '#6366f1' },
+  { id: 'breeze', label: '晴空', swatch: '#eff6ff', accent: '#3b82f6', dark: false },
+  { id: 'ink', label: '夜幕', swatch: '#0f172a', accent: '#818cf8', dark: true },
+  { id: 'sand', label: '暖阳', swatch: '#fffbeb', accent: '#f59e0b' },
+  { id: 'mint', label: '薄荷', swatch: '#f0fdf4', accent: '#10b981' },
+  { id: 'maruko', label: '晚樱', swatch: '#fdf2f8', accent: '#ec4899' },
+  { id: 'matrix', label: '深空', swatch: '#030712', accent: '#22c55e', dark: true },
+  { id: 'cyberpunk', label: '赛博', swatch: '#0a0a0f', accent: '#eab308', dark: true },
+  { id: 'celadon', label: '青瓷', swatch: '#f0fdfa', accent: '#14b8a6' },
+  { id: 'gadgetcat', label: '冰晶', swatch: '#f0f9ff', accent: '#6366f1' },
+  { id: 'cinnabar', label: '丹霞', swatch: '#fef2f2', accent: '#ef4444' },
 ];
 
 export const LISTENING_MOODS: Array<{
@@ -73,33 +77,35 @@ export const LISTENING_MOODS: Array<{
 ];
 
 export const ACCENT_PRESETS = [
-  '#b83228',
-  '#1f9a8c',
-  '#169bd5',
-  '#00ff41',
+  '#6366f1',
+  '#3b82f6',
+  '#10b981',
+  '#ec4899',
+  '#f59e0b',
+  '#ef4444',
 ] as const;
 
 export const DEFAULT_CUSTOMIZE: ThemeCustomize = {
-  style: 'sketch',
-  border: 'dashed',
-  pattern: 'grid',
-  font: 'hand',
+  style: 'glass',
+  border: 'subtle',
+  pattern: 'gradient',
+  font: 'sans',
   radius: 'soft',
   accent: '',
 };
 
 const STYLE_DEFAULTS: Record<AppTheme, Partial<ThemeCustomize>> = {
-  paper: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  sand: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  mint: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  ink: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  celadon: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'kai', radius: 'soft' },
-  cinnabar: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  breeze: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
-  gadgetcat: { style: 'fresh', border: 'solid', pattern: 'dots', font: 'sans', radius: 'round' },
-  maruko: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
-  matrix: { style: 'minimal', border: 'solid', pattern: 'none', font: 'mono', radius: 'sharp' },
-  cyberpunk: { style: 'minimal', border: 'solid', pattern: 'none', font: 'sans', radius: 'sharp' },
+  paper:     { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  sand:      { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  mint:      { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  ink:       { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  celadon:   { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  cinnabar:  { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  breeze:    { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'soft' },
+  gadgetcat: { style: 'solid', border: 'subtle', pattern: 'grid',    font: 'sans', radius: 'round' },
+  maruko:    { style: 'glass', border: 'subtle', pattern: 'gradient', font: 'sans', radius: 'round' },
+  matrix:    { style: 'minimal', border: 'visible', pattern: 'grid',  font: 'mono', radius: 'sharp' },
+  cyberpunk: { style: 'minimal', border: 'visible', pattern: 'grid',  font: 'mono', radius: 'sharp' },
 };
 
 export function normalizeTheme(value: string | null | undefined): AppTheme {
@@ -108,17 +114,28 @@ export function normalizeTheme(value: string | null | undefined): AppTheme {
 
 export function normalizeCustomize(raw: Partial<ThemeCustomize> | null | undefined): ThemeCustomize {
   const base = { ...DEFAULT_CUSTOMIZE, ...(raw || {}) };
-  const styles: UiStyle[] = ['sketch', 'fresh', 'minimal'];
-  const borders: UiBorder[] = ['dashed', 'solid'];
-  const patterns: UiPattern[] = ['grid', 'dots', 'wash', 'none'];
-  const fonts: UiFont[] = ['hand', 'kai', 'sans', 'mono'];
+  const styles: UiStyle[] = ['glass', 'solid', 'minimal'];
+  const borders: UiBorder[] = ['subtle', 'visible'];
+  const patterns: UiPattern[] = ['gradient', 'grid', 'dots', 'none'];
+  const fonts: UiFont[] = ['sans', 'serif', 'mono'];
   const radii: UiRadius[] = ['sharp', 'soft', 'round'];
 
+  // 兼容旧值映射
+  const legacyStyle: Record<string, UiStyle> = { sketch: 'glass', fresh: 'solid' };
+  const legacyBorder: Record<string, UiBorder> = { dashed: 'subtle', solid: 'visible' };
+  const legacyPattern: Record<string, UiPattern> = { wash: 'gradient' };
+  const legacyFont: Record<string, UiFont> = { hand: 'sans', kai: 'serif' };
+
+  const rawStyle = legacyStyle[base.style] || base.style;
+  const rawBorder = legacyBorder[base.border] || base.border;
+  const rawPattern = legacyPattern[base.pattern] || base.pattern;
+  const rawFont = legacyFont[base.font] || base.font;
+
   return {
-    style: styles.includes(base.style) ? base.style : DEFAULT_CUSTOMIZE.style,
-    border: borders.includes(base.border) ? base.border : DEFAULT_CUSTOMIZE.border,
-    pattern: patterns.includes(base.pattern) ? base.pattern : DEFAULT_CUSTOMIZE.pattern,
-    font: fonts.includes(base.font) ? base.font : DEFAULT_CUSTOMIZE.font,
+    style: styles.includes(rawStyle) ? rawStyle : DEFAULT_CUSTOMIZE.style,
+    border: borders.includes(rawBorder) ? rawBorder : DEFAULT_CUSTOMIZE.border,
+    pattern: patterns.includes(rawPattern) ? rawPattern : DEFAULT_CUSTOMIZE.pattern,
+    font: fonts.includes(rawFont) ? rawFont : DEFAULT_CUSTOMIZE.font,
     radius: radii.includes(base.radius) ? base.radius : DEFAULT_CUSTOMIZE.radius,
     accent: typeof base.accent === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(base.accent)
       ? base.accent
@@ -163,13 +180,13 @@ export function applyThemeToDocument(theme: AppTheme, customize: ThemeCustomize)
   if (customize.accent) {
     const accent = customize.accent;
     root.style.setProperty('--accent', accent);
-    root.style.setProperty('--accent-soft', `${accent}24`);
-    root.style.setProperty('--accent-green', mixHex(accent, 'white', 0.15));
-    root.style.setProperty('--accent-green-strong', mixHex(accent, 'black', 0.12));
+    root.style.setProperty('--accent-soft', `${accent}20`);
+    root.style.setProperty('--accent-hover', mixHex(accent, 'black', 0.12));
+    root.style.setProperty('--accent-glow', `${accent}40`);
   } else {
     root.style.removeProperty('--accent');
     root.style.removeProperty('--accent-soft');
-    root.style.removeProperty('--accent-green');
-    root.style.removeProperty('--accent-green-strong');
+    root.style.removeProperty('--accent-hover');
+    root.style.removeProperty('--accent-glow');
   }
 }
