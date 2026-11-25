@@ -7,79 +7,24 @@
   >
     <div :style="{ height: `${totalHeight}px`, position: 'relative' }">
       <div :style="{ transform: `translateY(${offsetY}px)` }">
-        <div
+        <SongRow
           v-for="item in visibleItems"
           :key="`${item.song.sourceId}-${item.song.id}`"
-          :class="['playlist-item', isCurrent(item.song) ? 'playing' : '']"
-          :style="{ height: `${itemHeight}px`, boxSizing: 'border-box' }"
-          @click="emit('play', item.song)"
-        >
-          <div class="song-index">{{ item.index + 1 }}</div>
-          <div class="song-info">
-            <div class="song-title">{{ item.song.title }}</div>
-            <div class="song-artist">{{ item.song.artist }}</div>
-          </div>
-          <button
-            v-if="showAddToPlaylist"
-            type="button"
-            class="play-btn"
-            title="加入歌单"
-            @click.stop="emit('add-to-playlist', item.song)"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round" />
-              <line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round" />
-            </svg>
-          </button>
-          <button
-            @click.stop="emit('toggle-favorite', item.song)"
-            :class="['btn-favorite', 'spaced', isFavorite(item.song) ? 'active' : '']"
-          >
-            {{ isFavorite(item.song) ? '♥' : '♡' }}
-          </button>
-          <button
-            class="play-btn"
-            @click.stop="isCurrent(item.song) ? emit('toggle-play') : emit('play', item.song)"
-          >
-            <svg
-              v-if="isCurrent(item.song) && loading"
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.2"
-              stroke-linecap="round"
-            >
-              <circle cx="8" cy="8" r="6" stroke-dasharray="3,2" />
-            </svg>
-            <svg
-              v-else-if="isCurrent(item.song) && isPlaying"
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              fill="none"
-            >
-              <line x1="4.5" y1="3" x2="4.5" y2="13" /><line x1="11.5" y1="3" x2="11.5" y2="13" />
-            </svg>
-            <svg
-              v-else
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              fill="none"
-            >
-              <polyline points="4,2 4,14 13,8 4,2" />
-            </svg>
-          </button>
-        </div>
+          :song="item.song"
+          :index="item.index"
+          :height="itemHeight"
+          :current="isCurrent(item.song)"
+          :playing="isPlaying"
+          :loading="loading"
+          :favorite="isFavorite(item.song)"
+          :show-add-to-playlist="showAddToPlaylist"
+          :removable="removable"
+          @play="emit('play', $event)"
+          @toggle-favorite="emit('toggle-favorite', $event)"
+          @toggle-play="emit('toggle-play')"
+          @add-to-playlist="emit('add-to-playlist', $event)"
+          @remove="emit('remove', $event)"
+        />
       </div>
     </div>
   </div>
@@ -87,7 +32,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import SongRow from './SongRow.vue';
 import type { Song } from '../core/sources/types';
+import { isSameSong } from '../core/song';
 
 const props = withDefaults(
   defineProps<{
@@ -99,6 +46,7 @@ const props = withDefaults(
     loading?: boolean;
     isFavorite: (song: Song) => boolean;
     showAddToPlaylist?: boolean;
+    removable?: boolean;
     /** 填满父级高度，由父级负责滚动区域 */
     fill?: boolean;
     /** 距离底部多少像素时触发懒加载 */
@@ -109,6 +57,7 @@ const props = withDefaults(
     overscan: 6,
     loading: false,
     showAddToPlaylist: true,
+    removable: false,
     fill: false,
     loadMoreThreshold: 140,
   },
@@ -119,6 +68,7 @@ const emit = defineEmits<{
   'toggle-favorite': [song: Song];
   'toggle-play': [];
   'add-to-playlist': [song: Song];
+  remove: [song: Song];
   'reach-end': [];
 }>();
 
@@ -147,10 +97,7 @@ const visibleItems = computed(() =>
 );
 
 function isCurrent(song: Song) {
-  return (
-    props.currentSong?.id === song.id &&
-    props.currentSong?.sourceId === song.sourceId
-  );
+  return isSameSong(props.currentSong, song);
 }
 
 function onScroll() {

@@ -72,40 +72,20 @@
               @add-to-playlist="playlists.openAddToPlaylist"
             />
             <template v-else>
-              <div
+              <SongRow
                 v-for="(song, idx) in filteredRecentPlays"
                 :key="`${song.sourceId}-${song.id}`"
-                :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
-                @click="playRecent(song)"
-              >
-                <div class="song-index">{{ idx + 1 }}</div>
-                <div class="song-info">
-                  <div class="song-title">{{ song.title }}</div>
-                  <div class="song-artist">{{ song.artist }}</div>
-                </div>
-                <button type="button" class="play-btn" title="加入歌单" @click.stop="playlists.openAddToPlaylist(song)">
-                  <SketchIcon name="plus" :size="16" />
-                </button>
-                <button
-                  type="button"
-                  :class="['btn-favorite', 'spaced', player.isFavorite(song) ? 'active' : '']"
-                  @click.stop="player.toggleFavorite(song)"
-                >
-                  {{ player.isFavorite(song) ? '♥' : '♡' }}
-                </button>
-                <button
-                  type="button"
-                  class="play-btn"
-                  @click.stop="isCurrent(song) ? player.togglePlay() : playRecent(song)"
-                >
-                  <svg v-if="isCurrent(song) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
-                    <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
-                  </svg>
-                  <svg v-else width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
-                    <polyline points="4,2 4,14 13,8 4,2"/>
-                  </svg>
-                </button>
-              </div>
+                :song="song"
+                :index="idx"
+                :current="isCurrent(song)"
+                :playing="player.isPlaying"
+                :loading="player.loading"
+                :favorite="player.isFavorite(song)"
+                @play="playRecent"
+                @toggle-favorite="player.toggleFavorite"
+                @toggle-play="player.togglePlay()"
+                @add-to-playlist="playlists.openAddToPlaylist"
+              />
             </template>
           </div>
         </template>
@@ -133,30 +113,20 @@
             @add-to-playlist="playlists.openAddToPlaylist"
           />
           <template v-else>
-            <div
+            <SongRow
               v-for="(song, idx) in player.favorites"
               :key="`${song.sourceId}-${song.id}`"
-              :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
-              @click="playFavorite(song)"
-            >
-              <div class="song-index">{{ idx + 1 }}</div>
-              <div class="song-info">
-                <div class="song-title">{{ song.title }}</div>
-                <div class="song-artist">{{ song.artist }}</div>
-              </div>
-              <button type="button" class="play-btn" title="加入歌单" @click.stop="playlists.openAddToPlaylist(song)">
-                <SketchIcon name="plus" :size="16" />
-              </button>
-              <button type="button" class="btn-favorite active spaced" @click.stop="player.toggleFavorite(song)">♥</button>
-              <button type="button" class="play-btn" @click.stop="isCurrent(song) ? player.togglePlay() : playFavorite(song)">
-                <svg v-if="isCurrent(song) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
-                  <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
-                </svg>
-                <svg v-else width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
-                  <polyline points="4,2 4,14 13,8 4,2"/>
-                </svg>
-              </button>
-            </div>
+              :song="song"
+              :index="idx"
+              :current="isCurrent(song)"
+              :playing="player.isPlaying"
+              :loading="player.loading"
+              :favorite="player.isFavorite(song)"
+              @play="playFavorite"
+              @toggle-favorite="player.toggleFavorite"
+              @toggle-play="player.togglePlay()"
+              @add-to-playlist="playlists.openAddToPlaylist"
+            />
           </template>
         </div>
       </section>
@@ -260,32 +230,31 @@
         </div>
 
         <div v-else class="song-panel sketch-card sketch-card-ghost">
-          <div
+          <SongRow
             v-for="(song, idx) in playlists.activePlaylist.songs"
             :key="`${song.sourceId}-${song.id}`"
-            :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
-            @click="playFromActive(song)"
+            :song="song"
+            :index="idx"
+            :current="isCurrent(song)"
+            :playing="player.isPlaying"
+            :loading="player.loading"
+            :favorite="player.isFavorite(song)"
+            :show-add-to-playlist="false"
+            :show-play-button="false"
+            @play="playFromActive"
+            @toggle-favorite="player.toggleFavorite"
           >
-            <div class="song-index">{{ idx + 1 }}</div>
-            <div class="song-info">
-              <div class="song-title">{{ song.title }}</div>
-              <div class="song-artist">{{ song.artist }}</div>
-            </div>
-            <button
-              class="btn-favorite spaced"
-              :class="player.isFavorite(song) ? 'active' : ''"
-              @click.stop="player.toggleFavorite(song)"
-            >
-              {{ player.isFavorite(song) ? '♥' : '♡' }}
-            </button>
-            <button
-              class="play-btn danger"
-              title="移出歌单"
-              @click.stop="playlists.removeSongFromPlaylist(playlists.activePlaylist!.id, song)"
-            >
-              移出
-            </button>
-          </div>
+            <template #actions="{ song: rowSong }">
+              <button
+                type="button"
+                class="play-btn danger"
+                title="移出歌单"
+                @click.stop="playlists.removeSongFromPlaylist(playlists.activePlaylist!.id, rowSong)"
+              >
+                移出
+              </button>
+            </template>
+          </SongRow>
         </div>
       </section>
     </div>
@@ -295,9 +264,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
+import SongRow from '../SongRow.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
 import { useAudio } from '../../composables/useAudio';
 import type { Song } from '../../core/sources/types';
+import { isSameSong } from '../../core/song';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 
@@ -335,7 +306,7 @@ function openPlaylistsTab() {
 }
 
 function isCurrent(track: Song) {
-  return player.currentSong?.id === track.id && player.currentSong?.sourceId === track.sourceId;
+  return isSameSong(player.currentSong, track);
 }
 
 function playFavorite(song: Song) {

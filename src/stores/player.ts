@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { Song, Lyric } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
-import { serializeSong, songKey } from '../core/song';
+import { isSameSong, serializeSong, songKey } from '../core/song';
 import storage from '../core/storage';
 import { formatUserError } from '../utils/errors';
 
@@ -50,9 +50,8 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   function toggleFavorite(song: Song) {
-    const idx = favorites.value.findIndex(
-      (s) => s.id === song.id && s.sourceId === song.sourceId,
-    );
+    const key = songKey(song);
+    const idx = favorites.value.findIndex((s) => songKey(s) === key);
     if (idx !== -1) {
       favorites.value.splice(idx, 1);
     } else {
@@ -158,9 +157,7 @@ export const usePlayerStore = defineStore('player', () => {
     error.value = '';
     // 先切换当前曲，避免等 URL 时列表无高亮、像“没反应”
     currentSong.value = serializeSong(song);
-    const idx = queue.value.findIndex(
-      (s) => s.id === song.id && s.sourceId === song.sourceId,
-    );
+    const idx = queue.value.findIndex((s) => isSameSong(s, song));
     if (idx !== -1) currentIndex.value = idx;
     isPlaying.value = false;
     persistSession();
@@ -198,6 +195,10 @@ export const usePlayerStore = defineStore('player', () => {
   function setPlaying(playing: boolean) {
     if (!currentSong.value) return;
     isPlaying.value = playing;
+  }
+
+  function setError(message: string) {
+    error.value = message;
   }
 
   function clearError() {
@@ -291,7 +292,7 @@ export const usePlayerStore = defineStore('player', () => {
     favorites, favoriteCount, isFavorite, toggleFavorite, addFavorites,
     progress, formattedCurrentTime, formattedDuration, currentLyricText,
     playModeLabel, qualityCascade,
-    playSong, resolvePlayUrl, togglePlay, setPlaying, clearError,
+    playSong, resolvePlayUrl, togglePlay, setPlaying, setError, clearError,
     setVolume, toggleMute, togglePlayMode, setPreferredQuality,
     updateTime, loadLyric, formatTime,
     addToHistory, clearRecentPlays, persistSession, restoreSession,

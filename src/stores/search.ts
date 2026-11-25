@@ -28,8 +28,12 @@ export interface SearchHistoryItem {
 
 const SEARCH_HISTORY_LIMIT = 20;
 
-function normalizeHistoryKeyword(kw: string) {
+function normalizeKeyword(kw: string) {
   return kw.trim().toLowerCase();
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 interface QuickSearchCacheItem {
@@ -128,12 +132,8 @@ export const useSearchStore = defineStore('search', () => {
     return picked;
   }
 
-  function normalizeKw(kw: string) {
-    return kw.trim().toLowerCase();
-  }
-
   function makeQueryKey(kw: string, scope: string) {
-    return `${scope || '__all__'}::${normalizeKw(kw)}`;
+    return `${scope || '__all__'}::${normalizeKeyword(kw)}`;
   }
 
   function touchSnapshotKey(key: string) {
@@ -198,9 +198,9 @@ export const useSearchStore = defineStore('search', () => {
     const keyword = kw.trim();
     if (!keyword) return;
 
-    const key = normalizeHistoryKeyword(keyword);
+    const key = normalizeKeyword(keyword);
     const exists = searchHistory.value.findIndex(
-      (h) => normalizeHistoryKeyword(h.keyword) === key,
+      (h) => normalizeKeyword(h.keyword) === key,
     );
     if (exists !== -1) searchHistory.value.splice(exists, 1);
     searchHistory.value.unshift({ keyword, source });
@@ -211,9 +211,9 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   function removeSearchHistory(keyword: string) {
-    const key = normalizeHistoryKeyword(keyword);
+    const key = normalizeKeyword(keyword);
     const next = searchHistory.value.filter(
-      (h) => normalizeHistoryKeyword(h.keyword) !== key,
+      (h) => normalizeKeyword(h.keyword) !== key,
     );
     if (next.length === searchHistory.value.length) return;
     searchHistory.value = next;
@@ -353,7 +353,7 @@ export const useSearchStore = defineStore('search', () => {
           markPlayable(song, false);
         }
         if (i < pending.length - 1) {
-          await new Promise((r) => setTimeout(r, 220));
+          await delay(220);
         }
       }
     } finally {
@@ -390,7 +390,7 @@ export const useSearchStore = defineStore('search', () => {
       for (let i = 0; i < sampledSources.length; i++) {
         if (signal.aborted || isStale(gen)) return;
         const source = sampledSources[i];
-        if (i > 0) await new Promise((r) => setTimeout(r, 300));
+        if (i > 0) await delay(300);
 
         try {
           const result = await sourceManager.search(kw, source.id, {
@@ -447,6 +447,115 @@ export const useSearchStore = defineStore('search', () => {
     return Array.from(merged.values());
   }
 
+  interface SearchPlan {
+    keyword: string;
+    scope: string;
+    targets: string[];
+    page: number;
+    delayMs: number;
+    /** 分页追加而非覆盖已有结果 */
+    append: boolean;
+    force: boolean;
+  }
+
+  function applySourceResult(sid: string, result: { songs: Song[]; hasMore?: boolean }, append: boolean) {
+    sourceHasMore.value.set(sid, result.hasMore || result.songs.length === pageSize);
+
+    if (!append) {
+      sourceResults.value.set(sid, result.songs);
+      results.value = mergeResults();
+      return;
+    }
+
+    sourceResults.value.set(sid, [...(sourceResults.value.get(sid) || []), ...result.songs]);
+    const known = new Set(results.value.map(songKey));
+    result.songs.forEach((song) => {
+      const key = songKey(song);
+      if (known.has(key)) return;
+      known.add(key);
+      results.value.push(song);
+    });
+  }
+
+  function finishSearch(plan: SearchPlan) {
+    hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
+    cacheCurrentQuickSearch(plan.keyword, plan.scope);
+    if (onlyPlayable.value) void probePlayable(results.value);
+    activeScope.value = plan.scope;
+    activeQueryKey.value = makeQueryKey(plan.keyword, plan.scope);
+    saveActiveSnapshot();
+  }
+
+  /** 所有搜索路径共用的请求骨架：取消、串行调度、错误与收尾 */
+  async function runSearch(plan: SearchPlan) {
+    const { signal, gen } = beginRequest();
+    saveActiveSnapshot();
+    const keywordChanged = keyword.value !== plan.keyword;
+    keyword.value = plan.keyword;
+    loading.value = true;
+    isLoadingMore.value = plan.append;
+    error.value = '';
+    page.value = plan.page;
+
+    if (!plan.append) {
+      sourceResults.value.clear();
+      sourceHasMore.value.clear();
+      // 关键字变了才清空列表，避免“已有结果又闪一下空白再刷”
+      if (keywordChanged || plan.force) results.value = [];
+      hasMore.value = false;
+    }
+
+    try {
+      for (let i = 0; i < plan.targets.length; i++) {
+        if (signal.aborted || isStale(gen)) return;
+        const sid = plan.targets[i];
+        if (i > 0 && plan.delayMs) await delay(plan.delayMs);
+        if (signal.aborted || isStale(gen)) return;
+
+        try {
+          const result = await sourceManager.search(plan.keyword, sid, {
+            page: plan.page,
+            limit: pageSize,
+            signal,
+          });
+          if (isStale(gen)) return;
+          applySourceResult(sid, result, plan.append);
+        } catch (e) {
+          if (isAbortError(e) || isStale(gen)) return;
+          if (plan.append) {
+            sourceHasMore.value.set(sid, false);
+          } else {
+            sourceResults.value.set(sid, []);
+            sourceHasMore.value.set(sid, false);
+          }
+        }
+      }
+
+      if (isStale(gen)) return;
+      finishSearch(plan);
+    } catch (e) {
+      if (isAbortError(e) || isStale(gen)) return;
+      // 分页失败时回到上一页，否则再点加载会跳过这一页
+      if (plan.append) page.value--;
+      error.value = formatUserError(e, '搜索失败，请稍后再试');
+    } finally {
+      if (!isStale(gen)) {
+        loading.value = false;
+        isLoadingMore.value = false;
+      }
+    }
+  }
+
+  function isSameQuery(kw: string, scope: string, force: boolean) {
+    return (
+      !force
+      && keyword.value === kw
+      && activeScope.value === scope
+      && results.value.length > 0
+      && !loading.value
+    );
+  }
+
   async function searchSongs(kw: string, sourceId?: string, options?: { force?: boolean }) {
     if (!kw.trim()) return;
     let source = sourceId === undefined ? currentSource.value : sourceId;
@@ -463,19 +572,8 @@ export const useSearchStore = defineStore('search', () => {
     const normalizedKeyword = kw.trim();
     const force = Boolean(options?.force);
 
-    if (
-      !force
-      && keyword.value === normalizedKeyword
-      && activeScope.value === scope
-      && results.value.length > 0
-      && !loading.value
-    ) {
-      return;
-    }
-
-    if (!force && tryRestoreSnapshot(normalizedKeyword, scope)) {
-      return;
-    }
+    if (isSameQuery(normalizedKeyword, scope, force)) return;
+    if (!force && tryRestoreSnapshot(normalizedKeyword, scope)) return;
 
     const sourceInfo = sources.value.find((s) => s.id === source);
     if (sourceInfo && !sourceInfo.enabled) {
@@ -483,45 +581,15 @@ export const useSearchStore = defineStore('search', () => {
       return;
     }
 
-    const { signal, gen } = beginRequest();
-    saveActiveSnapshot();
-    const keywordChanged = keyword.value !== normalizedKeyword;
-    keyword.value = normalizedKeyword;
-    loading.value = true;
-    isLoadingMore.value = false;
-    error.value = '';
-    page.value = 1;
-    sourceResults.value.clear();
-    sourceHasMore.value.clear();
-    // 关键字变了才清空列表，避免“已有结果又闪一下空白再刷”
-    if (keywordChanged || force) {
-      results.value = [];
-    }
-    hasMore.value = false;
-
-    try {
-      const result = await sourceManager.search(kw, source, {
-        page: page.value,
-        limit: pageSize,
-        signal,
-      });
-      if (isStale(gen)) return;
-      sourceResults.value.set(source, result.songs);
-      sourceHasMore.value.set(source, result.hasMore || result.songs.length === pageSize);
-      results.value = mergeResults();
-      hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
-      cacheCurrentQuickSearch(kw, source);
-      if (onlyPlayable.value) void probePlayable(results.value);
-      activeScope.value = scope;
-      activeQueryKey.value = makeQueryKey(normalizedKeyword, scope);
-      saveActiveSnapshot();
-    } catch (e) {
-      if (isAbortError(e) || isStale(gen)) return;
-      console.error('[Search] 搜索失败:', e);
-      error.value = formatUserError(e, '搜索失败，请稍后再试');
-    } finally {
-      if (!isStale(gen)) loading.value = false;
-    }
+    await runSearch({
+      keyword: normalizedKeyword,
+      scope,
+      targets: [source],
+      page: 1,
+      delayMs: 0,
+      append: false,
+      force,
+    });
   }
 
   async function searchAllSources(kw: string, options?: { force?: boolean }) {
@@ -530,144 +598,48 @@ export const useSearchStore = defineStore('search', () => {
     const normalizedKeyword = kw.trim();
     const scope = '';
     const force = Boolean(options?.force);
-    if (
-      !force
-      && keyword.value === normalizedKeyword
-      && activeScope.value === scope
-      && results.value.length > 0
-      && !loading.value
-    ) {
-      return;
-    }
-
-    if (!force && tryRestoreSnapshot(normalizedKeyword, scope)) {
-      return;
-    }
+    if (isSameQuery(normalizedKeyword, scope, force)) return;
+    if (!force && tryRestoreSnapshot(normalizedKeyword, scope)) return;
 
     if (sources.value.length === 0) {
-      await new Promise((r) => setTimeout(r, 500));
+      await delay(500);
       if (sources.value.length === 0) return;
     }
 
-    const { signal, gen } = beginRequest();
-    saveActiveSnapshot();
-    const keywordChanged = keyword.value !== normalizedKeyword;
-    keyword.value = normalizedKeyword;
-    loading.value = true;
-    isLoadingMore.value = false;
-    error.value = '';
-    page.value = 1;
-    sourceResults.value.clear();
-    sourceHasMore.value.clear();
-    if (keywordChanged || force) {
-      results.value = [];
+    const targets = sources.value.filter((s) => s.enabled).map((s) => s.id);
+    if (targets.length === 0) {
+      error.value = '没有可用音源，请在设置中启用至少一个音源';
+      return;
     }
 
-    try {
-      const enabledIds = sources.value.filter((s) => s.enabled).map((s) => s.id);
-
-      if (enabledIds.length === 0) {
-        error.value = '没有可用音源，请在设置中启用至少一个音源';
-        return;
-      }
-
-      for (let i = 0; i < enabledIds.length; i++) {
-        if (signal.aborted || isStale(gen)) return;
-        const sid = enabledIds[i];
-        if (i > 0) await new Promise((r) => setTimeout(r, 400));
-        if (signal.aborted || isStale(gen)) return;
-
-        try {
-          const result = await sourceManager.search(kw, sid, {
-            page: 1,
-            limit: pageSize,
-            signal,
-          });
-          if (isStale(gen)) return;
-          sourceResults.value.set(sid, result.songs);
-          sourceHasMore.value.set(
-            sid,
-            result.hasMore || result.songs.length === pageSize,
-          );
-          results.value = mergeResults();
-        } catch (e) {
-          if (isAbortError(e) || isStale(gen)) return;
-          sourceResults.value.set(sid, []);
-          sourceHasMore.value.set(sid, false);
-        }
-      }
-
-      if (isStale(gen)) return;
-      hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
-      cacheCurrentQuickSearch(kw, '');
-      if (onlyPlayable.value) void probePlayable(results.value);
-      activeScope.value = scope;
-      activeQueryKey.value = makeQueryKey(normalizedKeyword, scope);
-      saveActiveSnapshot();
-    } catch (e) {
-      if (isAbortError(e) || isStale(gen)) return;
-      console.error('[Search] 多源搜索失败:', e);
-      error.value = formatUserError(e, '搜索失败，请稍后再试');
-    } finally {
-      if (!isStale(gen)) loading.value = false;
-    }
+    await runSearch({
+      keyword: normalizedKeyword,
+      scope,
+      targets,
+      page: 1,
+      delayMs: 400,
+      append: false,
+      force,
+    });
   }
 
   async function loadMore() {
     if (!hasMore.value || loading.value) return;
 
-    const { signal, gen } = beginRequest();
-    loading.value = true;
-    isLoadingMore.value = true;
-    page.value++;
+    const targets = Array.from(sourceHasMore.value.entries())
+      .filter(([, ok]) => ok)
+      .map(([sid]) => sid);
+    if (targets.length === 0) return;
 
-    try {
-      const pending = Array.from(sourceHasMore.value.entries()).filter(([, ok]) => ok);
-
-      for (let i = 0; i < pending.length; i++) {
-        if (signal.aborted || isStale(gen)) return;
-        const [sid] = pending[i];
-        if (i > 0) await new Promise((r) => setTimeout(r, 400));
-        if (signal.aborted || isStale(gen)) return;
-
-        try {
-          const result = await sourceManager.search(keyword.value, sid, {
-            page: page.value,
-            limit: pageSize,
-            signal,
-          });
-          if (isStale(gen)) return;
-          const existing = sourceResults.value.get(sid) || [];
-          sourceResults.value.set(sid, [...existing, ...result.songs]);
-          sourceHasMore.value.set(
-            sid,
-            result.hasMore || result.songs.length === pageSize,
-          );
-          result.songs.forEach((song) => {
-            const key = songKey(song);
-            if (!results.value.some((s) => songKey(s) === key)) {
-              results.value.push(song);
-            }
-          });
-        } catch (e) {
-          if (isAbortError(e) || isStale(gen)) return;
-          sourceHasMore.value.set(sid, false);
-        }
-      }
-
-      if (isStale(gen)) return;
-      hasMore.value = Array.from(sourceHasMore.value.values()).some((v) => v);
-      cacheCurrentQuickSearch(keyword.value, activeScope.value);
-      if (onlyPlayable.value) void probePlayable(results.value);
-      saveActiveSnapshot();
-    } catch {
-      if (!isStale(gen)) page.value--;
-    } finally {
-      if (!isStale(gen)) {
-        loading.value = false;
-        isLoadingMore.value = false;
-      }
-    }
+    await runSearch({
+      keyword: keyword.value,
+      scope: activeScope.value,
+      targets,
+      page: page.value + 1,
+      delayMs: 400,
+      append: true,
+      force: false,
+    });
   }
 
   function pickDefaultSourceId(): string {

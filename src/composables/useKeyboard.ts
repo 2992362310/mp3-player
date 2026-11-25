@@ -7,15 +7,27 @@ import { usePlayerStore } from '../stores/player';
 import { useUIStore } from '../stores/ui';
 import { useAudio } from './useAudio';
 
+/**
+ * 判断一个键盘事件是否应交由全局快捷键处理。
+ * - 输入框内的按键交给输入框自己
+ * - 已被组件 preventDefault 的按键（如下拉菜单的方向键）不再触发全局行为，
+ *   否则切换音源/筛选时会连带改变音量或关闭歌词面板
+ */
+export function shouldHandleGlobalKey(
+  e: Pick<KeyboardEvent, 'defaultPrevented' | 'target'>,
+): boolean {
+  if (e.defaultPrevented) return false;
+  const tag = (e.target as HTMLElement | null)?.tagName;
+  return tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT';
+}
+
 export function useKeyboard() {
   const player = usePlayerStore();
   const ui = useUIStore();
   const { playNext, playPrevious, seekTo } = useAudio();
 
   function handleKeydown(e: KeyboardEvent) {
-    // 忽略输入框中的按键
-    const tag = (e.target as HTMLElement)?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (!shouldHandleGlobalKey(e)) return;
 
     switch (e.code) {
       case 'Space':

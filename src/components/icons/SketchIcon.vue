@@ -129,6 +129,13 @@
       <path d="M16.8 18.2V18.8" />
     </template>
 
+    <!-- popout：弹出到独立窗口 -->
+    <template v-else-if="name === 'popout'">
+      <path d="M13.5 4.5H19.5V10.5" />
+      <path d="M19.5 4.5L12.5 11.5" />
+      <path d="M18 14V18.5C18 19.6 17.1 20.5 16 20.5H5.5C4.4 20.5 3.5 19.6 3.5 18.5V8C3.5 6.9 4.4 6 5.5 6H10" />
+    </template>
+
     <!-- mode-order：顺序双箭头 -->
     <template v-else-if="name === 'mode-order'">
       <path d="M4.5 8.2H15.5" />
@@ -236,6 +243,7 @@ export type SketchIconName =
   | 'volume'
   | 'mute'
   | 'lyric'
+  | 'popout'
   | 'mode-order'
   | 'mode-random'
   | 'mode-loop'

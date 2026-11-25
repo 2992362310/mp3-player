@@ -116,84 +116,30 @@
           :is-playing="player.isPlaying"
           :loading="player.loading"
           :is-favorite="player.isFavorite"
+          removable
           @play="playLocal"
           @toggle-favorite="player.toggleFavorite"
           @toggle-play="player.togglePlay()"
           @add-to-playlist="playlists.openAddToPlaylist"
+          @remove="removeTrack"
         />
         <template v-else>
-          <div
+          <SongRow
             v-for="(song, idx) in local.filteredSongs"
             :key="`${song.sourceId}-${song.id}`"
-            :class="['playlist-item', isCurrent(song) ? 'playing' : '']"
-            @click="playLocal(song)"
-          >
-            <div class="song-index">{{ idx + 1 }}</div>
-            <div class="song-info">
-              <div class="song-title">{{ song.title }}</div>
-              <div class="song-artist">{{ song.artist }}</div>
-            </div>
-            <button
-              type="button"
-              class="play-btn"
-              title="加入歌单"
-              @click.stop="playlists.openAddToPlaylist(song)"
-            >
-              <SketchIcon name="plus" :size="16" />
-            </button>
-            <button
-              type="button"
-              :class="['btn-favorite', 'spaced', player.isFavorite(song) ? 'active' : '']"
-              @click.stop="player.toggleFavorite(song)"
-            >
-              {{ player.isFavorite(song) ? '♥' : '♡' }}
-            </button>
-            <button
-              type="button"
-              class="play-btn danger"
-              title="从本地删除"
-              @click.stop="removeTrack(song)"
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M3.5 4.5H12.5" />
-                <path d="M6 4.5V3.5C6 2.95 6.45 2.5 7 2.5H9C9.55 2.5 10 2.95 10 3.5V4.5" />
-                <path d="M5 6.5V12C5 12.83 5.67 13.5 6.5 13.5H9.5C10.33 13.5 11 12.83 11 12V6.5" />
-                <path d="M7 7.5V11" />
-                <path d="M9 7.5V11" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              class="play-btn"
-              @click.stop="isCurrent(song) ? player.togglePlay() : playLocal(song)"
-            >
-              <svg
-                v-if="isCurrent(song) && player.isPlaying"
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                fill="none"
-              >
-                <line x1="4.5" y1="3" x2="4.5" y2="13" /><line x1="11.5" y1="3" x2="11.5" y2="13" />
-              </svg>
-              <svg
-                v-else
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                fill="none"
-              >
-                <polyline points="4,2 4,14 13,8 4,2" />
-              </svg>
-            </button>
-          </div>
+            :song="song"
+            :index="idx"
+            :current="isCurrent(song)"
+            :playing="player.isPlaying"
+            :loading="player.loading"
+            :favorite="player.isFavorite(song)"
+            removable
+            @play="playLocal"
+            @toggle-favorite="player.toggleFavorite"
+            @toggle-play="player.togglePlay()"
+            @add-to-playlist="playlists.openAddToPlaylist"
+            @remove="removeTrack"
+          />
         </template>
       </div>
     </div>
@@ -203,9 +149,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
+import SongRow from '../SongRow.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
 import { useAudio } from '../../composables/useAudio';
 import type { Song } from '../../core/sources/types';
+import { isSameSong } from '../../core/song';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 import { useLocalStore } from '../../stores/local';
@@ -222,7 +170,7 @@ const dragDepth = ref(0);
 const statusTip = ref('');
 
 function isCurrent(track: Song) {
-  return player.currentSong?.id === track.id && player.currentSong?.sourceId === track.sourceId;
+  return isSameSong(player.currentSong, track);
 }
 
 function playLocal(song: Song) {

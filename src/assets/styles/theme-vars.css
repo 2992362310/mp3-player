@@ -1,0 +1,334 @@
+:root,
+html[data-theme='paper'] {
+  --paper-bg: #faf7f0;
+  --paper-grid: rgba(150, 132, 100, 0.05);
+  --ink: #2a2722;
+  --ink-soft: #4d4840;
+  --muted: #7c766a;
+  --faint: #a8a091;
+  --border: #c8bda8;
+  --border-strong: #97896d;
+  --border-soft: #e2d9c6;
+  --surface: rgba(255, 253, 247, 0.44);
+  --surface-strong: rgba(255, 253, 247, 0.74);
+  --hover: rgba(226, 216, 194, 0.42);
+  --accent: #5b57d1;
+  --accent-soft: rgba(91, 87, 209, 0.12);
+  --accent-green: #2f9a63;
+  --accent-green-strong: #227a4c;
+  --control-fill: #efe6d3;
+  --shadow-ink: rgba(151, 137, 109, 0.2);
+  --line-strong: color-mix(in srgb, var(--border-strong) 82%, var(--border) 18%);
+  --line-mid: color-mix(in srgb, var(--border) 84%, var(--border-soft) 16%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
+}
+
+/* 主题：蓝喵（冷调蓝 + 天青） */
+html[data-theme='gadgetcat'] {
+  --paper-bg: #eef4f9;
+  --paper-grid: rgba(90, 122, 152, 0.045);
+  --ink: #23313c;
+  --ink-soft: #3d5261;
+  --muted: #68808f;
+  --faint: #9bb0bd;
+  --border: #b3c8d7;
+  --border-strong: #7295ad;
+  --border-soft: #d9e6ef;
+  --surface: rgba(255, 255, 255, 0.46);
+  --surface-strong: rgba(255, 255, 255, 0.76);
+  --hover: rgba(78, 150, 200, 0.14);
+  --accent: #1f7fb8;
+  --accent-soft: rgba(31, 127, 184, 0.13);
+  --accent-green: #35a08c;
+  --accent-green-strong: #277a6b;
+  --control-fill: #dbe9f3;
+  --shadow-ink: rgba(114, 149, 173, 0.16);
+  --ui-font: "Nunito", "Noto Sans SC", sans-serif;
+  --ui-display: "Nunito", "Noto Sans SC", sans-serif;
+  --ui-radius: 18px;
+  --ui-radius-sm: 14px;
+  --line-strong: color-mix(in srgb, var(--border-strong) 78%, var(--border) 22%);
+  --line-mid: color-mix(in srgb, var(--border) 82%, var(--border-soft) 18%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 80%, var(--border) 20%);
+}
+
+html[data-theme='sand'] {
+  --paper-bg: #faf3e3;
+  --paper-grid: rgba(170, 138, 70, 0.05);
+  --ink: #382e22;
+  --ink-soft: #564734;
+  --muted: #86705a;
+  --faint: #b89e70;
+  --border: #d6c3a0;
+  --border-strong: #a68d5b;
+  --border-soft: #ecdfc2;
+  --surface: rgba(255, 250, 238, 0.46);
+  --surface-strong: rgba(255, 252, 243, 0.76);
+  --hover: rgba(214, 186, 132, 0.34);
+  --accent: #c0741c;
+  --accent-soft: rgba(192, 116, 28, 0.14);
+  --accent-green: #3f8a58;
+  --accent-green-strong: #2f6a44;
+  --control-fill: #f0e2bd;
+  --shadow-ink: rgba(166, 141, 91, 0.2);
+  --line-strong: color-mix(in srgb, var(--border-strong) 80%, var(--border) 20%);
+  --line-mid: color-mix(in srgb, var(--border) 82%, var(--border-soft) 18%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
+}
+
+html[data-theme='mint'] {
+  --paper-bg: #eef6ee;
+  --paper-grid: rgba(80, 130, 105, 0.045);
+  --ink: #1d332a;
+  --ink-soft: #33503f;
+  --muted: #5c7d6a;
+  --faint: #8fae9a;
+  --border: #a6c6ae;
+  --border-strong: #6b9a7d;
+  --border-soft: #d3e5d7;
+  --surface: rgba(255, 255, 255, 0.44);
+  --surface-strong: rgba(255, 255, 255, 0.75);
+  --hover: rgba(120, 180, 145, 0.22);
+  --accent: #1f8a5c;
+  --accent-soft: rgba(31, 138, 92, 0.13);
+  --accent-green: #2f9a6b;
+  --accent-green-strong: #237a52;
+  --control-fill: #d8ebdd;
+  --shadow-ink: rgba(107, 154, 125, 0.16);
+  --line-strong: color-mix(in srgb, var(--border-strong) 80%, var(--border) 20%);
+  --line-mid: color-mix(in srgb, var(--border) 82%, var(--border-soft) 18%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
+}
+
+/* 主题：夜幕（墨色暗底 + 靛紫） */
+html[data-theme='ink'] {
+  --paper-bg: #1a1d22;
+  --paper-grid: rgba(200, 190, 165, 0.035);
+  --ink: #ece6d9;
+  --ink-soft: #cfc8b9;
+  --muted: #9b9384;
+  --faint: #736c5e;
+  --border: #6b6455;
+  --border-strong: #b3a488;
+  --border-soft: #3b372f;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.12);
+  --hover: rgba(236, 230, 216, 0.1);
+  --accent: #8e93e8;
+  --accent-soft: rgba(142, 147, 232, 0.18);
+  --accent-green: #7db99a;
+  --accent-green-strong: #5c9a78;
+  --control-fill: #262a31;
+  --shadow-ink: rgba(0, 0, 0, 0.36);
+  --line-strong: color-mix(in srgb, var(--border-strong) 72%, var(--ink) 28%);
+  --line-mid: color-mix(in srgb, var(--border) 70%, var(--ink) 30%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 70%, var(--ink-soft) 30%);
+}
+
+/* 主题：青瓷（青灰绿） */
+html[data-theme='celadon'] {
+  --paper-bg: #e8f1ef;
+  --paper-grid: rgba(70, 110, 100, 0.045);
+  --ink: #22332f;
+  --ink-soft: #364d47;
+  --muted: #5f7a72;
+  --faint: #88a29a;
+  --border: #a2c0b6;
+  --border-strong: #628a7c;
+  --border-soft: #cbdcd5;
+  --surface: rgba(255, 255, 255, 0.38);
+  --surface-strong: rgba(255, 255, 255, 0.68);
+  --hover: rgba(96, 142, 128, 0.18);
+  --accent: #2f7a6b;
+  --accent-soft: rgba(47, 122, 107, 0.14);
+  --accent-green: #4a9078;
+  --accent-green-strong: #36705c;
+  --control-fill: #d3e3dc;
+  --shadow-ink: rgba(98, 138, 124, 0.18);
+  --line-strong: color-mix(in srgb, var(--border-strong) 80%, var(--border) 20%);
+  --line-mid: color-mix(in srgb, var(--border) 82%, var(--border-soft) 18%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
+}
+
+/* 主题：丹霞（暖朱红） */
+html[data-theme='cinnabar'] {
+  --paper-bg: #fbefeb;
+  --paper-grid: rgba(130, 90, 80, 0.045);
+  --ink: #2b211e;
+  --ink-soft: #47362f;
+  --muted: #77645c;
+  --faint: #a08b81;
+  --border: #dcc3b6;
+  --border-strong: #a87560;
+  --border-soft: #eeddd3;
+  --surface: rgba(255, 253, 250, 0.4);
+  --surface-strong: rgba(255, 253, 250, 0.7);
+  --hover: rgba(190, 90, 70, 0.12);
+  --accent: #bf4530;
+  --accent-soft: rgba(191, 69, 48, 0.14);
+  --accent-green: #5c8a6a;
+  --accent-green-strong: #467055;
+  --control-fill: #ecd9cf;
+  --shadow-ink: rgba(168, 117, 96, 0.18);
+  --line-strong: color-mix(in srgb, var(--border-strong) 80%, var(--border) 20%);
+  --line-mid: color-mix(in srgb, var(--border) 82%, var(--border-soft) 18%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
+}
+
+/* 主题：晴空（雾蓝） */
+html[data-theme='breeze'] {
+  --paper-bg: #f1f7fb;
+  --paper-grid: rgba(60, 130, 170, 0.04);
+  --ink: #1d2f3d;
+  --ink-soft: #37505f;
+  --muted: #62839a;
+  --faint: #93b2c6;
+  --border: #bad2e2;
+  --border-strong: #7699b3;
+  --border-soft: #e0ecf4;
+  --surface: rgba(255, 255, 255, 0.44);
+  --surface-strong: rgba(255, 255, 255, 0.77);
+  --hover: rgba(90, 160, 205, 0.16);
+  --accent: #2f7cc4;
+  --accent-soft: rgba(47, 124, 196, 0.13);
+  --accent-green: #35a298;
+  --accent-green-strong: #287d75;
+  --control-fill: #dcebf5;
+  --shadow-ink: rgba(118, 153, 179, 0.15);
+  --ui-font: "Outfit", "Noto Sans SC", sans-serif;
+  --ui-display: "Outfit", "Noto Sans SC", sans-serif;
+  --ui-radius: 16px;
+  --ui-radius-sm: 12px;
+  --line-strong: color-mix(in srgb, var(--border-strong) 78%, var(--border) 22%);
+  --line-mid: color-mix(in srgb, var(--border) 80%, var(--border-soft) 20%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 76%, var(--border) 24%);
+}
+
+/* 主题：现场（暗黑 + 荧光黄 HUD） */
+html[data-theme='cyberpunk'] {
+  --paper-bg: #0f1014;
+  --paper-grid: rgba(242, 210, 26, 0.035);
+  --ink: #f0ece2;
+  --ink-soft: #c2bcb0;
+  --muted: #8e8a80;
+  --faint: #605d56;
+  --border: #3d3d44;
+  --border-strong: #f2d21a;
+  --border-soft: #26262c;
+  --surface: rgba(30, 30, 36, 0.52);
+  --surface-strong: rgba(30, 30, 36, 0.78);
+  --hover: rgba(242, 210, 26, 0.12);
+  --accent: #f2d21a;
+  --accent-soft: rgba(242, 210, 26, 0.16);
+  --accent-green: #22d3ee;
+  --accent-green-strong: #12a8bd;
+  --control-fill: #1e1e24;
+  --shadow-ink: rgba(242, 210, 26, 0.22);
+  --ui-font: "Rajdhani", "Noto Sans SC", sans-serif;
+  --ui-display: "Rajdhani", "Noto Sans SC", sans-serif;
+  --ui-radius: 0px;
+  --ui-radius-sm: 0px;
+  --radius-card: 0;
+  --radius-control: 0;
+  --radius-popover: 0;
+  --cp-cyan: var(--accent-green);
+  --cp-magenta: #ff2f6d;
+  --cp-yellow: var(--accent);
+  --glow-yellow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  --glow-cyan: 0 0 10px color-mix(in srgb, var(--accent-green) 35%, transparent);
+  --line-strong: color-mix(in srgb, var(--border-strong) 55%, var(--border) 45%);
+  --line-mid: color-mix(in srgb, var(--border) 78%, var(--ink) 22%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 70%, var(--border) 30%);
+}
+
+/* 主题：矩阵（终端绿） */
+html[data-theme='matrix'] {
+  --paper-bg: #0a0f0c;
+  --paper-grid: rgba(80, 230, 130, 0.03);
+  --ink: #7ff0a8;
+  --ink-soft: #57d98a;
+  --muted: #3aa869;
+  --faint: #24744a;
+  --border: #14381f;
+  --border-strong: #3fd070;
+  --border-soft: #0c1e13;
+  --surface: rgba(10, 26, 16, 0.48);
+  --surface-strong: rgba(10, 26, 16, 0.72);
+  --hover: rgba(80, 230, 130, 0.1);
+  --accent: #3fd070;
+  --accent-soft: rgba(63, 208, 112, 0.14);
+  --accent-green: #6bf09a;
+  --accent-green-strong: #3fd070;
+  --control-fill: #0c1e13;
+  --shadow-ink: transparent;
+  --ui-font: "Courier New", "Lucida Console", "Consolas", monospace;
+  --ui-display: "Courier New", "Lucida Console", "Consolas", monospace;
+  --line-strong: color-mix(in srgb, var(--border-strong) 50%, var(--border) 50%);
+  --line-mid: color-mix(in srgb, var(--border) 65%, var(--ink) 35%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 60%, var(--border) 40%);
+}
+
+/* 主题：晚樱（樱粉） */
+html[data-theme='maruko'] {
+  --paper-bg: #fdf2f7;
+  --paper-grid: rgba(220, 130, 165, 0.05);
+  --ink: #4a3038;
+  --ink-soft: #64474f;
+  --muted: #8b6b76;
+  --faint: #b2949e;
+  --border: #f0c8d6;
+  --border-strong: #d4849e;
+  --border-soft: #fbe0e9;
+  --surface: rgba(255, 252, 253, 0.44);
+  --surface-strong: rgba(255, 252, 253, 0.74);
+  --hover: rgba(230, 140, 175, 0.16);
+  --accent: #d15e88;
+  --accent-soft: rgba(209, 94, 136, 0.16);
+  --accent-green: #6fbfa8;
+  --accent-green-strong: #4f9d87;
+  --control-fill: #fbe0e8;
+  --shadow-ink: rgba(209, 94, 136, 0.2);
+  --ui-font: "ZCOOL KuaiLe", "Nunito", "Noto Sans SC", sans-serif;
+  --ui-display: "ZCOOL KuaiLe", "Nunito", "Noto Sans SC", sans-serif;
+  --ui-radius: 18px;
+  --ui-radius-sm: 12px;
+  --warm-orange: #ffb74d;
+  --line-strong: color-mix(in srgb, var(--border-strong) 70%, var(--border) 30%);
+  --line-mid: color-mix(in srgb, var(--border) 78%, var(--border-soft) 22%);
+  --line-soft: color-mix(in srgb, var(--border-soft) 72%, var(--border) 28%);
+}
+
+/* 由主题基色派生的层级色（各主题共用） */
+:root,
+html[data-theme='paper'],
+html[data-theme='gadgetcat'],
+html[data-theme='sand'],
+html[data-theme='mint'],
+html[data-theme='ink'],
+html[data-theme='celadon'],
+html[data-theme='cinnabar'],
+html[data-theme='breeze'],
+html[data-theme='cyberpunk'],
+html[data-theme='matrix'],
+html[data-theme='maruko'] {
+  --paper-pattern: var(--paper-grid);
+  --bg-raised: color-mix(in srgb, var(--paper-bg) 88%, transparent);
+  --bg-panel: color-mix(in srgb, var(--surface-strong) 70%, transparent);
+  --bg-subtle: color-mix(in srgb, var(--surface) 78%, transparent);
+}
+
+html[data-theme='ink'],
+html[data-theme='matrix'],
+html[data-theme='cyberpunk'] {
+  --paper-pattern: var(--paper-grid);
+  --bg-raised: color-mix(in srgb, var(--paper-bg) 90%, transparent);
+  --bg-panel: color-mix(in srgb, var(--surface-strong) 78%, transparent);
+  --bg-subtle: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+/* 手绘圆角令牌：四角不等，随「圆角」设置缩放 */
+:root {
+  --radius-card: 8px 14px 6px 12px;
+  --radius-control: 6px 10px 8px 12px;
+  --radius-popover: 10px 14px 12px 16px;
+}

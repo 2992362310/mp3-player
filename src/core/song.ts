@@ -16,3 +16,8 @@ export function serializeSong(song: Song): Song {
 export function songKey(song: Song): string {
   return `${song.sourceId}-${song.id}`;
 }
+
+/** 判断两首歌是否为同一曲（跨组件、store、composable 统一入口） */
+export function isSameSong(a: Song | null | undefined, b: Song | null | undefined): boolean {
+  return Boolean(a && b && a.id === b.id && a.sourceId === b.sourceId);
+}

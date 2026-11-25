@@ -72,6 +72,15 @@
           >
             <SketchIcon name="lyric" :size="17" />
           </button>
+          <button
+            @click="desktopLyrics.toggle()"
+            class="sketch-icon"
+            :class="{ active: desktopLyrics.isOpen }"
+            :title="desktopLyrics.isOpen ? '关闭桌面歌词' : '桌面歌词（独立窗口）'"
+            :disabled="!player.currentSong"
+          >
+            <SketchIcon name="popout" :size="17" />
+          </button>
           <button @click="player.togglePlayMode()" class="sketch-icon" :title="player.playModeLabel" :disabled="!player.currentSong">
             <SketchIcon :name="modeIcon" :size="17" />
           </button>
@@ -195,12 +204,14 @@ import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import { useUIStore } from '../stores/ui';
 import { useSleepTimerStore } from '../stores/sleepTimer';
+import { useDesktopLyricsStore } from '../stores/desktopLyrics';
 import { useAudio } from '../composables/useAudio';
 import SketchIcon from './icons/SketchIcon.vue';
 import type { SketchIconName } from './icons/SketchIcon.vue';
 
 const player = usePlayerStore();
 const ui = useUIStore();
+const desktopLyrics = useDesktopLyricsStore();
 const sleepTimer = useSleepTimerStore();
 const { playNext, playPrevious, seekTo, playAtIndex } = useAudio();
 

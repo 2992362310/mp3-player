@@ -22,7 +22,7 @@ export interface Song {
   /** 音源ID */
   sourceId: string;
   /** 原始数据（供插件内部使用） */
-  raw?: any;
+  raw?: Record<string, unknown>;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface Playlist {
   /** 音源ID */
   sourceId: string;
   /** 原始数据 */
-  raw?: any;
+  raw?: Record<string, unknown>;
 }
 
 /**
@@ -68,7 +68,7 @@ export interface Artist {
   /** 音源ID */
   sourceId: string;
   /** 原始数据 */
-  raw?: any;
+  raw?: Record<string, unknown>;
 }
 
 /**
@@ -92,7 +92,7 @@ export interface Album {
   /** 音源ID */
   sourceId: string;
   /** 原始数据 */
-  raw?: any;
+  raw?: Record<string, unknown>;
 }
 
 /**

@@ -67,7 +67,7 @@ export interface GDPicResponse {
 // 搜索参数
 export interface SearchParams {
   keyword: string;
-  source?: MusicSource;
+  source?: MusicSource | `${MusicSource}_album`;
   page?: number;
   limit?: number;
   signal?: AbortSignal;
@@ -85,7 +85,7 @@ export interface SearchResult {
   total: number;
   page: number;
   limit: number;
-  source: MusicSource;
+  source: MusicSource | `${MusicSource}_album`;
 }
 
 // 请求缓存项
@@ -112,16 +112,9 @@ function sleep(ms: number) {
  * GD Music API 服务类
  */
 class GDMusicApiService {
-  private cache: Map<string, CacheItem<any>> = new Map();
+  private cache: Map<string, CacheItem<unknown>> = new Map();
   private requestTimestamps: number[] = [];
   private cooldownUntil = 0;
-
-  public readonly stableSources: MusicSource[] = ['netease', 'kuwo', 'joox', 'bilibili'];
-
-  public readonly allSources: MusicSource[] = [
-    'netease', 'kuwo', 'joox', 'tencent', 'bilibili',
-    'spotify', 'ytmusic', 'apple', 'tidal', 'qobuz',
-  ];
 
   /** 限流冷却剩余秒数，0 表示可请求 */
   getCooldownSeconds(): number {
@@ -375,7 +368,7 @@ class GDMusicApiService {
   }
 
   async getAlbumSongs(source: MusicSource, albumId: string): Promise<GDSong[]> {
-    const albumSource = `${source}_album` as any;
+    const albumSource: `${MusicSource}_album` = `${source}_album`;
     return this.request<GDSong[]>({
       types: 'search',
       source: albumSource,
@@ -383,56 +376,6 @@ class GDMusicApiService {
     });
   }
 
-  normalizeSong(song: GDSong): {
-    id: string;
-    title: string;
-    artist: string;
-    album: string;
-    cover: string;
-    sourceId: string;
-    raw: GDSong;
-  } {
-    return {
-      id: String(song.id ?? song.url_id ?? ''),
-      title: song.name,
-      artist: Array.isArray(song.artist) ? song.artist.join(', ') : String(song.artist || ''),
-      album: song.album || '',
-      cover: '',
-      sourceId: song.source,
-      raw: song,
-    };
-  }
-
-  async getFullSongInfo(song: GDSong, picSize: PicSize = 300): Promise<{
-    id: string;
-    title: string;
-    artist: string;
-    album: string;
-    cover: string;
-    sourceId: string;
-    raw: GDSong;
-  }> {
-    const normalized = this.normalizeSong(song);
-
-    if (song.pic_id) {
-      try {
-        const picResponse = await this.getPicUrl(song.source, song.pic_id, picSize);
-        normalized.cover = picResponse.url;
-      } catch (error) {
-        console.warn('[GDMusicApi] 获取封面失败:', error);
-      }
-    }
-
-    return normalized;
-  }
-
-  async searchWithDetails(params: SearchParams, picSize: PicSize = 300) {
-    const result = await this.search(params);
-    const songs = await Promise.all(
-      result.songs.map((song) => this.getFullSongInfo(song, picSize)),
-    );
-    return { ...result, songs };
-  }
 }
 
 export const gdMusicApi = new GDMusicApiService();

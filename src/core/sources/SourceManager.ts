@@ -3,7 +3,7 @@
  * 管理和调度所有音乐源插件
  */
 
-import type { ISourcePlugin, Song, SearchResult } from './types';
+import type { ISourcePlugin, Song, SearchResult, Playlist } from './types';
 import gdMusicApi from '../../services/GDMusicApi';
 import { debug } from '../../utils/log';
 
@@ -34,11 +34,6 @@ class SourceManager {
     }
     this.sources.set(source.id, source);
     debug(`[SourceManager] 注册音源: ${source.name} (${source.id})`);
-  }
-
-  /** 注销音源插件 */
-  unregister(sourceId: string): boolean {
-    return this.sources.delete(sourceId);
   }
 
   /** 获取所有已注册的音源 */
@@ -72,28 +67,6 @@ class SourceManager {
       console.error(`[SourceManager] 搜索失败 (${sourceId}):`, error);
       return { songs: [], hasMore: false };
     }
-  }
-
-  /** 搜索所有音源（并行） */
-  async searchAll(
-    keyword: string,
-    options?: { limit?: number },
-  ): Promise<Map<string, SearchResult>> {
-    const results = new Map<string, SearchResult>();
-    const limit = options?.limit || 20;
-
-    const promises = Array.from(this.sources.entries()).map(async ([id]) => {
-      try {
-        const result = await this.search(keyword, id, { limit, page: 1 });
-        results.set(id, result);
-      } catch (error) {
-        console.error(`[SourceManager] 搜索失败 (${id}):`, error);
-        results.set(id, { songs: [], hasMore: false });
-      }
-    });
-
-    await Promise.all(promises);
-    return results;
   }
 
   /** 获取播放地址：从首选音质向下降级 */
@@ -157,7 +130,7 @@ class SourceManager {
       return [];
     }
 
-    const all: any[] = [];
+    const all: (Song | Playlist)[] = [];
     const promises = Array.from(this.sources.values()).map(async (source) => {
       if (source.getRecommend) {
         try {

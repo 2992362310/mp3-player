@@ -41,7 +41,7 @@ const INSTALL_KEY = 'pwaInstalled';
 const VISIT_COUNT_KEY = 'pwaVisitCount';
 const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
-const props = defineProps<{
+defineProps<{
   activeSection: 'discover' | 'local' | 'favorites' | 'settings';
 }>();
 

@@ -84,48 +84,21 @@
           />
 
           <template v-else>
-            <div
+            <SongRow
               v-for="(track, i) in filteredResults"
               :key="`${track.sourceId}-${track.id}`"
-              :class="['playlist-item', isCurrent(track) ? 'playing' : '']"
-              @click="playTrack(track)"
-            >
-              <div class="song-index">{{ i + 1 }}</div>
-              <div class="song-info">
-                <div class="song-title">{{ track.title }}</div>
-                <div class="song-artist">{{ track.artist }} · {{ sourceName(track.sourceId) }}</div>
-              </div>
-              <button
-                type="button"
-                class="play-btn"
-                title="加入歌单"
-                @click.stop="playlists.openAddToPlaylist(track)"
-              >
-                <SketchIcon name="plus" :size="16" />
-              </button>
-              <button
-                type="button"
-                :class="['btn-favorite', 'spaced', player.isFavorite(track) ? 'active' : '']"
-                @click.stop="player.toggleFavorite(track)"
-              >
-                {{ player.isFavorite(track) ? '♥' : '♡' }}
-              </button>
-              <button
-                type="button"
-                class="play-btn"
-                @click.stop="isCurrent(track) ? player.togglePlay() : playTrack(track)"
-              >
-                <svg v-if="isCurrent(track) && player.loading" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
-                  <circle cx="8" cy="8" r="6" stroke-dasharray="3,2"/>
-                </svg>
-                <svg v-else-if="isCurrent(track) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
-                  <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
-                </svg>
-                <svg v-else width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
-                  <polyline points="4,2 4,14 13,8 4,2"/>
-                </svg>
-              </button>
-            </div>
+              :song="track"
+              :index="i"
+              :subtitle="`${track.artist} · ${sourceName(track.sourceId)}`"
+              :current="isCurrent(track)"
+              :playing="player.isPlaying"
+              :loading="player.loading"
+              :favorite="player.isFavorite(track)"
+              @play="playTrack"
+              @toggle-favorite="player.toggleFavorite"
+              @toggle-play="player.togglePlay()"
+              @add-to-playlist="playlists.openAddToPlaylist"
+            />
           </template>
         </div>
 
@@ -187,10 +160,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
-import SketchIcon from '../icons/SketchIcon.vue';
+import SongRow from '../SongRow.vue';
 import SketchSelect from '../SketchSelect.vue';
 import { useAudio } from '../../composables/useAudio';
 import type { Song } from '../../core/sources/types';
+import { isSameSong } from '../../core/song';
 import { usePlayerStore } from '../../stores/player';
 import { usePlaylistStore } from '../../stores/playlist';
 import { useSearchStore } from '../../stores/search';
@@ -330,7 +304,7 @@ function sourceName(sourceId: string) {
 }
 
 function isCurrent(track: Song) {
-  return player.currentSong?.id === track.id && player.currentSong?.sourceId === track.sourceId;
+  return isSameSong(player.currentSong, track);
 }
 
 function playTrack(track: Song) {

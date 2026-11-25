@@ -16,7 +16,16 @@ pnpm run build
 
 # 预览生产构建
 pnpm run preview
+
+# 质量门禁：ESLint + 类型检查 + 单元测试
+pnpm run check
+
+# 只跑单元测试 / 监听模式
+pnpm run test
+pnpm run test:watch
 ```
+
+推送到 `main` 后，CI 会先执行 `pnpm run check` 再构建部署。
 
 ### PWA 安装（iOS/Android）
 
@@ -40,6 +49,7 @@ pnpm run preview
 - 本地音乐：导入文件/文件夹、拖放导入，IndexedDB 持久化，同名 `.lrc` 自动配对
 - 站点：应用内直接嵌入 GD Studio / QQMP3 网页（可新窗口打开）
 - 歌词面板（移动端全屏 / 横屏紧凑布局），点击歌词跳转
+- 桌面歌词：播放器栏的「弹出窗口」按钮可打开独立歌词窗；Chrome/Edge/Firefox 使用置顶浮动窗（Document PiP），Safari 降级为普通弹窗。两个窗口均可控制播放、切歌、点击歌词跳转
 - 主题设置器：11 套配色 + 手绘/清新/极简风格 + 网格/点阵/柔光纹理 + 自定义强调色
 - 睡眠定时：15/30/60/90 分钟定时关闭播放，支持渐弱音量
 - 播放队列面板：查看待播列表、点击切歌、移除/清空
@@ -73,7 +83,7 @@ GD Music API 封装：限流（约 5 分钟 50 次）、缓存、音质降级、
 ### 状态与界面
 
 - Pinia：`player` / `search` / `playlist` / `ui` / `sleepTimer` / `stats` / `pet` / `local`
-- 样式：`src/assets/styles/main.css`（手绘设计体系，CSS 变量主题）
+- 样式：`src/assets/styles/` 下 7 个分文件（theme-vars / base / layout / controls / responsive / customize / theme-overrides），`main.css` 仅负责按层叠顺序引入（手绘设计体系，CSS 变量主题）
 
 ---
 

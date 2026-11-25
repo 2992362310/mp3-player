@@ -192,13 +192,14 @@ export class GDMusicSource implements ISourcePlugin {
     let title = song.name;
     if (!title || title.toLowerCase() === "undefined" || title.trim() === "") {
       // 尝试用 raw 数据中的其他字段
-      const raw = song as any;
-      title =
+      const raw = song as unknown as Record<string, unknown>;
+      title = String(
         raw.title ||
         raw.songname ||
         raw.songName ||
         raw.song_name ||
-        `未知歌曲 (${song.id})`;
+        `未知歌曲 (${song.id})`,
+      );
     }
 
     // 处理歌手名字
@@ -208,8 +209,8 @@ export class GDMusicSource implements ISourcePlugin {
     } else if (typeof song.artist === "string") {
       artist = song.artist;
     } else {
-      const raw = song as any;
-      artist = raw.singer || raw.author || raw.artistName || "未知歌手";
+      const raw = song as unknown as Record<string, unknown>;
+      artist = String(raw.singer || raw.author || raw.artistName || "未知歌手");
     }
 
     return {
@@ -220,7 +221,7 @@ export class GDMusicSource implements ISourcePlugin {
       cover: "", // 不再自动获取封面，避免跨域和请求过多
       duration: 0,
       sourceId: song.source || this.id,
-      raw: song,
+      raw: { ...song },
     };
   }
 

@@ -6,17 +6,40 @@ import { useStatsStore } from '../stores/stats';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
 import { LOCAL_SOURCE_ID } from '../core/sources/LocalSource';
-import { songKey } from '../core/song';
+import { isSameSong, songKey } from '../core/song';
 import gdMusicApi from '../services/GDMusicApi';
 
-let initialized = false;
-let playGeneration = 0;
-let consecutiveFailures = 0;
-let restoring = false;
-let nextPrefetchTask: Promise<void> | null = null;
-let prefetchedNext: { key: string; url: string } | null = null;
-/** 用户点选播放失败时不自动跳曲，避免列表高亮乱跳像闪烁 */
-let holdOnUserPick = false;
+/**
+ * 播放会话状态。收敛在单一对象里，避免多个模块级可变变量各自漂移；
+ * HMR 重载模块时会整体重建，不会残留半初始化的状态。
+ */
+interface AudioSessionState {
+  initialized: boolean;
+  playGeneration: number;
+  consecutiveFailures: number;
+  restoring: boolean;
+  nextPrefetchTask: Promise<void> | null;
+  prefetchedNext: { key: string; url: string } | null;
+  /** 用户点选播放失败时不自动跳曲，避免列表高亮乱跳像闪烁 */
+  holdOnUserPick: boolean;
+}
+
+let sessionState: AudioSessionState | null = null;
+
+function getAudioSessionState(): AudioSessionState {
+  if (!sessionState) {
+    sessionState = {
+      initialized: false,
+      playGeneration: 0,
+      consecutiveFailures: 0,
+      restoring: false,
+      nextPrefetchTask: null,
+      prefetchedNext: null,
+      holdOnUserPick: false,
+    };
+  }
+  return sessionState;
+}
 
 export type PlayOptions = {
   addToHistory?: boolean;
@@ -60,6 +83,8 @@ function audioFormatFor(song: Song | null | undefined, url: string): string[] | 
 }
 
 export function useAudio() {
+  const state = getAudioSessionState();
+
   const player = usePlayerStore();
   const search = useSearchStore();
   const sleepTimer = useSleepTimerStore();
@@ -69,7 +94,7 @@ export function useAudio() {
     return (value || '')
       .toLowerCase()
       .replace(/\s+/g, '')
-      .replace(/[()（）\[\]【】\-_.']/g, '');
+      .replace(/[()（）[\]【】\-_.']/g, '');
   }
 
   function getFallbackCandidates(song: Song): Song[] {
@@ -77,7 +102,7 @@ export function useAudio() {
     const artist = normalizeText(song.artist);
 
     return player.queue.filter((item) => {
-      if (item.id === song.id && item.sourceId === song.sourceId) return false;
+      if (isSameSong(item, song)) return false;
       if (normalizeText(item.title) !== title) return false;
       return !artist || normalizeText(item.artist).includes(artist) || artist.includes(normalizeText(item.artist));
     });
@@ -101,8 +126,8 @@ export function useAudio() {
   }
 
   function clearNextPrefetch() {
-    prefetchedNext = null;
-    nextPrefetchTask = null;
+    state.prefetchedNext = null;
+    state.nextPrefetchTask = null;
   }
 
   function getSequentialNextSong(): Song | null {
@@ -129,7 +154,7 @@ export function useAudio() {
     }
 
     const key = songKey(nextSong);
-    if (prefetchedNext?.key === key) return;
+    if (state.prefetchedNext?.key === key) return;
 
     const task = (async () => {
       try {
@@ -137,26 +162,26 @@ export function useAudio() {
         if (!url) return;
         const latest = getSequentialNextSong();
         if (!latest || songKey(latest) !== key) return;
-        prefetchedNext = { key, url };
+        state.prefetchedNext = { key, url };
       } catch {
         // ignore prefetch errors; normal play flow will still resolve on demand
       }
     })();
 
-    nextPrefetchTask = task;
+    state.nextPrefetchTask = task;
     await task;
-    if (nextPrefetchTask === task) nextPrefetchTask = null;
+    if (state.nextPrefetchTask === task) state.nextPrefetchTask = null;
   }
 
   function skipAfterFailure() {
-    if (holdOnUserPick) return;
+    if (state.holdOnUserPick) return;
 
-    consecutiveFailures += 1;
+    state.consecutiveFailures += 1;
     const limit = Math.max(1, Math.min(player.queue.length, 5));
-    if (consecutiveFailures >= limit) {
-      consecutiveFailures = 0;
+    if (state.consecutiveFailures >= limit) {
+      state.consecutiveFailures = 0;
       if (!player.error) {
-        player.error = '连续多首无法播放，已暂停自动跳过';
+        player.setError('连续多首无法播放，已暂停自动跳过');
       }
       return;
     }
@@ -164,16 +189,16 @@ export function useAudio() {
   }
 
   async function playSong(song: Song, resolvedUrl?: string, options?: PlayOptions) {
-    const generation = ++playGeneration;
+    const generation = ++state.playGeneration;
     const autoSkipOnFail = options?.autoSkipOnFail !== false;
-    holdOnUserPick = !autoSkipOnFail;
+    state.holdOnUserPick = !autoSkipOnFail;
     clearNextPrefetch();
 
     const url = await player.playSong(song, resolvedUrl, options);
-    if (generation !== playGeneration) return;
+    if (generation !== state.playGeneration) return;
 
     if (url) {
-      consecutiveFailures = 0;
+      state.consecutiveFailures = 0;
       search.markPlayable(song, true);
       loadAudio(song, url);
       void prefetchSequentialNext();
@@ -184,25 +209,25 @@ export function useAudio() {
 
     // 本地曲无需跨音源回退
     if (song.sourceId === LOCAL_SOURCE_ID) {
-      holdOnUserPick = false;
+      state.holdOnUserPick = false;
       return;
     }
 
     // 已限流时不要连环尝试其他版本，否则更播不了
     if (gdMusicApi.getCooldownSeconds() > 0) {
-      holdOnUserPick = false;
+      state.holdOnUserPick = false;
       return;
     }
 
     const fallbacks = getFallbackCandidates(song);
     for (const candidate of fallbacks) {
-      if (generation !== playGeneration) return;
+      if (generation !== state.playGeneration) return;
       if (gdMusicApi.getCooldownSeconds() > 0) break;
       // 同源同名回退时保持“用户点选”语义，避免中途又自动连跳
       const fallbackUrl = await player.playSong(candidate, undefined, options);
-      if (generation !== playGeneration) return;
+      if (generation !== state.playGeneration) return;
       if (fallbackUrl) {
-        consecutiveFailures = 0;
+        state.consecutiveFailures = 0;
         search.markPlayable(candidate, true);
         loadAudio(candidate, fallbackUrl);
         void prefetchSequentialNext();
@@ -211,14 +236,14 @@ export function useAudio() {
       search.markPlayable(candidate, false);
     }
 
-    if (generation !== playGeneration) return;
+    if (generation !== state.playGeneration) return;
 
     if (!player.error) {
-      player.error = '暂无可用播放地址，试试其他版本或音源';
+      player.setError('暂无可用播放地址，试试其他版本或音源');
     }
 
     if (autoSkipOnFail) skipAfterFailure();
-    else holdOnUserPick = false;
+    else state.holdOnUserPick = false;
   }
 
   function playFromList(songs: Song[], song: Song, options?: PlayOptions) {
@@ -237,11 +262,11 @@ export function useAudio() {
 
     const target = list[idx];
     const key = songKey(target);
-    if (nextPrefetchTask) {
-      try { await nextPrefetchTask; } catch { /* ignore */ }
+    if (state.nextPrefetchTask) {
+      try { await state.nextPrefetchTask; } catch { /* ignore */ }
     }
-    if (prefetchedNext?.key === key) {
-      const { url } = prefetchedNext;
+    if (state.prefetchedNext?.key === key) {
+      const { url } = state.prefetchedNext;
       clearNextPrefetch();
       void playSong(target, url, { autoSkipOnFail: true, ...options });
       return;
@@ -290,34 +315,34 @@ export function useAudio() {
 
   /** 恢复上次播放（不自动播放，符合浏览器策略） */
   async function restoreLastSession() {
-    if (restoring) return;
+    if (state.restoring) return;
     const session = player.restoreSession();
     if (!session) return;
 
-    restoring = true;
-    const generation = ++playGeneration;
+    state.restoring = true;
+    const generation = ++state.playGeneration;
     try {
       const url = await player.resolvePlayUrl(session.song);
-      if (generation !== playGeneration || !url) return;
+      if (generation !== state.playGeneration || !url) return;
 
       loadAudio(session.song, url, false);
       player.isPlaying = false;
       if (session.time > 0) {
         // 等 howl onload 后再 seek 更稳，这里短延迟兜底
         setTimeout(() => {
-          if (generation !== playGeneration) return;
+          if (generation !== state.playGeneration) return;
           audioEngine.seek(session.time);
           player.persistSession();
         }, 300);
       }
       player.loadLyric(session.song);
     } finally {
-      restoring = false;
+      state.restoring = false;
     }
   }
 
-  if (!initialized) {
-    initialized = true;
+  if (!state.initialized) {
+    state.initialized = true;
 
     // 听歌统计：累计播放时长
     let lastRecordedTime = 0;
@@ -347,8 +372,8 @@ export function useAudio() {
     audioEngine.setCallbacks({
       onPlay: () => {
         player.isPlaying = true;
-        holdOnUserPick = false;
-        consecutiveFailures = 0;
+        state.holdOnUserPick = false;
+        state.consecutiveFailures = 0;
         player.clearError();
         // 新歌开始播放时记录
         if (player.currentSong) {
@@ -383,16 +408,18 @@ export function useAudio() {
       onError: (msg) => {
         const isLocal = player.currentSong?.sourceId === LOCAL_SOURCE_ID;
         if (isLocal) {
-          player.error = msg.includes('格式')
-            ? '本地音频格式不受当前浏览器支持'
-            : '本地音频加载失败，请尝试重新导入';
+          player.setError(
+            msg.includes('格式')
+              ? '本地音频格式不受当前浏览器支持'
+              : '本地音频加载失败，请尝试重新导入',
+          );
           player.isPlaying = false;
-          holdOnUserPick = false;
+          state.holdOnUserPick = false;
           return;
         }
-        player.error = msg.includes('失败')
-          ? '音频加载失败，可能是网络或版权限制'
-          : msg;
+        player.setError(
+          msg.includes('失败') ? '音频加载失败，可能是网络或版权限制' : msg,
+        );
         player.isPlaying = false;
         skipAfterFailure();
       },

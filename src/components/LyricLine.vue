@@ -23,6 +23,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   isUpcoming: false,
+  lineRefSetter: undefined,
 });
 
 const emit = defineEmits<{

@@ -87,7 +87,7 @@ export class LocalSource implements ISourcePlugin {
 
   async getPlayUrl(song: Song): Promise<PlayUrl> {
     const id = String(song.id);
-    const format = guessAudioFormat(song.raw?.mimeType || song.raw?.mime, song.raw?.fileName);
+    const format = guessAudioFormat(String(song.raw?.mimeType || song.raw?.mime || ''), String(song.raw?.fileName || ''));
     const cached = this.urlCache.get(id);
     if (cached) return { url: cached, format };
 
@@ -95,7 +95,7 @@ export class LocalSource implements ISourcePlugin {
     if (!blob) throw new Error('本地文件不存在或已被删除');
 
     // IndexedDB 取出的 Blob 可能丢失 type，补上以便 Howler / 浏览器识别
-    const mime = song.raw?.mimeType || song.raw?.mime || blob.type || mimeFromFormat(format);
+    const mime = String(song.raw?.mimeType || song.raw?.mime || blob.type || mimeFromFormat(format));
     const playBlob = blob.type === mime ? blob : new Blob([blob], { type: mime });
     const url = URL.createObjectURL(playBlob);
     this.urlCache.set(id, url);
