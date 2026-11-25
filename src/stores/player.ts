@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { Song, Lyric } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
-import { serializeSong } from '../core/song';
+import { serializeSong, songKey } from '../core/song';
 import storage from '../core/storage';
 import { formatUserError } from '../utils/errors';
 
@@ -42,11 +42,11 @@ export const usePlayerStore = defineStore('player', () => {
   const favoriteCount = computed(() => favorites.value.length);
 
   const favoriteKeys = computed(
-    () => new Set(favorites.value.map((s) => `${s.sourceId}-${s.id}`)),
+    () => new Set(favorites.value.map(songKey)),
   );
 
   function isFavorite(song: Song): boolean {
-    return favoriteKeys.value.has(`${song.sourceId}-${song.id}`);
+    return favoriteKeys.value.has(songKey(song));
   }
 
   function toggleFavorite(song: Song) {
@@ -61,16 +61,29 @@ export const usePlayerStore = defineStore('player', () => {
     storage.set('favorites', favorites.value);
   }
 
+  /** 批量加入收藏（导入备份用），返回实际新增数量 */
+  function addFavorites(songs: Song[]): number {
+    let added = 0;
+    for (const song of songs) {
+      if (!song || !song.id) continue;
+      if (favoriteKeys.value.has(songKey(song))) continue;
+      favorites.value.push(serializeSong(song));
+      added++;
+    }
+    if (added > 0) storage.set('favorites', favorites.value);
+    return added;
+  }
+
   function setQueue(songs: Song[]) {
     queue.value = songs;
     persistSession();
   }
 
   function addToHistory(song: Song) {
-    const key = `${song.sourceId}-${song.id}`;
+    const key = songKey(song);
     recentPlays.value = [
       serializeSong(song),
-      ...recentPlays.value.filter((s) => `${s.sourceId}-${s.id}` !== key),
+      ...recentPlays.value.filter((s) => songKey(s) !== key),
     ].slice(0, HISTORY_LIMIT);
     storage.set('recentPlays', recentPlays.value);
   }
@@ -275,7 +288,7 @@ export const usePlayerStore = defineStore('player', () => {
     currentSong, isPlaying, playMode, volume, muted, preferredQuality,
     currentTime, duration, loading, error, lyric, currentLyricIndex,
     queue, currentIndex, setQueue, recentPlays,
-    favorites, favoriteCount, isFavorite, toggleFavorite,
+    favorites, favoriteCount, isFavorite, toggleFavorite, addFavorites,
     progress, formattedCurrentTime, formattedDuration, currentLyricText,
     playModeLabel, qualityCascade,
     playSong, resolvePlayUrl, togglePlay, setPlaying, clearError,

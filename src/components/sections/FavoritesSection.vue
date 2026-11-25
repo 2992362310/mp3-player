@@ -88,8 +88,7 @@
                 </button>
                 <button
                   type="button"
-                  :class="['btn-favorite', player.isFavorite(song) ? 'active' : '']"
-                  style="margin-right: 8px;"
+                  :class="['btn-favorite', 'spaced', player.isFavorite(song) ? 'active' : '']"
                   @click.stop="player.toggleFavorite(song)"
                 >
                   {{ player.isFavorite(song) ? '♥' : '♡' }}
@@ -148,7 +147,7 @@
               <button type="button" class="play-btn" title="加入歌单" @click.stop="playlists.openAddToPlaylist(song)">
                 <SketchIcon name="plus" :size="16" />
               </button>
-              <button type="button" class="btn-favorite active" style="margin-right: 8px;" @click.stop="player.toggleFavorite(song)">♥</button>
+              <button type="button" class="btn-favorite active spaced" @click.stop="player.toggleFavorite(song)">♥</button>
               <button type="button" class="play-btn" @click.stop="isCurrent(song) ? player.togglePlay() : playFavorite(song)">
                 <svg v-if="isCurrent(song) && player.isPlaying" width="14" height="14" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none">
                   <line x1="4.5" y1="3" x2="4.5" y2="13"/><line x1="11.5" y1="3" x2="11.5" y2="13"/>
@@ -188,7 +187,7 @@
             ref="importFileInput"
             type="file"
             accept=".json"
-            style="display: none;"
+            hidden
             @change="onImportFile"
           />
         </div>
@@ -273,9 +272,8 @@
               <div class="song-artist">{{ song.artist }}</div>
             </div>
             <button
-              class="btn-favorite"
+              class="btn-favorite spaced"
               :class="player.isFavorite(song) ? 'active' : ''"
-              style="margin-right: 8px;"
               @click.stop="player.toggleFavorite(song)"
             >
               {{ player.isFavorite(song) ? '♥' : '♡' }}
@@ -295,7 +293,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import VirtualSongList from '../VirtualSongList.vue';
 import SketchIcon from '../icons/SketchIcon.vue';
 import { useAudio } from '../../composables/useAudio';
@@ -385,6 +383,21 @@ function playFromActive(song: Song) {
   playFromList(playlists.activePlaylist.songs, song);
 }
 
+let messageTimer: ReturnType<typeof setTimeout> | null = null;
+
+onBeforeUnmount(() => {
+  if (messageTimer) clearTimeout(messageTimer);
+});
+
+function flashMessage(text: string, duration = 3000) {
+  importMessage.value = text;
+  if (messageTimer) clearTimeout(messageTimer);
+  messageTimer = setTimeout(() => {
+    importMessage.value = '';
+    messageTimer = null;
+  }, duration);
+}
+
 function exportPlaylists() {
   const json = playlists.exportData(player.favorites);
   const blob = new Blob([json], { type: 'application/json' });
@@ -394,8 +407,7 @@ function exportPlaylists() {
   a.download = `moyun-playlists-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  importMessage.value = '已导出歌单文件';
-  setTimeout(() => { importMessage.value = ''; }, 3000);
+  flashMessage('已导出歌单文件');
 }
 
 function importPlaylists() {
@@ -410,12 +422,17 @@ function onImportFile(e: Event) {
   reader.onload = () => {
     try {
       const result = playlists.importData(String(reader.result));
-      importMessage.value = `导入完成：${result.playlistsAdded} 个新歌单，${result.songsAdded} 首歌`;
-    } catch (err: any) {
-      importMessage.value = err?.message || '导入失败';
+      const favoritesAdded = player.addFavorites(result.favorites);
+      const parts = [
+        `${result.playlistsAdded} 个新歌单`,
+        `${result.songsAdded} 首歌`,
+      ];
+      if (favoritesAdded > 0) parts.push(`${favoritesAdded} 个收藏`);
+      flashMessage(`导入完成：${parts.join('，')}`, 5000);
+    } catch (err) {
+      flashMessage(err instanceof Error ? err.message : '导入失败', 5000);
     }
     input.value = '';
-    setTimeout(() => { importMessage.value = ''; }, 5000);
   };
   reader.readAsText(file);
 }
@@ -450,7 +467,7 @@ function onImportFile(e: Event) {
   padding: 10px 8px;
   border: none;
   background: none;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 16px;
   color: var(--muted);
   cursor: pointer;
@@ -540,7 +557,7 @@ function onImportFile(e: Event) {
   background: transparent;
   color: var(--ink);
   padding: 7px 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   outline: none;
 }
@@ -571,7 +588,7 @@ function onImportFile(e: Event) {
   justify-content: center;
   gap: 6px;
   padding: 32px 16px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   color: var(--ink-soft);
 }
 
@@ -610,7 +627,7 @@ function onImportFile(e: Event) {
   border-radius: 6px;
   background: var(--accent-soft);
   color: var(--accent);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 12px;
   animation: fadeIn 0.2s ease;
 }
@@ -629,7 +646,7 @@ function onImportFile(e: Event) {
   align-items: stretch;
   gap: 4px;
   border: 1px var(--stroke-style-decor) var(--border);
-  border-radius: 8px 14px 6px 12px;
+  border-radius: var(--radius-card);
   background: transparent;
   overflow: hidden;
   transition: background 0.2s ease, border-color 0.2s ease;
@@ -652,7 +669,7 @@ function onImportFile(e: Event) {
   background: none;
   text-align: left;
   cursor: pointer;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
 }
 
 .playlist-tile-name {
@@ -682,7 +699,7 @@ function onImportFile(e: Event) {
   border: none;
   background: none;
   padding: 6px 10px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   color: var(--muted);
   cursor: pointer;

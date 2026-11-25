@@ -173,18 +173,18 @@ onMounted(async () => {
 
 .guide-card {
   width: min(92vw, 520px);
-  background: var(--surface-strong, var(--paper-bg));
-  border: 2px dashed var(--border);
-  border-radius: 10px 16px 8px 14px;
+  background: var(--surface-strong);
+  border: var(--stroke-control);
+  border-radius: var(--radius-popover);
   padding: 20px 20px 16px;
-  color: var(--text, var(--ink));
+  color: var(--ink);
   box-shadow: 4px 4px 0 var(--shadow-ink);
   animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .guide-card h2 {
   margin: 0 0 12px;
-  font-family: var(--ui-display, inherit);
+  font-family: var(--ui-display);
   font-size: 22px;
   font-weight: 700;
 }
@@ -192,8 +192,8 @@ onMounted(async () => {
 .guide-card ol {
   margin: 0;
   padding-left: 20px;
-  font-family: var(--ui-font, inherit);
-  color: var(--text-secondary, #5f5f5f);
+  font-family: var(--ui-font);
+  color: var(--ink-soft);
   line-height: 1.65;
   font-size: 14px;
 }

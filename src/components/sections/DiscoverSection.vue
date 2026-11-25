@@ -105,8 +105,7 @@
               </button>
               <button
                 type="button"
-                :class="['btn-favorite', player.isFavorite(track) ? 'active' : '']"
-                style="margin-right: 8px;"
+                :class="['btn-favorite', 'spaced', player.isFavorite(track) ? 'active' : '']"
                 @click.stop="player.toggleFavorite(track)"
               >
                 {{ player.isFavorite(track) ? '♥' : '♡' }}
@@ -386,7 +385,7 @@ async function searchHot(kw: string) {
 .results-loading {
   text-align: center;
   padding: 40px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   color: var(--accent-green);
 }
 
@@ -419,7 +418,7 @@ async function searchHot(kw: string) {
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   color: var(--ink-soft);
   cursor: pointer;
@@ -488,7 +487,7 @@ async function searchHot(kw: string) {
   justify-content: flex-start;
   gap: 0;
   color: var(--muted);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   padding: 8px 12px 16px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -502,8 +501,8 @@ async function searchHot(kw: string) {
   gap: 20px;
   width: min(820px, 100%);
   padding: 18px 20px;
-  border: 1px dashed var(--border-soft);
-  border-left: 3px solid var(--accent);
+  border: var(--stroke-soft);
+  border-left: var(--stroke-rail);
   border-radius: 8px;
   background: linear-gradient(115deg, var(--surface-strong), var(--surface));
   animation: slideUp 0.45s ease both;
@@ -511,7 +510,7 @@ async function searchHot(kw: string) {
 
 .listening-eyebrow {
   color: var(--accent);
-  font-family: var(--ui-font, sans-serif);
+  font-family: var(--ui-font);
   font-size: 10px;
   letter-spacing: 0.12em;
 }
@@ -519,7 +518,7 @@ async function searchHot(kw: string) {
 .listening-hero h1 {
   margin: 5px 0 3px;
   color: var(--ink);
-  font-family: var(--ui-display, serif);
+  font-family: var(--ui-display);
   font-size: 24px;
   font-weight: 600;
 }
@@ -539,7 +538,7 @@ async function searchHot(kw: string) {
   justify-content: space-between;
   gap: 4px;
   padding: 7px 8px;
-  border: 1px dashed var(--border-soft);
+  border: var(--stroke-soft);
   border-radius: 6px;
   background: color-mix(in srgb, var(--paper-bg) 62%, transparent);
   color: var(--ink-soft);
@@ -585,7 +584,7 @@ async function searchHot(kw: string) {
 .hot-group-title {
   font-size: 16px;
   color: var(--faint);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   letter-spacing: 0.12em;
   text-align: center;
 }
@@ -595,7 +594,7 @@ async function searchHot(kw: string) {
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-soft);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 16px;
   line-height: 1;
   padding: 9px 12px;

@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
 }
 
 .desk-pet-name {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 11px;
   color: var(--faint);
   letter-spacing: 0.08em;
@@ -187,10 +187,10 @@ onBeforeUnmount(() => {
   max-width: 140px;
   padding: 6px 10px;
   border: var(--stroke-soft);
-  border-radius: var(--ui-radius-sm, 8px);
+  border-radius: var(--ui-radius-sm);
   background: color-mix(in srgb, var(--paper-bg) 88%, transparent);
   color: var(--ink-soft);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   white-space: nowrap;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);

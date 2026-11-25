@@ -6,6 +6,7 @@ import { useStatsStore } from '../stores/stats';
 import audioEngine from '../core/audio/AudioEngine';
 import type { Song } from '../core/sources/types';
 import { LOCAL_SOURCE_ID } from '../core/sources/LocalSource';
+import { songKey } from '../core/song';
 import gdMusicApi from '../services/GDMusicApi';
 
 let initialized = false;
@@ -89,10 +90,6 @@ export function useAudio() {
 
   function applyOutputVolume() {
     audioEngine.setVolume(effectiveVolume());
-  }
-
-  function songKey(song: Song): string {
-    return `${song.sourceId}-${song.id}`;
   }
 
   function loadAudio(song: Song, url: string, autoplay = true) {

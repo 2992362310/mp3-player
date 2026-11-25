@@ -170,12 +170,12 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  border-bottom: 2px dashed var(--border);
+  border-bottom: 2px var(--stroke-style-decor) var(--border);
   background: var(--surface-strong);
 }
 
 .pwa-update-banner {
-  border-bottom: 2px dashed var(--accent);
+  border-bottom: 2px var(--stroke-style-decor) var(--accent);
   background: color-mix(in srgb, var(--paper-bg) 80%, var(--accent-soft));
 }
 
@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
 .pwa-banner-content strong {
   display: block;
   color: var(--ink);
-  font-family: var(--ui-display, inherit);
+  font-family: var(--ui-display);
   font-size: 15px;
   font-weight: 600;
 }
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
   margin: 2px 0 0;
   color: var(--muted);
   font-size: 13px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
 }
 
 .pwa-banner-actions {

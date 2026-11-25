@@ -5,6 +5,7 @@
 
 import type { ISourcePlugin, Song, SearchResult } from './types';
 import gdMusicApi from '../../services/GDMusicApi';
+import { debug } from '../../utils/log';
 
 type AudioQuality = 'low' | 'medium' | 'high' | 'lossless';
 const QUALITY_FALLBACK: AudioQuality[] = ['high', 'medium', 'low'];
@@ -32,7 +33,7 @@ class SourceManager {
       console.warn(`[SourceManager] 音源 ${source.id} 已存在，将被覆盖`);
     }
     this.sources.set(source.id, source);
-    console.log(`[SourceManager] 注册音源: ${source.name} (${source.id})`);
+    debug(`[SourceManager] 注册音源: ${source.name} (${source.id})`);
   }
 
   /** 注销音源插件 */
@@ -187,7 +188,7 @@ class SourceManager {
 
     await Promise.all(promises);
     this.initialized = true;
-    console.log(`[SourceManager] 初始化完成，共 ${this.sources.size} 个音源`);
+    debug(`[SourceManager] 初始化完成，共 ${this.sources.size} 个音源`);
   }
 
   /** 销毁所有音源 */

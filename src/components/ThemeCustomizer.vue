@@ -325,7 +325,7 @@ function onCustomAccent(e: Event) {
   align-items: flex-start;
   gap: 4px;
   padding: 10px;
-  border: 1px dashed var(--border-soft);
+  border: var(--stroke-soft);
   border-radius: 8px;
   background: var(--surface);
   color: var(--ink-soft);
@@ -362,7 +362,7 @@ function onCustomAccent(e: Event) {
   align-items: center;
   gap: 6px;
   padding: 8px 6px;
-  border: 1px solid transparent;
+  border: 1px var(--stroke-style-chrome) transparent;
   border-radius: 10px;
   background: transparent;
   cursor: pointer;
@@ -381,7 +381,7 @@ function onCustomAccent(e: Event) {
   width: 100%;
   height: 28px;
   border-radius: 8px;
-  border: 1px dashed var(--border-soft);
+  border: var(--stroke-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -437,7 +437,7 @@ function onCustomAccent(e: Event) {
 
 .chip {
   padding: 6px 12px;
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 999px;
   background: transparent;
   color: var(--ink-soft);
@@ -463,7 +463,7 @@ function onCustomAccent(e: Event) {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid var(--border);
+  border: 2px var(--stroke-style-chrome) var(--border);
   background: var(--control-fill);
   cursor: pointer;
   padding: 0;
@@ -484,7 +484,7 @@ function onCustomAccent(e: Event) {
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 8px;
   color: var(--muted);
   font-size: 12px;
@@ -519,7 +519,7 @@ function onCustomAccent(e: Event) {
   align-items: center;
   justify-content: center;
   padding: 0 10px;
-  border: 1px dashed var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 6px;
   background: var(--surface);
   color: var(--ink-soft);
@@ -540,7 +540,7 @@ function onCustomAccent(e: Event) {
   min-width: 0;
   height: 34px;
   padding: 0 9px;
-  border: 1px dashed var(--border-soft);
+  border: var(--stroke-soft);
   border-radius: 6px;
   background: var(--surface-strong);
   color: var(--ink);

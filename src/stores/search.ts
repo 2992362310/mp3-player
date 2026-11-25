@@ -8,6 +8,7 @@ import { ref, computed } from 'vue';
 import type { Song } from '../core/sources/types';
 import { sourceManager } from '../core/sources/SourceManager';
 import storage from '../core/storage';
+import { songKey } from '../core/song';
 import { formatUserError } from '../utils/errors';
 import { isAbortError } from '../services/GDMusicApi';
 import { HOT_KEYWORDS } from '../constants/hotKeywords';
@@ -50,10 +51,6 @@ interface SearchSnapshot {
   sourceHasMore: Map<string, boolean>;
   page: number;
   hasMore: boolean;
-}
-
-function songKey(song: Song) {
-  return `${song.sourceId}-${song.id}`;
 }
 
 function quickSearchKey(keyword: string, sourceId: string) {

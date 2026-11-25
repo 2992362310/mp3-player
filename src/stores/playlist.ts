@@ -120,52 +120,64 @@ export const usePlaylistStore = defineStore('playlist', () => {
     }, null, 2);
   }
 
-  /** 导入 JSON 备份（合并模式，不覆盖已有） */
-  function importData(json: string): { playlistsAdded: number; songsAdded: number; favoritesAdded: number } {
-    let parsed: any;
+  /** 导入 JSON 备份（合并模式，不覆盖已有；收藏交由调用方合并） */
+  function importData(json: string): {
+    playlistsAdded: number;
+    songsAdded: number;
+    favorites: Song[];
+  } {
+    let parsed: unknown;
     try {
       parsed = JSON.parse(json);
     } catch {
       throw new Error('文件格式不正确，请选择墨韵导出的 JSON 文件');
     }
 
-    if (parsed?.app !== 'moyun') {
+    const payload = parsed as {
+      app?: string;
+      playlists?: Array<Partial<UserPlaylist>>;
+      favorites?: Song[];
+    };
+
+    if (payload?.app !== 'moyun') {
       throw new Error('不是墨韵导出的数据文件');
     }
 
     let playlistsAdded = 0;
     let songsAdded = 0;
 
-    if (Array.isArray(parsed.playlists)) {
-      for (const imported of parsed.playlists) {
-        if (!imported?.name || !Array.isArray(imported.songs)) continue;
-        const existing = playlists.value.find((p) => p.name === imported.name);
-        if (existing) {
-          // 合并歌曲（去重）
-          for (const song of imported.songs) {
-            const key = songKey(song);
-            if (!existing.songs.some((s) => songKey(s) === key)) {
-              existing.songs.push(serializeSong(song));
-              songsAdded++;
-            }
+    for (const imported of payload.playlists ?? []) {
+      if (!imported?.name || !Array.isArray(imported.songs)) continue;
+      const existing = playlists.value.find((p) => p.name === imported.name);
+      if (existing) {
+        // 同名歌单：合并去重
+        for (const song of imported.songs) {
+          const key = songKey(song);
+          if (!existing.songs.some((s) => songKey(s) === key)) {
+            existing.songs.push(serializeSong(song));
+            songsAdded++;
           }
-          existing.updatedAt = Date.now();
-        } else {
-          playlists.value.push({
-            id: createId(),
-            name: String(imported.name).slice(0, 40),
-            songs: imported.songs.map((s: Song) => serializeSong(s)),
-            createdAt: imported.createdAt || Date.now(),
-            updatedAt: Date.now(),
-          });
-          playlistsAdded++;
-          songsAdded += imported.songs.length;
         }
+        existing.updatedAt = Date.now();
+      } else {
+        playlists.value.push({
+          id: createId(),
+          name: String(imported.name).slice(0, 40),
+          songs: imported.songs.map((song) => serializeSong(song)),
+          createdAt: imported.createdAt || Date.now(),
+          updatedAt: Date.now(),
+        });
+        playlistsAdded++;
+        songsAdded += imported.songs.length;
       }
     }
 
     persist();
-    return { playlistsAdded, songsAdded, favoritesAdded: 0 };
+    return {
+      playlistsAdded,
+      songsAdded,
+      favorites: Array.isArray(payload.favorites) ? payload.favorites : [],
+    };
   }
 
   return {

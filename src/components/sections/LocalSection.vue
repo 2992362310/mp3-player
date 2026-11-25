@@ -143,8 +143,7 @@
             </button>
             <button
               type="button"
-              :class="['btn-favorite', player.isFavorite(song) ? 'active' : '']"
-              style="margin-right: 8px;"
+              :class="['btn-favorite', 'spaced', player.isFavorite(song) ? 'active' : '']"
               @click.stop="player.toggleFavorite(song)"
             >
               {{ player.isFavorite(song) ? '♥' : '♡' }}
@@ -327,7 +326,7 @@ function clearLibrary() {
   border-radius: 12px;
   background: color-mix(in srgb, var(--paper-bg) 55%, transparent);
   color: var(--accent);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 22px;
   pointer-events: none;
 }
@@ -393,7 +392,7 @@ function clearLibrary() {
   background: transparent;
   color: var(--ink);
   padding: 7px 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   outline: none;
 }
@@ -413,7 +412,7 @@ function clearLibrary() {
 .local-status,
 .local-error {
   margin: 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
 }
 
@@ -454,7 +453,7 @@ function clearLibrary() {
   justify-content: center;
   gap: 6px;
   padding: 32px 16px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   color: var(--ink-soft);
 }
 

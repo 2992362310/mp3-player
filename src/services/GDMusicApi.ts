@@ -6,6 +6,8 @@
  * 访问限制: 5分钟内不超过50次请求
  */
 
+import { debug } from '../utils/log';
+
 // 音乐源类型
 export type MusicSource =
   | 'netease'
@@ -203,7 +205,7 @@ class GDMusicApiService {
       throw new Error(`请求频率超限，请约 ${seconds || 60} 秒后再试`);
     }
 
-    console.log('[GDMusicApi] 请求:', url);
+    debug('[GDMusicApi] 请求:', url);
 
     let response: Response;
     try {

@@ -11,6 +11,7 @@ import type {
   SearchResult,
   SearchParams,
 } from "./types";
+import { debug } from '../../utils/log';
 import gdMusicApi, {
   type MusicSource,
   type MusicQuality,
@@ -173,14 +174,14 @@ export class GDMusicSource implements ISourcePlugin {
    * 初始化
    */
   async init(): Promise<void> {
-    console.log(`[${this.id}] 音源插件已初始化`);
+    debug(`[${this.id}] 音源插件已初始化`);
   }
 
   /**
    * 销毁
    */
   async destroy(): Promise<void> {
-    console.log(`[${this.id}] 音源插件已销毁`);
+    debug(`[${this.id}] 音源插件已销毁`);
   }
 
   /**

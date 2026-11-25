@@ -33,8 +33,7 @@
           </button>
           <button
             @click.stop="emit('toggle-favorite', item.song)"
-            :class="['btn-favorite', isFavorite(item.song) ? 'active' : '']"
-            style="margin-right: 8px;"
+            :class="['btn-favorite', 'spaced', isFavorite(item.song) ? 'active' : '']"
           >
             {{ isFavorite(item.song) ? '♥' : '♡' }}
           </button>

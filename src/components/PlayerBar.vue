@@ -38,7 +38,7 @@
         <!-- 右侧 -->
         <div class="right-controls">
           <div class="volume-controls">
-            <button @click="player.toggleMute()" class="sketch-icon" title="音量" style="padding: 2px;">
+            <button @click="player.toggleMute()" class="sketch-icon" title="音量">
               <SketchIcon
                 :name="!player.muted && player.volume > 0 ? 'volume' : 'mute'"
                 :size="17"
@@ -54,7 +54,7 @@
             :class="{ 'fav-on': player.currentSong && player.isFavorite(player.currentSong) }"
             :title="player.currentSong && player.isFavorite(player.currentSong) ? '取消喜欢' : '喜欢'"
             :disabled="!player.currentSong"
-            style="padding: 2px;"
+           
           >
             <SketchIcon
               name="heart"
@@ -68,11 +68,11 @@
             :class="{ active: ui.showLyricPanel }"
             title="歌词 (L)"
             :disabled="!player.currentSong"
-            style="padding: 2px;"
+           
           >
             <SketchIcon name="lyric" :size="17" />
           </button>
-          <button @click="player.togglePlayMode()" class="sketch-icon" :title="player.playModeLabel" style="padding: 2px;" :disabled="!player.currentSong">
+          <button @click="player.togglePlayMode()" class="sketch-icon" :title="player.playModeLabel" :disabled="!player.currentSong">
             <SketchIcon :name="modeIcon" :size="17" />
           </button>
           <!-- 睡眠定时 -->
@@ -82,7 +82,7 @@
               class="sketch-icon"
               :class="{ active: sleepTimer.active }"
               :title="sleepTimer.active ? `定时 ${sleepTimer.formattedRemaining}` : '睡眠定时'"
-              style="padding: 2px;"
+             
             >
               <SketchIcon name="clock" :size="17" />
             </button>
@@ -122,7 +122,7 @@
             class="sketch-icon"
             :class="{ active: showQueuePanel }"
             title="播放队列 (Q)"
-            style="padding: 2px;"
+           
           >
             <SketchIcon name="queue" :size="17" />
           </button>
@@ -331,11 +331,11 @@ onBeforeUnmount(() => {
   max-width: min(92vw, 420px);
   padding: 10px 12px 10px 14px;
   border: var(--stroke-focus);
-  border-radius: 8px 12px 6px 10px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--paper-bg) 92%, var(--accent-soft));
   color: var(--accent);
   box-shadow: 3px 3px 0 var(--shadow-ink);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 14px;
   line-height: 1.35;
   animation: toastIn 0.2s ease-out;
@@ -382,6 +382,7 @@ onBeforeUnmount(() => {
 
 .sketch-icon {
   color: var(--ink-soft);
+  padding: 2px;
 }
 
 .sketch-icon.active {
@@ -418,9 +419,9 @@ onBeforeUnmount(() => {
   right: 16px;
   z-index: 1510;
   width: 232px;
-  border: var(--stroke-control, 2px dashed var(--border, #ddd));
-  border-radius: 10px 14px 8px 12px;
-  background: var(--surface-strong, #fff);
+  border: var(--stroke-control);
+  border-radius: var(--radius-popover);
+  background: var(--surface-strong);
   box-shadow: 3px 3px 0 var(--shadow-ink);
   padding: 12px;
   animation: sleepPopIn 0.18s ease-out;
@@ -435,17 +436,17 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 14px;
   font-weight: 600;
-  color: var(--ink, #222);
+  color: var(--ink);
   margin-bottom: 10px;
 }
 
 .sleep-popover-close {
   background: none;
   border: none;
-  color: var(--muted, #888);
+  color: var(--muted);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -459,19 +460,19 @@ onBeforeUnmount(() => {
 
 .sleep-preset-btn {
   padding: 8px 6px;
-  border: 1px dashed var(--border, #ddd);
-  border-radius: 7px 10px 6px 9px;
-  background: var(--paper-bg, #fff);
-  color: var(--ink-soft, #444);
-  font-family: var(--ui-font, inherit);
+  border: 1px var(--stroke-style-decor) var(--border);
+  border-radius: var(--radius-control);
+  background: var(--paper-bg);
+  color: var(--ink-soft);
+  font-family: var(--ui-font);
   font-size: 13px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 
 .sleep-preset-btn:hover {
-  background: var(--hover, #f5f5f5);
-  border-color: var(--accent, #6366f1);
+  background: var(--hover);
+  border-color: var(--accent);
 }
 
 .sleep-active-info {
@@ -483,10 +484,10 @@ onBeforeUnmount(() => {
 }
 
 .sleep-countdown {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 22px;
   font-weight: 600;
-  color: var(--accent, #6366f1);
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -496,10 +497,10 @@ onBeforeUnmount(() => {
   gap: 6px;
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px dashed var(--border-soft, #eee);
-  font-family: var(--ui-font, inherit);
+  border-top: 1px var(--stroke-style-decor) var(--line-soft);
+  font-family: var(--ui-font);
   font-size: 12px;
-  color: var(--muted, #888);
+  color: var(--muted);
   cursor: pointer;
 }
 
@@ -516,8 +517,8 @@ onBeforeUnmount(() => {
 .queue-panel {
   width: min(360px, 88vw);
   height: 100%;
-  background: var(--paper-bg, #fff);
-  border-left: 2px dashed var(--border, #ddd);
+  background: var(--paper-bg);
+  border-left: 2px var(--stroke-style-decor) var(--border);
   box-shadow: -3px 0 0 var(--shadow-ink);
   display: flex;
   flex-direction: column;
@@ -534,21 +535,21 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 2px dashed var(--border-soft, #eee);
+  border-bottom: 2px var(--stroke-style-decor) var(--line-soft);
   flex-shrink: 0;
 }
 
 .queue-header h3 {
   margin: 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 17px;
-  color: var(--ink, #222);
+  color: var(--ink);
 }
 
 .queue-header h3 em {
   font-style: normal;
   font-size: 12px;
-  color: var(--muted, #888);
+  color: var(--muted);
   margin-left: 6px;
 }
 
@@ -561,7 +562,7 @@ onBeforeUnmount(() => {
 .queue-close-btn {
   background: none;
   border: none;
-  color: var(--muted, #888);
+  color: var(--muted);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -569,8 +570,8 @@ onBeforeUnmount(() => {
 }
 
 .queue-close-btn:hover {
-  background: var(--hover, #f5f5f5);
-  color: var(--ink, #222);
+  background: var(--hover);
+  color: var(--ink);
 }
 
 .queue-list {
@@ -583,8 +584,8 @@ onBeforeUnmount(() => {
 .queue-empty {
   text-align: center;
   padding: 48px 16px;
-  color: var(--muted, #888);
-  font-family: var(--ui-font, inherit);
+  color: var(--muted);
+  font-family: var(--ui-font);
   font-size: 14px;
 }
 
@@ -593,18 +594,18 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 9px 16px;
-  border-left: 3px solid transparent;
-  border-bottom: 1px dashed var(--border-soft, #eee);
+  border-left: var(--stroke-rail-idle);
+  border-bottom: 1px var(--stroke-style-decor) var(--line-soft);
   cursor: pointer;
   transition: background 0.12s;
 }
 
 .queue-item:hover {
-  background: var(--hover, #f5f5f5);
+  background: var(--hover);
 }
 
 .queue-item.current {
-  background: var(--accent-soft, rgba(99, 102, 241, 0.08));
+  background: var(--accent-soft);
   border-left-color: var(--accent);
 }
 
@@ -612,13 +613,13 @@ onBeforeUnmount(() => {
   width: 22px;
   text-align: center;
   font-size: 12px;
-  color: var(--muted, #888);
+  color: var(--muted);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .queue-item.current .queue-item-index {
-  color: var(--accent, #6366f1);
+  color: var(--accent);
   font-size: 15px;
 }
 
@@ -628,18 +629,18 @@ onBeforeUnmount(() => {
 }
 
 .queue-item-title {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
-  color: var(--ink, #222);
+  color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .queue-item-artist {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 11px;
-  color: var(--muted, #888);
+  color: var(--muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -648,7 +649,7 @@ onBeforeUnmount(() => {
 .queue-item-remove {
   background: none;
   border: none;
-  color: var(--muted, #aaa);
+  color: var(--muted);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -662,7 +663,7 @@ onBeforeUnmount(() => {
 }
 
 .queue-item-remove:hover {
-  color: var(--accent, #e11d48);
+  color: var(--accent);
 }
 
 .btn-action-sm {

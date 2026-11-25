@@ -25,7 +25,7 @@ html[data-theme='paper'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
 }
 
-/* ?????? + ????? */
+/* 主题：蓝喵（冷调蓝 + 天青） */
 html[data-theme='gadgetcat'] {
   --paper-bg: #eef4f9;
   --paper-grid: rgba(90, 122, 152, 0.045);
@@ -102,7 +102,7 @@ html[data-theme='mint'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
 }
 
-/* ???????? + ???? */
+/* 主题：夜幕（墨色暗底 + 靛紫） */
 html[data-theme='ink'] {
   --paper-bg: #1a1d22;
   --paper-grid: rgba(200, 190, 165, 0.035);
@@ -127,7 +127,7 @@ html[data-theme='ink'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 70%, var(--ink-soft) 30%);
 }
 
-/* ???????? */
+/* 主题：青瓷（青灰绿） */
 html[data-theme='celadon'] {
   --paper-bg: #e8f1ef;
   --paper-grid: rgba(70, 110, 100, 0.045);
@@ -152,7 +152,7 @@ html[data-theme='celadon'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
 }
 
-/* ??????? + ???? */
+/* 主题：丹霞（暖朱红） */
 html[data-theme='cinnabar'] {
   --paper-bg: #fbefeb;
   --paper-grid: rgba(130, 90, 80, 0.045);
@@ -177,7 +177,7 @@ html[data-theme='cinnabar'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 78%, var(--border) 22%);
 }
 
-/* ??????? */
+/* 主题：晴空（雾蓝） */
 html[data-theme='breeze'] {
   --paper-bg: #f1f7fb;
   --paper-grid: rgba(60, 130, 170, 0.04);
@@ -206,7 +206,7 @@ html[data-theme='breeze'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 76%, var(--border) 24%);
 }
 
-/* ?????? + ?? HUD */
+/* 主题：现场（暗黑 + 荧光黄 HUD） */
 html[data-theme='cyberpunk'] {
   --paper-bg: #0f1014;
   --paper-grid: rgba(242, 210, 26, 0.035);
@@ -230,17 +230,20 @@ html[data-theme='cyberpunk'] {
   --ui-display: "Rajdhani", "Noto Sans SC", sans-serif;
   --ui-radius: 0px;
   --ui-radius-sm: 0px;
-  --cp-cyan: #00f0ff;
-  --cp-magenta: #ff003c;
-  --cp-yellow: #fcee09;
-  --glow-yellow: 0 0 12px rgba(252, 238, 9, 0.45);
-  --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.35);
+  --radius-card: 0;
+  --radius-control: 0;
+  --radius-popover: 0;
+  --cp-cyan: var(--accent-green);
+  --cp-magenta: #ff2f6d;
+  --cp-yellow: var(--accent);
+  --glow-yellow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  --glow-cyan: 0 0 10px color-mix(in srgb, var(--accent-green) 35%, transparent);
   --line-strong: color-mix(in srgb, var(--border-strong) 55%, var(--border) 45%);
   --line-mid: color-mix(in srgb, var(--border) 78%, var(--ink) 22%);
   --line-soft: color-mix(in srgb, var(--border-soft) 70%, var(--border) 30%);
 }
 
-/* ???????? */
+/* 主题：矩阵（终端绿） */
 html[data-theme='matrix'] {
   --paper-bg: #0a0f0c;
   --paper-grid: rgba(80, 230, 130, 0.03);
@@ -267,7 +270,7 @@ html[data-theme='matrix'] {
   --line-soft: color-mix(in srgb, var(--border-soft) 60%, var(--border) 40%);
 }
 
-/* ???????? */
+/* 主题：晚樱（樱粉） */
 html[data-theme='maruko'] {
   --paper-bg: #fdf2f7;
   --paper-grid: rgba(220, 130, 165, 0.05);
@@ -291,16 +294,13 @@ html[data-theme='maruko'] {
   --ui-display: "ZCOOL KuaiLe", "Nunito", "Noto Sans SC", sans-serif;
   --ui-radius: 18px;
   --ui-radius-sm: 12px;
-  --sky: #87ceeb;
-  --blush: #ff6b6b;
-  --deep-pink: #d81b60;
   --warm-orange: #ffb74d;
   --line-strong: color-mix(in srgb, var(--border-strong) 70%, var(--border) 30%);
   --line-mid: color-mix(in srgb, var(--border) 78%, var(--border-soft) 22%);
   --line-soft: color-mix(in srgb, var(--border-soft) 72%, var(--border) 28%);
 }
 
-/* ?????????????????????????? */
+/* 由主题基色派生的层级色（各主题共用） */
 :root,
 html[data-theme='paper'],
 html[data-theme='gadgetcat'],
@@ -313,7 +313,7 @@ html[data-theme='breeze'],
 html[data-theme='cyberpunk'],
 html[data-theme='matrix'],
 html[data-theme='maruko'] {
-  --paper-pattern: color-mix(in srgb, var(--ink) 6%, transparent);
+  --paper-pattern: var(--paper-grid);
   --bg-raised: color-mix(in srgb, var(--paper-bg) 88%, transparent);
   --bg-panel: color-mix(in srgb, var(--surface-strong) 70%, transparent);
   --bg-subtle: color-mix(in srgb, var(--surface) 78%, transparent);
@@ -322,40 +322,20 @@ html[data-theme='maruko'] {
 html[data-theme='ink'],
 html[data-theme='matrix'],
 html[data-theme='cyberpunk'] {
-  --paper-pattern: color-mix(in srgb, var(--ink) 8%, transparent);
+  --paper-pattern: var(--paper-grid);
   --bg-raised: color-mix(in srgb, var(--paper-bg) 90%, transparent);
   --bg-panel: color-mix(in srgb, var(--surface-strong) 78%, transparent);
   --bg-subtle: color-mix(in srgb, var(--surface) 82%, transparent);
 }
 
-/* ========== ?????? ========== */
-@theme {
-  --color-ink: #2a2722;
-  --color-ink-light: #4d4840;
-  --color-ink-muted: #7c766a;
-  --color-ink-faint: #a8a091;
-
-  --color-paper: #faf7f0;
-  --color-paper-alt: #efe6d3;
-  --color-paper-dark: #c8bda8;
-
-  --color-pencil: #4a4a4a;
-  --color-pencil-light: #7a7a7a;
-
-  --color-accent: #5b57d1;
-  --color-accent-green: #2f9a63;
-
-  --font-hand: "Ma Shan Zheng", "Caveat", "Patrick Hand", cursive;
-  --font-kai: "KaiTi", "??", "STKaiti", "????", serif;
-  --font-sans: "Noto Sans SC", system-ui, sans-serif;
-
-  --radius-sketch: 3px 8px 5px 10px;
-
-  --animate-fade-in: fadeIn 0.4s ease-out;
-  --animate-slide-up: slideUp 0.4s ease-out;
+/* 手绘圆角令牌：四角不等，随「圆角」设置缩放 */
+:root {
+  --radius-card: 8px 14px 6px 12px;
+  --radius-control: 6px 10px 8px 12px;
+  --radius-popover: 10px 14px 12px 16px;
 }
 
-/* ========== ?? ========== */
+/* ========== 动画 ========== */
 @keyframes fadeIn {
   0% { opacity: 0; }
   100% { opacity: 1; }
@@ -405,7 +385,7 @@ html[data-theme='cyberpunk'] {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ========== ???? ========== */
+/* ========== 基础重置 ========== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
@@ -416,14 +396,14 @@ body {
   font-family: "KaiTi", "STKaiti", "Ma Shan Zheng", "Noto Serif SC", serif;
   background-color: var(--paper-bg);
   background-image:
-    linear-gradient(var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px),
-    linear-gradient(90deg, var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px);
+    linear-gradient(var(--paper-pattern) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-pattern) 1px, transparent 1px);
   background-size: 32px 32px;
   background-attachment: fixed;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
-  /* ????????????? body ????????? h-screen ?????? */
+  /* 根容器占满视口；移动端优先 dvh 以规避地址栏抖动 */
   height: 100%;
   min-height: 100dvh;
   min-height: 100vh;
@@ -438,7 +418,7 @@ body {
 
 ::selection { background: var(--ink); color: var(--paper-bg); }
 
-/* ========== ??? ========== */
+/* ========== 滚动条 ========== */
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -448,12 +428,12 @@ body {
 .main-scroll::-webkit-scrollbar { display: block; width: 8px; }
 .main-scroll::-webkit-scrollbar-track {
   background: transparent;
-  border-left: 1px dashed var(--line-soft);
+  border-left: 1px var(--stroke-style-decor) var(--line-soft);
 }
 .main-scroll::-webkit-scrollbar-thumb {
   background: var(--line-mid);
   border-radius: 10px 4px 8px 5px;
-  border: 1px dashed var(--line-strong);
+  border: 1px var(--stroke-style-decor) var(--line-strong);
 }
 .main-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--line-strong);
@@ -463,7 +443,7 @@ body {
   scrollbar-color: var(--line-mid) transparent;
 }
 
-/* ========== ????? ========== */
+/* ========== 顶部导航 ========== */
 .top-nav {
   position: relative;
   z-index: 1200;
@@ -471,7 +451,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 6px 16px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--line-soft) 70%, transparent);
+  border-bottom: 1px var(--stroke-style-decor) color-mix(in srgb, var(--line-soft) 70%, transparent);
   flex-shrink: 0;
   gap: 8px;
   overflow: visible;
@@ -489,7 +469,7 @@ body {
   font-size: 22px;
   font-weight: normal;
   color: var(--ink);
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   letter-spacing: 3px;
   line-height: 1;
   user-select: none;
@@ -546,7 +526,7 @@ body {
   background: var(--accent-soft);
 }
 
-/* ========== ??????????? ========== */
+/* ========== 侧边栏（暂未启用） ========== */
 .sidebar {
   display: none;
 }
@@ -565,9 +545,9 @@ body {
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  color: #4a4a4a;
+  color: var(--ink-soft);
   text-decoration: none;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 15px;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -575,14 +555,14 @@ body {
 }
 
 .sidebar .nav-item a:hover {
-  background-color: rgba(240, 228, 200, 0.6);
-  border-left-color: #d4c5a0;
+  background-color: var(--hover);
+  border-left-color: var(--line-mid);
   transform: translateX(2px);
 }
 
 .sidebar .nav-item.active a {
-  background-color: rgba(240, 228, 200, 0.9);
-  border-left: 3px solid #e74c3c;
+  background-color: var(--hover);
+  border-left: 3px solid var(--accent);
   font-weight: bold;
 }
 
@@ -604,7 +584,7 @@ body {
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-/* ========== ???? ========== */
+/* ========== 主内容区 ========== */
 .main-content {
   flex: 1;
   display: flex;
@@ -640,7 +620,7 @@ body {
   margin: 0;
   font-size: 20px;
   font-weight: normal;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   letter-spacing: 2px;
   border-bottom: var(--stroke-divider);
   padding-bottom: 6px;
@@ -660,13 +640,13 @@ body {
   font-size: 17px;
   margin-bottom: 10px;
   color: var(--ink);
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   border-left: 3px solid var(--accent);
   padding-left: 8px;
   font-weight: normal;
 }
 
-/* ========== ?? ========== */
+/* ========== 卡片网格 ========== */
 .card-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -676,8 +656,8 @@ body {
 
 .card {
   background-color: var(--bg-panel);
-  border: 2px solid var(--line-mid);
-  border-radius: 8px 12px 6px 14px;
+  border: var(--stroke-frame);
+  border-radius: var(--radius-card);
   padding: 12px;
   text-align: center;
   cursor: pointer;
@@ -700,14 +680,14 @@ body {
 .card .card-title {
   font-size: 14px;
   margin: 0;
-  color: #2d2d2d;
-  font-family: "Ma Shan Zheng", cursive;
+  color: var(--ink);
+  font-family: var(--ui-display);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ========== ???? ========== */
+/* ========== 歌曲列表项 ========== */
 .playlist-item {
   display: flex;
   align-items: center;
@@ -738,7 +718,7 @@ body {
   margin-right: 10px;
   min-width: 24px;
   text-align: center;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 13px;
 }
 
@@ -749,7 +729,7 @@ body {
 
 .playlist-item .song-title {
   margin-bottom: 2px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   color: var(--ink);
   font-size: 14px;
   overflow: hidden;
@@ -760,7 +740,7 @@ body {
 .playlist-item .song-artist {
   font-size: 12px;
   color: var(--muted);
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -794,12 +774,12 @@ body {
   color: var(--accent);
 }
 
-/* ========== ????? ========== */
+/* ========== 底部播放器 ========== */
 .bottom-controller {
-  border-top: 1px dashed color-mix(in srgb, var(--line-soft) 70%, transparent);
+  border-top: 1px var(--stroke-style-decor) color-mix(in srgb, var(--line-soft) 70%, transparent);
   z-index: 1000;
   flex-shrink: 0;
-  /* border-box?????????????????? 80px */
+  /* 高度固定 80px（含刘海安全区），与固定定位偏移配合 */
   height: calc(80px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
@@ -849,7 +829,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   max-width: 260px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   color: var(--ink);
 }
 
@@ -872,10 +852,10 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 260px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
 }
 
-/* ?????? */
+/* ========== 图标 ========== */
 .sketch-icon {
   display: inline-flex;
   align-items: center;
@@ -922,9 +902,9 @@ body {
   font-size: 14px;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px 10px 8px 12px;
+  border-radius: var(--radius-control);
   transition: all 0.2s ease;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
 }
 
 .control-btn:hover {
@@ -968,7 +948,7 @@ body {
   gap: 8px;
   font-size: 11px;
   color: var(--muted);
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
 }
 
 .progress-row .time {
@@ -985,7 +965,7 @@ body {
   background-color: var(--line-soft);
   border-radius: 8px;
   cursor: pointer;
-  border: 1px dashed var(--line-mid);
+  border: 1px var(--stroke-style-decor) var(--line-mid);
   touch-action: none;
 }
 
@@ -1035,13 +1015,13 @@ body {
   transform: translateY(-50%) scale(1);
 }
 
-/* ========== ???? ========== */
+/* ========== 搜索历史 ========== */
 .search-history-container {
   margin: 20px 0;
   padding: 15px;
-  background-color: rgba(255, 255, 255, 0.4);
-  border-radius: 6px 10px 8px 12px;
-  border: 2px dashed #d4c5a0;
+  background-color: var(--surface);
+  border-radius: var(--radius-control);
+  border: var(--stroke-frame);
 }
 
 .search-history-header {
@@ -1050,13 +1030,13 @@ body {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px dashed #d4c5a0;
+  border-bottom: 1px var(--stroke-style-decor) var(--line-mid);
 }
 
 .search-history-container h4 {
   margin: 0;
-  color: #2d2d2d;
-  font-family: "Ma Shan Zheng", cursive;
+  color: var(--ink);
+  font-family: var(--ui-display);
   font-size: 15px;
   font-weight: normal;
 }
@@ -1072,18 +1052,18 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 2px solid #d4c5a0;
-  border-radius: 6px 10px 8px 12px;
-  font-family: "Ma Shan Zheng", cursive;
+  background: var(--surface);
+  border: var(--stroke-frame);
+  border-radius: var(--radius-control);
+  font-family: var(--ui-display);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .history-tag:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--surface-strong);
   transform: translateY(-2px) rotate(-0.5deg);
-  box-shadow: 2px 2px 0 #c4b5a0;
+  box-shadow: 2px 2px 0 var(--line-strong);
 }
 
 .history-content {
@@ -1094,21 +1074,21 @@ body {
 }
 
 .history-keyword {
-  color: #2d2d2d;
+  color: var(--ink);
   font-size: 14px;
 }
 
 .history-source {
-  background-color: #e8dcc4;
-  color: #666;
+  background-color: var(--control-fill);
+  color: var(--muted);
   padding: 1px 8px;
-  border-radius: 10px 4px 8px 6px;
+  border-radius: var(--radius-control);
   font-size: 11px;
-  border: 1px dashed #c4b5a0;
+  border: 1px var(--stroke-style-decor) var(--line-strong);
 }
 
 .delete-history-btn {
-  color: #e74c3c;
+  color: var(--accent);
   background-color: transparent;
   cursor: pointer;
   width: 22px;
@@ -1123,12 +1103,12 @@ body {
 }
 
 .delete-history-btn:hover {
-  background-color: #e74c3c;
-  color: white;
+  background-color: var(--accent);
+  color: var(--paper-bg);
   transform: scale(1.2) rotate(90deg);
 }
 
-/* ========== ?? ========== */
+/* ========== 分页 ========== */
 .pagination-container {
   display: flex;
   justify-content: center;
@@ -1140,37 +1120,37 @@ body {
 
 .pagination-btn {
   padding: 5px 12px;
-  font-family: "Ma Shan Zheng", cursive;
-  border: 2px solid #c4b5a0;
-  border-radius: 6px 10px 8px 12px;
-  background-color: rgba(255, 255, 255, 0.5);
+  font-family: var(--ui-display);
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--surface);
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 70px;
   font-size: 13px;
-  color: #4a4a4a;
+  color: var(--ink-soft);
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--surface-strong);
   transform: rotate(-1deg);
-  box-shadow: 2px 2px 0 #c4b5a0;
+  box-shadow: 2px 2px 0 var(--line-strong);
 }
 
 .pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .pagination-info {
-  font-family: "Ma Shan Zheng", cursive;
-  color: #888;
+  font-family: var(--ui-display);
+  color: var(--muted);
   white-space: nowrap;
   font-size: 13px;
 }
 
-/* ========== ??/??? ========== */
+/* ========== 加载 / 空状态 ========== */
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px dashed var(--border);
+  border: 3px var(--stroke-style-decor) var(--border);
   border-top-color: var(--accent-green);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -1193,7 +1173,7 @@ body {
 
 .empty-state p {
   margin: 8px 0;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 15px;
 }
 
@@ -1202,7 +1182,7 @@ body {
   color: var(--faint);
 }
 
-/* ???? */
+/* 热门标签 */
 .hot-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1214,30 +1194,30 @@ body {
 .hot-tag {
   display: inline-block;
   padding: 4px 12px;
-  border: 2px solid #c4b5a0;
-  border-radius: 8px 14px 6px 12px;
-  font-family: "Ma Shan Zheng", cursive;
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-card);
+  font-family: var(--ui-display);
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--surface);
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #666;
+  color: var(--muted);
 }
 
 .hot-tag:hover {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: #a09070;
-  color: #2d2d2d;
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+  color: var(--ink);
   transform: translateY(-2px) rotate(-1deg);
-  box-shadow: 2px 2px 0 #c4b5a0;
+  box-shadow: 2px 2px 0 var(--line-strong);
 }
 
-/* ========== ???? ========== */
+/* ========== 按钮 ========== */
 .btn-action {
   padding: 4px 10px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   border: var(--stroke-control);
-  border-radius: 6px 10px 8px 12px;
+  border-radius: var(--radius-control);
   background-color: var(--bg-panel);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1253,7 +1233,7 @@ body {
 
 .btn-action-primary {
   background-color: var(--accent-green);
-  color: white;
+  color: var(--paper-bg);
   border: var(--stroke-focus);
   border-color: var(--accent-green-strong);
 }
@@ -1269,7 +1249,7 @@ body {
   box-shadow: none;
 }
 
-/* ???? */
+/* 收藏按钮 */
 .btn-favorite {
   transition: all 0.15s ease;
   background: none;
@@ -1288,11 +1268,14 @@ body {
 }
 .btn-favorite.active { color: var(--accent); }
 
-/* ========== ???? ========== */
-/* ??????????? */
+/* 歌曲行内收藏按钮：与相邻操作按钮留出间距 */
+.btn-favorite.spaced { margin-right: 8px; }
+
+/* ========== 卡片容器 ========== */
+/* 手绘纸片卡片 */
 .sketch-card {
   border: var(--stroke-frame);
-  border-radius: 8px 14px 6px 12px;
+  border-radius: var(--radius-card);
   padding: 16px;
   position: relative;
   background: var(--bg-panel);
@@ -1321,7 +1304,7 @@ body {
   opacity: 0.25;
 }
 
-/* ========== ?? / ?? / Tab ========== */
+/* ========== 搜索 / 筛选 / Tab ========== */
 .search-box {
   position: relative;
   z-index: 2;
@@ -1338,9 +1321,9 @@ body {
 .filter-select,
 .sketch-select__trigger {
   padding: 8px 10px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   border: var(--stroke-control);
-  border-radius: 6px 10px 8px 12px;
+  border-radius: var(--radius-control);
   font-size: 14px;
   background: var(--bg-panel);
   color: var(--ink);
@@ -1451,9 +1434,9 @@ body {
   overflow-y: auto;
   padding: 6px;
   border: 2px solid color-mix(in srgb, var(--accent) 18%, var(--line-mid));
-  border-radius: 10px 14px 12px 16px;
+  border-radius: var(--radius-popover);
   background: color-mix(in srgb, var(--accent) 8%, var(--paper-bg));
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
   transform-origin: top center;
   -webkit-overflow-scrolling: touch;
 }
@@ -1477,7 +1460,7 @@ body {
   color: var(--ink-soft);
   padding: 9px 12px;
   text-align: left;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 14px;
   line-height: 1.35;
   cursor: pointer;
@@ -1578,14 +1561,14 @@ body {
   right: 0;
   background: color-mix(in srgb, var(--accent) 8%, var(--paper-bg));
   border: var(--stroke-frame);
-  border-radius: 10px 14px 12px 16px;
+  border-radius: var(--radius-popover);
   max-height: 280px;
   overflow-x: hidden;
   overflow-y: auto;
   margin-top: 0;
   padding: 6px;
   z-index: 1300;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
   pointer-events: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -1601,7 +1584,7 @@ body {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 13px;
   letter-spacing: 0.04em;
-  border-bottom: 1px dashed color-mix(in srgb, var(--accent) 12%, var(--line-soft));
+  border-bottom: 1px var(--stroke-style-decor) color-mix(in srgb, var(--accent) 12%, var(--line-soft));
   position: sticky;
   top: -6px;
   background: color-mix(in srgb, var(--accent) 8%, var(--paper-bg));
@@ -1724,14 +1707,14 @@ body {
   flex-shrink: 0;
   color: var(--faint);
   font-size: 12px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
 }
 
 .filter-empty,
 .search-error {
   padding: 12px 14px;
   border-radius: 8px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 14px;
 }
 
@@ -1743,7 +1726,7 @@ body {
 
 .search-error {
   margin-bottom: 12px;
-  border: 1px dashed color-mix(in srgb, var(--accent) 68%, var(--line-mid));
+  border: 1px var(--stroke-style-decor) color-mix(in srgb, var(--accent) 68%, var(--line-mid));
   background: var(--accent-soft);
   color: var(--accent);
 }
@@ -1760,7 +1743,7 @@ body {
   border-radius: 8px;
   padding: 6px 14px;
   cursor: pointer;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   color: var(--muted);
   font-size: 15px;
   transition: all 0.2s ease;
@@ -1793,7 +1776,7 @@ body {
 
 .section-title {
   margin: 0 0 10px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 18px;
   color: var(--ink);
 }
@@ -1803,7 +1786,7 @@ body {
 }
 
 .setting-lead {
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   color: var(--muted);
   margin-bottom: 15px;
   font-size: 17px;
@@ -1827,7 +1810,7 @@ body {
 }
 
 .about-brand {
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   color: var(--ink);
   font-size: 20px;
   margin-bottom: 8px;
@@ -1837,7 +1820,7 @@ body {
 }
 
 .about-desc {
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   color: var(--muted);
   font-size: 16px;
 }
@@ -1846,7 +1829,7 @@ body {
   text-align: center;
   padding: 60px 20px;
   color: var(--faint);
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   font-size: 18px;
   display: flex;
   flex-direction: column;
@@ -1856,10 +1839,10 @@ body {
 
 .load-more-btn {
   padding: 8px 20px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--ui-display);
   border: var(--stroke-control);
   background: var(--surface);
-  border-radius: 6px 10px 8px 12px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   color: var(--muted);
   font-size: 14px;
@@ -1879,7 +1862,7 @@ body {
   animation: modalIn 0.22s ease-out;
 }
 
-/* ========== Vue ?? ========== */
+/* ========== Vue 过渡 ========== */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
@@ -1890,7 +1873,7 @@ body {
 .animate-slide-up { animation: slideUp 0.4s ease-out; }
 .animate-slide-right { animation: slideRight 0.4s ease-out; }
 
-/* ========== ??? ========== */
+/* ========== 响应式 ========== */
 @media (max-width: 768px) {
   .top-nav {
     padding: 8px 10px;
@@ -1959,7 +1942,7 @@ body {
     min-width: 148px;
     padding: 8px;
     border-radius: 12px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+    box-shadow: 4px 4px 0 var(--shadow-ink);
   }
 
   .sketch-select__option {
@@ -2008,33 +1991,33 @@ body {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
     background: rgba(253, 246, 227, 0.97);
-    border-top: 2px dashed #c4b5a0;
-    border-bottom: 2px dashed #c4b5a0;
+    border-top: 2px var(--stroke-style-decor) var(--line-strong);
+    border-bottom: 2px var(--stroke-style-decor) var(--line-strong);
     flex-shrink: 0;
   }
 
   .mobile-tab-item {
     border: none;
     background: transparent;
-    color: #6f665a;
+    color: var(--muted);
     padding: 7px 4px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 3px;
-    font-family: "Ma Shan Zheng", cursive;
+    font-family: var(--ui-display);
     font-size: 11px;
     min-height: 52px;
     cursor: pointer;
   }
 
   .mobile-tab-item + .mobile-tab-item {
-    border-left: 1px dashed #d4c5a0;
+    border-left: 1px var(--stroke-style-decor) var(--line-mid);
   }
 
   .mobile-tab-item.active {
-    color: #e74c3c;
+    color: var(--accent);
     background: rgba(231, 76, 60, 0.08);
   }
 
@@ -2093,7 +2076,7 @@ body {
   }
 
   .bottom-controller {
-    /* ????????????? Home ? / ????? */
+    /* 移动端：底部播放器自适应高度，避开 Home 条 */
     height: auto;
     min-height: calc(82px + 24px + env(safe-area-inset-bottom, 0px));
     padding-top: 6px;
@@ -2276,7 +2259,7 @@ body {
   }
 }
 
-/* ========== ???????? / ?? / ?? / ?? / ?? ========== */
+/* ========== 自定义令牌：字体 / 圆角 / 描边 / 纹理 / 风格 ========== */
 :root {
   --ui-font: "KaiTi", "STKaiti", "Ma Shan Zheng", "Noto Serif SC", serif;
   --ui-display: "Ma Shan Zheng", cursive;
@@ -2286,21 +2269,20 @@ body {
   --ui-card-shadow: none;
 
   /*
-   * ????
-   * - ?????/????????????????????=?????=???
-   * - ???3px ????2px ??/???1px ?????
-   * - ???strong ???mid ???soft ???
+   * 描边体系
+   * - 结构线始终实线；装饰线跟随 data-ui-border（虚线/实线）
+   * - 粗=3px 主结构，中=2px 框体，细=1px 分割
+   * - 颜色由深到浅：strong → mid → soft
    */
   --stroke-style-chrome: solid;
   --stroke-style-state: solid;
   --stroke-style-decor: var(--ui-border-style);
 
-  --stroke-chrome: 1px var(--stroke-style-chrome) var(--line-strong);
   --stroke-frame: 2px var(--stroke-style-decor) var(--line-mid);
+  --stroke-frame-strong: 2px var(--stroke-style-decor) var(--line-strong);
   --stroke-soft: 1px var(--stroke-style-decor) var(--line-soft);
   --stroke-divider: 1px var(--stroke-style-decor) var(--line-soft);
   --stroke-control: 2px var(--stroke-style-decor) var(--border);
-  --stroke-control-strong: 2px var(--stroke-style-chrome) var(--border-strong);
   --stroke-focus: 2px var(--stroke-style-state) var(--accent);
   --stroke-rail: 3px var(--stroke-style-state) var(--accent);
   --stroke-rail-idle: 3px var(--stroke-style-state) transparent;
@@ -2349,6 +2331,9 @@ html[data-theme='cyberpunk'][data-ui-font='mono'] {
 html[data-ui-radius='sharp'] {
   --ui-radius: 6px;
   --ui-radius-sm: 4px;
+  --radius-card: 4px 7px 3px 6px;
+  --radius-control: 3px 6px 4px 7px;
+  --radius-popover: 5px 8px 6px 9px;
 }
 
 html[data-ui-radius='soft'] {
@@ -2359,6 +2344,9 @@ html[data-ui-radius='soft'] {
 html[data-ui-radius='round'] {
   --ui-radius: 18px;
   --ui-radius-sm: 14px;
+  --radius-card: 14px 20px 12px 18px;
+  --radius-control: 12px 16px 13px 18px;
+  --radius-popover: 16px 20px 18px 22px;
 }
 
 html[data-ui-border='dashed'] {
@@ -2372,7 +2360,7 @@ html[data-ui-border='solid'] {
 }
 
 html[data-ui-style='sketch'] {
-  --ui-card-shadow: none;
+  --ui-card-shadow: 3px 3px 0 var(--shadow-ink);
 }
 
 html[data-ui-style='fresh'] {
@@ -2390,14 +2378,14 @@ html[data-ui-style='minimal']:not([data-theme='matrix']):not([data-theme='cyberp
 
 html[data-ui-pattern='grid'] body {
   background-image:
-    linear-gradient(var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px),
-    linear-gradient(90deg, var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px);
+    linear-gradient(var(--paper-pattern) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-pattern) 1px, transparent 1px);
   background-size: 32px 32px;
   background-attachment: fixed;
 }
 
 html[data-ui-pattern='dots'] body {
-  background-image: radial-gradient(var(--paper-pattern, var(--paper-grid)) 0.9px, transparent 1.1px);
+  background-image: radial-gradient(var(--paper-pattern) 0.9px, transparent 1.1px);
   background-size: 18px 18px;
   background-attachment: fixed;
 }
@@ -2443,7 +2431,7 @@ html[data-ui-font] .source-item {
 
 html[data-ui-style] .sketch-card {
   border: var(--stroke-frame);
-  border-radius: var(--ui-radius);
+  border-radius: var(--radius-card);
   box-shadow: var(--ui-card-shadow);
 }
 
@@ -2528,7 +2516,7 @@ html[data-ui-style='minimal'] .playlist-item {
   border-bottom-width: 1px;
 }
 
-/* ========== ???????????? ========== */
+/* ========== 晚樱 / 蓝喵：整体覆写 ========== */
 html[data-theme='maruko'] body {
   font-family: var(--ui-font);
   background-color: var(--paper-bg);
@@ -2545,7 +2533,7 @@ html[data-theme='gadgetcat'][data-ui-pattern='dots'] body {
   background-image:
     radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--accent) 10%, transparent) 0 28px, transparent 29px),
     radial-gradient(circle at 86% 10%, color-mix(in srgb, white 28%, transparent) 0 34px, transparent 35px),
-    radial-gradient(var(--paper-pattern, var(--paper-grid)) 0.85px, transparent 1.05px);
+    radial-gradient(var(--paper-pattern) 0.85px, transparent 1.05px);
   background-size: auto, auto, 18px 18px;
   background-attachment: fixed;
 }
@@ -2561,7 +2549,7 @@ html[data-theme='gadgetcat'] .guide-card,
 html[data-theme='gadgetcat'] .modal-card {
   background: color-mix(in srgb, var(--surface-strong) 62%, transparent);
   border-color: var(--border);
-  box-shadow: 0 10px 26px rgba(70, 140, 180, 0.12);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
 }
 
 html[data-theme='gadgetcat'] .btn-action,
@@ -2572,7 +2560,7 @@ html[data-theme='gadgetcat'] .sketch-input,
 html[data-theme='gadgetcat'] .filter-select,
 html[data-theme='gadgetcat'] .search-source-select,
 html[data-theme='gadgetcat'] .sketch-select__trigger {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-strong);
   border-color: var(--border);
 }
 
@@ -2601,13 +2589,13 @@ html[data-theme='maruko'][data-ui-pattern='wash'] body {
 html[data-theme='maruko'] .top-nav,
 html[data-theme='maruko'] .bottom-controller {
   border: none;
-  border-bottom: 1px dashed color-mix(in srgb, var(--border) 45%, transparent);
+  border-bottom: 1px var(--stroke-style-decor) color-mix(in srgb, var(--border) 45%, transparent);
   background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
 }
 
 html[data-theme='maruko'] .bottom-controller {
   border-bottom: none;
-  border-top: 1px dashed color-mix(in srgb, var(--border) 45%, transparent);
+  border-top: 1px var(--stroke-style-decor) color-mix(in srgb, var(--border) 45%, transparent);
 }
 
 html[data-theme='maruko'] .top-nav .nav-left .logo {
@@ -2617,13 +2605,13 @@ html[data-theme='maruko'] .top-nav .nav-left .logo {
 }
 
 html[data-theme='maruko'] .top-nav .nav-left .logo .logo-mark {
-  color: var(--blush);
+  color: var(--accent);
 }
 
 html[data-theme='maruko'] .sketch-card {
   background: color-mix(in srgb, var(--surface-strong) 58%, transparent);
   border: var(--stroke-frame);
-  border-radius: 18px;
+  border-radius: var(--radius-card);
   box-shadow: 0 4px 12px rgba(255, 143, 168, 0.2);
 }
 
@@ -2639,99 +2627,99 @@ html[data-theme='maruko'] .sketch-card-ghost {
 html[data-theme='maruko'] .btn-action,
 html[data-theme='maruko'] .load-more-btn,
 html[data-theme='maruko'] .tile-btn {
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: #fff9e6;
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-control);
+  background: var(--paper-bg);
   color: var(--ink);
-  box-shadow: 0 2px 8px rgba(255, 183, 197, 0.25);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 html[data-theme='maruko'] .btn-action:hover,
 html[data-theme='maruko'] .load-more-btn:hover {
-  background: #ffe8ec;
+  background: var(--accent-soft);
   border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(255, 183, 197, 0.4);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
   transform: translateY(-2px);
 }
 
 html[data-theme='maruko'] .btn-action-primary {
   background: var(--accent);
-  border-color: #ff8fa3;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(255, 183, 197, 0.4);
+  border-color: var(--accent);
+  color: var(--paper-bg);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
 }
 
 html[data-theme='maruko'] .btn-action-primary:hover {
-  background: #ff8fa3;
-  border-color: var(--blush);
-  box-shadow: 0 6px 16px rgba(255, 183, 197, 0.5);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
 }
 
 html[data-theme='maruko'] .sketch-input,
 html[data-theme='maruko'] .filter-select,
 html[data-theme='maruko'] .search-source-select {
-  background: #fff9e6;
-  border: 2px solid var(--border);
-  border-radius: 12px;
+  background: var(--paper-bg);
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-control);
   color: var(--ink);
-  box-shadow: 0 2px 8px rgba(255, 224, 178, 0.2);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 html[data-theme='maruko'] .sketch-select__trigger {
-  background: #fff9e6;
-  border: 2px solid var(--border);
-  border-radius: 12px;
+  background: var(--paper-bg);
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-control);
   color: var(--ink);
-  box-shadow: 0 2px 8px rgba(255, 224, 178, 0.2);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
 }
 
 html[data-theme='maruko'] .sketch-input:focus,
 html[data-theme='maruko'] .filter-select:focus,
 html[data-theme='maruko'] .search-source-select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 197, 0.3);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 html[data-theme='maruko'] .sketch-select__menu {
-  background: #fff9e6;
-  border: 2px solid var(--border);
-  box-shadow: 0 12px 32px rgba(255, 183, 197, 0.35);
+  background: var(--paper-bg);
+  border: var(--stroke-frame-strong);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
 }
 
 html[data-theme='maruko'] .search-history-dropdown {
-  background: #fff9e6;
-  border: 2px solid var(--border);
-  box-shadow: 0 12px 32px rgba(255, 183, 197, 0.35);
+  background: var(--paper-bg);
+  border: var(--stroke-frame-strong);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
 }
 
 html[data-theme='maruko'] .search-history-item:hover {
-  background: rgba(255, 183, 197, 0.14);
+  background: var(--hover);
 }
 
 html[data-theme='maruko'] .nav-icon-btn {
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   color: var(--muted);
   transition: color 0.3s ease, background 0.3s ease, transform 0.3s ease;
 }
 
 html[data-theme='maruko'] .nav-icon-btn:hover {
-  color: var(--blush);
-  background: rgba(255, 183, 197, 0.14);
+  color: var(--accent);
+  background: var(--hover);
   transform: scale(1.06);
 }
 
 html[data-theme='maruko'] .nav-icon-btn.active {
-  color: var(--deep-pink);
-  background: rgba(255, 183, 197, 0.22);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 html[data-theme='maruko'] .recent-chip {
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  background: #fff9e6;
-  box-shadow: 0 2px 8px rgba(255, 224, 178, 0.25);
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-control);
+  background: var(--paper-bg);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
@@ -2742,64 +2730,64 @@ html[data-theme='maruko'] .recent-chip:hover {
 }
 
 html[data-theme='maruko'] .recent-chip.playing {
-  border-color: var(--blush);
-  background: #ffe8ec;
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 html[data-theme='maruko'] .playlist-item {
-  border-bottom: 1px solid var(--border-soft);
-  border-radius: 12px;
+  border-bottom: 1px var(--stroke-style-decor) var(--line-soft);
+  border-radius: var(--radius-control);
   margin: 2px 4px;
   transition: background 0.3s ease, transform 0.3s ease;
 }
 
 html[data-theme='maruko'] .playlist-item:hover {
-  background: rgba(255, 183, 197, 0.12);
+  background: var(--hover);
   border-left-color: var(--accent);
 }
 
 html[data-theme='maruko'] .playlist-item.playing {
-  background: rgba(255, 183, 197, 0.2);
-  border-left-color: var(--blush);
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
 }
 
 html[data-theme='maruko'] .library-nav-ink {
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #ffb7c5, #ff6b6b);
+  background: linear-gradient(90deg, var(--accent), var(--accent-green));
 }
 
 html[data-theme='maruko'] .progress-bar {
-  background: linear-gradient(90deg, #ffb7c5, #ff8fa3);
+  background: linear-gradient(90deg, var(--accent), var(--accent-green));
   border-radius: 999px;
 }
 
 html[data-theme='maruko'] .guide-card,
 html[data-theme='maruko'] .modal-card {
-  background: #fff9e6;
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  box-shadow: 0 12px 48px rgba(255, 183, 197, 0.45);
+  background: var(--paper-bg);
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-popover);
+  box-shadow: 4px 4px 0 var(--shadow-ink);
 }
 
 html[data-theme='maruko'] .source-item {
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: #fff9e6;
+  border: var(--stroke-frame-strong);
+  border-radius: var(--radius-control);
+  background: var(--paper-bg);
 }
 
 html[data-theme='maruko'] .source-toggle:checked {
   background: var(--accent);
-  border-color: #ff8fa3;
+  border-color: var(--accent);
 }
 
 html[data-theme='maruko'] .chip.active,
 html[data-theme='maruko'] .preset-card.active {
   border-color: var(--accent);
-  background: rgba(255, 183, 197, 0.18);
+  background: var(--accent-soft);
 }
 
-/* ========== ??????????????????????/??/??/??/???? ========== */
+/* ========== 矩阵主题：整体覆写与网格纹理 ========== */
 html[data-theme='matrix'] body {
   font-family: var(--ui-font);
   background-color: var(--paper-bg);
@@ -2863,7 +2851,7 @@ html[data-theme='matrix'] .top-nav .nav-left .logo .logo-mark {
 html[data-theme='matrix'] .sketch-card {
   background: color-mix(in srgb, var(--surface-strong) 65%, transparent);
   border: var(--stroke-frame);
-  border-radius: var(--ui-radius);
+  border-radius: var(--radius-card);
   box-shadow: var(--ui-card-shadow);
 }
 
@@ -3054,13 +3042,16 @@ html[data-theme='matrix'] ::selection {
   color: var(--paper-bg);
 }
 
-/* ???????????????????? 0????? soft/round */
+/* 矩阵 + 直角：强制 0 圆角 */
 html[data-theme='matrix'][data-ui-radius='sharp'] {
   --ui-radius: 0px;
   --ui-radius-sm: 0px;
+  --radius-card: 0;
+  --radius-control: 0;
+  --radius-popover: 0;
 }
 
-/* ========== ???? 2077???? HUD ========== */
+/* ========== 现场主题：2077 风格 HUD ========== */
 html[data-theme='cyberpunk'] body {
   font-family: var(--ui-font);
   background-color: #0a0a0a;
@@ -3071,7 +3062,7 @@ html[data-theme='cyberpunk'] body {
   color: #e0e0e0;
 }
 
-/* ?????????????????? */
+/* ========== 现场主题的扫描线装饰 ========== */
 html[data-theme='cyberpunk'] body::after {
   content: '';
   position: fixed;
@@ -3410,26 +3401,4 @@ html[data-theme='cyberpunk'] ::selection {
   html[data-theme='cyberpunk'] body::after {
     display: none;
   }
-}
-
-/* ================================================================
-   变量别名层 —— 兼容后续新增功能组件使用的语义化变量名
-   原始手绘体系使用 --ink / --muted 等，新组件使用 --text 系列
-   ================================================================ */
-:root {
-  --text: var(--ink);
-  --text-secondary: var(--ink-soft);
-  --text-muted: var(--muted);
-  --text-faint: var(--faint);
-
-  --bg: var(--paper-bg);
-  --surface-hover: var(--hover);
-  --accent-hover: var(--accent);
-
-  --shadow-sm: 2px 2px 0 var(--shadow-ink);
-  --shadow: 3px 3px 0 var(--shadow-ink);
-  --shadow-lg: 5px 5px 0 var(--shadow-ink);
-
-  --gradient-accent: linear-gradient(135deg, var(--accent), var(--accent-green));
-  --gradient-bg: none;
 }

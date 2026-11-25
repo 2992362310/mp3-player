@@ -106,7 +106,7 @@ function createAndAdd() {
   width: min(92vw, 420px);
   background: var(--paper-bg);
   border: 2px var(--stroke-style-decor) var(--border);
-  border-radius: 10px 15px 8px 13px;
+  border-radius: var(--radius-popover);
   padding: 16px;
   color: var(--ink);
   box-shadow: 4px 4px 0 var(--shadow-ink);
@@ -121,7 +121,7 @@ function createAndAdd() {
 
 .modal-header h3 {
   margin: 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 22px;
 }
 
@@ -130,19 +130,19 @@ function createAndAdd() {
   background: none;
   font-size: 22px;
   cursor: pointer;
-  color: var(--text-muted, #666);
+  color: var(--muted);
   line-height: 1;
 }
 
 .modal-song {
   margin: 0 0 12px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 15px;
-  color: var(--text-secondary, #444);
+  color: var(--ink-soft);
 }
 
 .modal-song span {
-  color: var(--text-muted, #888);
+  color: var(--muted);
   font-size: 13px;
 }
 
@@ -164,7 +164,7 @@ function createAndAdd() {
   border-radius: 8px;
   background: var(--surface);
   cursor: pointer;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   color: var(--ink);
   font-size: 16px;
 }
@@ -181,7 +181,7 @@ function createAndAdd() {
 .empty-hint {
   margin: 8px 0;
   color: var(--muted);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   text-align: center;
 }
 
@@ -197,14 +197,14 @@ function createAndAdd() {
   border: var(--stroke-focus);
   border-radius: 8px;
   background: transparent;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   color: var(--ink);
 }
 
 .toast {
   margin: 10px 0 0;
   color: var(--accent-green);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 14px;
   text-align: center;
 }

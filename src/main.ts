@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
+import { debug } from './utils/log';
 import './assets/styles/main.css';
 
 import { sourceManager } from './core/sources/SourceManager';
@@ -18,7 +19,7 @@ gdMusicSources.forEach((source) => sourceManager.register(source));
 sourceManager.register(new LocalSource());
 
 sourceManager.init().then(() => {
-  console.log('[Main] 音源管理器初始化完成');
+  debug('[Main] 音源管理器初始化完成');
 });
 
 const updateSW = registerSW({
@@ -27,7 +28,7 @@ const updateSW = registerSW({
     window.dispatchEvent(new Event('pwa-update-available'));
   },
   onRegistered() {
-    console.log('[PWA] Service worker registered');
+    debug('[PWA] Service worker registered');
   },
 });
 

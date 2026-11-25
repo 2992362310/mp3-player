@@ -294,7 +294,7 @@ function handleLineClick(time: number) {
   height: 100%;
   color: var(--muted);
   font-size: 14px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   flex: 1;
 }
 
@@ -322,14 +322,14 @@ function handleLineClick(time: number) {
 
 .lyrics-signature-title {
   display: block;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 15px;
   color: var(--ink);
 }
 
 .lyrics-signature-artist {
   display: block;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   color: var(--muted);
   margin-top: 2px;
@@ -344,14 +344,14 @@ function handleLineClick(time: number) {
 .lyrics-desktop-title {
   flex: 1;
   min-width: 0;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 16px;
   color: var(--ink-soft);
 }
 
 .lyrics-mobile-title {
   display: block;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 16px;
   color: var(--ink);
   overflow: hidden;
@@ -361,7 +361,7 @@ function handleLineClick(time: number) {
 
 .lyrics-mobile-artist {
   display: block;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
@@ -396,7 +396,7 @@ function handleLineClick(time: number) {
   border-bottom: var(--stroke-divider);
   background: var(--accent-soft);
   color: var(--ink-soft);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -407,7 +407,7 @@ function handleLineClick(time: number) {
   border-radius: 6px;
   background: var(--surface-strong);
   color: var(--ink);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 12px;
   padding: 4px 10px;
   cursor: pointer;
@@ -435,8 +435,8 @@ function handleLineClick(time: number) {
     /* 移动端必须遮住下方歌单，半透明会导致歌词与列表文字重叠 */
     background-color: var(--paper-bg);
     background-image:
-      linear-gradient(var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px),
-      linear-gradient(90deg, var(--paper-pattern, var(--paper-grid)) 1px, transparent 1px);
+      linear-gradient(var(--paper-pattern) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-pattern) 1px, transparent 1px);
     background-size: 28px 28px;
     box-shadow: inset 0 1px 0 var(--border-soft);
     z-index: 40;

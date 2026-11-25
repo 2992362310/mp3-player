@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: color-mix(in srgb, var(--paper-bg) 90%, transparent);
   color: var(--ink-soft);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   white-space: nowrap;
   pointer-events: auto;
@@ -165,11 +165,11 @@ onBeforeUnmount(() => {
 }
 
 .sticker-placing-cancel {
-  border: 1px var(--stroke-style-decor, dashed) var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-soft);
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 12px;
   padding: 2px 10px;
   cursor: pointer;
@@ -204,7 +204,7 @@ onBeforeUnmount(() => {
   right: -4px;
   width: 18px;
   height: 18px;
-  border: 1px var(--stroke-style-decor, dashed) var(--border);
+  border: 1px var(--stroke-style-decor) var(--border);
   border-radius: 50%;
   background: color-mix(in srgb, var(--paper-bg) 88%, transparent);
   color: var(--muted);

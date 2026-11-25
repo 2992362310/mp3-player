@@ -167,8 +167,11 @@ export function applyThemeToDocument(theme: AppTheme, customize: ThemeCustomize)
 
   if (customize.accent) {
     const accent = customize.accent;
+    const rgb = hexToRgb(accent);
     root.style.setProperty('--accent', accent);
-    root.style.setProperty('--accent-soft', `${accent}24`);
+    if (rgb) {
+      root.style.setProperty('--accent-soft', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.14)`);
+    }
     root.style.setProperty('--accent-green', mixHex(accent, 'white', 0.15));
     root.style.setProperty('--accent-green-strong', mixHex(accent, 'black', 0.12));
   } else {

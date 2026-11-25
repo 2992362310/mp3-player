@@ -221,7 +221,7 @@
             <div v-if="stats.topSongs.length > 0" class="stats-top">
               <p class="setting-lead spaced">最常听歌曲</p>
               <ol class="stats-list">
-                <li v-for="s in stats.topSongs.slice(0, 5)" :key="s.key">
+                <li v-for="s in stats.topSongs" :key="s.key">
                   <span class="stats-list-title">{{ s.title }}</span>
                   <span class="stats-list-count">{{ s.count }} 次</span>
                 </li>
@@ -231,7 +231,7 @@
             <div v-if="stats.topArtists.length > 0" class="stats-top">
               <p class="setting-lead spaced">最常听歌手</p>
               <ol class="stats-list">
-                <li v-for="a in stats.topArtists.slice(0, 5)" :key="a.name">
+                <li v-for="a in stats.topArtists" :key="a.name">
                   <span class="stats-list-title">{{ a.name }}</span>
                   <span class="stats-list-count">{{ a.count }} 次</span>
                 </li>
@@ -339,11 +339,11 @@ function resetPwaPrompt() {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  border: 1px dashed var(--border);
-  border-radius: var(--ui-radius-sm, 8px);
-  font-family: var(--ui-font, inherit);
-  color: var(--text-secondary, var(--ink-soft));
-  background: var(--surface, transparent);
+  border: 1px var(--stroke-style-decor) var(--border);
+  border-radius: var(--ui-radius-sm);
+  font-family: var(--ui-font);
+  color: var(--ink-soft);
+  background: var(--surface);
   transition: border-color 0.2s ease;
 }
 
@@ -356,9 +356,9 @@ function resetPwaPrompt() {
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border-strong, var(--border));
+  border: 2px var(--stroke-style-decor) var(--border-strong);
   border-radius: 6px;
-  background: var(--surface-strong, var(--bg, white));
+  background: var(--surface-strong);
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
@@ -402,11 +402,11 @@ function resetPwaPrompt() {
   align-items: center;
   gap: 4px;
   padding: 8px 6px;
-  border: 1px dashed var(--border);
-  border-radius: var(--ui-radius-sm, 8px);
-  background: var(--surface, transparent);
-  color: var(--text-secondary, var(--ink-soft));
-  font-family: var(--ui-font, inherit);
+  border: 1px var(--stroke-style-decor) var(--border);
+  border-radius: var(--ui-radius-sm);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-family: var(--ui-font);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -444,8 +444,8 @@ function resetPwaPrompt() {
   list-style: none;
   display: grid;
   gap: 8px;
-  font-family: var(--ui-font, inherit);
-  color: var(--text-secondary, var(--ink-soft));
+  font-family: var(--ui-font);
+  color: var(--ink-soft);
   font-size: 14px;
 }
 
@@ -454,10 +454,10 @@ function resetPwaPrompt() {
   min-width: 1.6em;
   padding: 2px 8px;
   margin-right: 2px;
-  border: 2px dashed var(--border-strong, var(--border));
+  border: 2px var(--stroke-style-decor) var(--border-strong);
   border-radius: 6px;
-  background: var(--surface-strong, var(--surface));
-  font-family: var(--ui-font, inherit);
+  background: var(--surface-strong);
+  font-family: var(--ui-font);
   font-size: 12px;
   font-weight: 600;
   text-align: center;
@@ -465,9 +465,9 @@ function resetPwaPrompt() {
 
 .setting-hint {
   margin-top: 10px;
-  color: var(--text-muted, var(--muted));
+  color: var(--muted);
   font-size: 13px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
 }
 
 /* ===== 听歌统计 ===== */
@@ -484,14 +484,14 @@ function resetPwaPrompt() {
   align-items: center;
   gap: 2px;
   padding: 12px 6px;
-  border: 1px dashed var(--border);
-  border-radius: 9px 13px 7px 11px;
-  background: var(--surface, transparent);
+  border: 1px var(--stroke-style-decor) var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
   box-shadow: 2px 2px 0 var(--shadow-ink);
 }
 
 .stat-value {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 22px;
   font-weight: 600;
   color: var(--accent);
@@ -505,7 +505,7 @@ function resetPwaPrompt() {
 }
 
 .stat-label {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 11px;
   color: var(--muted);
 }
@@ -538,7 +538,7 @@ function resetPwaPrompt() {
   display: flex;
   align-items: flex-end;
   border-radius: 4px 4px 0 0;
-  background: var(--bg-subtle, rgba(0, 0, 0, 0.04));
+  background: var(--bg-subtle);
   overflow: hidden;
 }
 
@@ -551,13 +551,13 @@ function resetPwaPrompt() {
 }
 
 .weekly-bar-label {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 11px;
   color: var(--muted);
 }
 
 .weekly-bar-value {
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 10px;
   color: var(--faint);
 }
@@ -580,13 +580,13 @@ function resetPwaPrompt() {
   align-items: center;
   padding: 5px 8px;
   border-radius: 6px;
-  font-family: var(--ui-font, inherit);
+  font-family: var(--ui-font);
   font-size: 13px;
   color: var(--ink-soft);
 }
 
 .stats-list li:nth-child(odd) {
-  background: var(--bg-subtle, rgba(0, 0, 0, 0.02));
+  background: var(--bg-subtle);
 }
 
 .stats-list-title {
@@ -612,16 +612,16 @@ function resetPwaPrompt() {
 
 .about-version {
   margin: 10px 0 0;
-  font-family: var(--ui-font, inherit);
-  color: var(--text-faint, var(--faint));
+  font-family: var(--ui-font);
+  color: var(--faint);
   font-size: 13px;
 }
 
 .update-notes {
   margin: 12px 0 0;
   padding-left: 18px;
-  color: var(--text-secondary, var(--ink-soft));
-  font-family: var(--ui-font, inherit);
+  color: var(--ink-soft);
+  font-family: var(--ui-font);
   font-size: 13px;
   line-height: 1.7;
 }
