@@ -249,7 +249,7 @@
               <SketchIcon name="music" :size="24" />
               <span>墨韵 MoYun</span>
             </div>
-            <p class="about-desc">现代风格的多音源在线音乐播放器</p>
+            <p class="about-desc">一个手绘风格的多音源在线音乐播放器</p>
             <p class="about-version">版本 {{ APP_VERSION }} · 构建 {{ APP_BUILD_TIME }}</p>
             <ul class="update-notes">
               <li v-for="note in UPDATE_NOTES" :key="note">{{ note }}</li>
@@ -339,7 +339,7 @@ function resetPwaPrompt() {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  border: 1px solid var(--border);
+  border: 1px dashed var(--border);
   border-radius: var(--ui-radius-sm, 8px);
   font-family: var(--ui-font, inherit);
   color: var(--text-secondary, var(--ink-soft));
@@ -402,7 +402,7 @@ function resetPwaPrompt() {
   align-items: center;
   gap: 4px;
   padding: 8px 6px;
-  border: 1px solid var(--border);
+  border: 1px dashed var(--border);
   border-radius: var(--ui-radius-sm, 8px);
   background: var(--surface, transparent);
   color: var(--text-secondary, var(--ink-soft));
@@ -454,7 +454,7 @@ function resetPwaPrompt() {
   min-width: 1.6em;
   padding: 2px 8px;
   margin-right: 2px;
-  border: 1px solid var(--border-strong, var(--border));
+  border: 2px dashed var(--border-strong, var(--border));
   border-radius: 6px;
   background: var(--surface-strong, var(--surface));
   font-family: var(--ui-font, inherit);
@@ -484,9 +484,10 @@ function resetPwaPrompt() {
   align-items: center;
   gap: 2px;
   padding: 12px 6px;
-  border: 1px solid var(--border);
-  border-radius: var(--ui-radius-sm, 8px);
+  border: 1px dashed var(--border);
+  border-radius: 9px 13px 7px 11px;
   background: var(--surface, transparent);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
 }
 
 .stat-value {

@@ -1,4 +1,4 @@
-/** 主题预设与自定义配置 — Aurora 设计体系 */
+/** 主题预设与自定义配置 */
 
 export type AppTheme =
   | 'paper'
@@ -48,19 +48,18 @@ export const THEME_PRESETS: Array<{
   label: string;
   swatch: string;
   accent: string;
-  dark?: boolean;
 }> = [
-  { id: 'paper', label: '云白', swatch: '#f1f5f9', accent: '#6366f1' },
-  { id: 'breeze', label: '晴空', swatch: '#eff6ff', accent: '#3b82f6', dark: false },
-  { id: 'ink', label: '夜幕', swatch: '#0f172a', accent: '#818cf8', dark: true },
-  { id: 'sand', label: '暖阳', swatch: '#fffbeb', accent: '#f59e0b' },
-  { id: 'mint', label: '薄荷', swatch: '#f0fdf4', accent: '#10b981' },
-  { id: 'maruko', label: '晚樱', swatch: '#fdf2f8', accent: '#ec4899' },
-  { id: 'matrix', label: '深空', swatch: '#030712', accent: '#22c55e', dark: true },
-  { id: 'cyberpunk', label: '赛博', swatch: '#0a0a0f', accent: '#eab308', dark: true },
-  { id: 'celadon', label: '青瓷', swatch: '#f0fdfa', accent: '#14b8a6' },
-  { id: 'gadgetcat', label: '冰晶', swatch: '#f0f9ff', accent: '#6366f1' },
-  { id: 'cinnabar', label: '丹霞', swatch: '#fef2f2', accent: '#ef4444' },
+  { id: 'paper', label: '素纸', swatch: '#faf7f0', accent: '#5b57d1' },
+  { id: 'breeze', label: '晴空', swatch: '#f1f7fb', accent: '#2f7cc4' },
+  { id: 'gadgetcat', label: '蓝喵', swatch: '#eef4f9', accent: '#1f7fb8' },
+  { id: 'matrix', label: '矩阵', swatch: '#0a0f0c', accent: '#3fd070' },
+  { id: 'maruko', label: '晚樱', swatch: '#fdf2f7', accent: '#d15e88' },
+  { id: 'ink', label: '夜幕', swatch: '#1a1d22', accent: '#8e93e8' },
+  { id: 'cyberpunk', label: '现场', swatch: '#0f1014', accent: '#f2d21a' },
+  { id: 'celadon', label: '青瓷', swatch: '#e8f1ef', accent: '#2f7a6b' },
+  { id: 'sand', label: '暖阳', swatch: '#faf3e3', accent: '#c0741c' },
+  { id: 'mint', label: '薄荷', swatch: '#eef6ee', accent: '#1f8a5c' },
+  { id: 'cinnabar', label: '丹霞', swatch: '#fbefeb', accent: '#bf4530' },
 ];
 
 export const LISTENING_MOODS: Array<{
@@ -77,12 +76,12 @@ export const LISTENING_MOODS: Array<{
 ];
 
 export const ACCENT_PRESETS = [
-  '#6366f1',
-  '#3b82f6',
-  '#10b981',
-  '#ec4899',
-  '#f59e0b',
-  '#ef4444',
+  '#5b57d1',
+  '#2f7cc4',
+  '#1f8a5c',
+  '#bf4530',
+  '#c0741c',
+  '#d15e88',
 ] as const;
 
 export const DEFAULT_CUSTOMIZE: ThemeCustomize = {
@@ -95,17 +94,17 @@ export const DEFAULT_CUSTOMIZE: ThemeCustomize = {
 };
 
 const STYLE_DEFAULTS: Record<AppTheme, Partial<ThemeCustomize>> = {
-  paper:     { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  sand:      { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  mint:      { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  ink:       { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  celadon:   { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  cinnabar:  { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  breeze:    { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
-  gadgetcat: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
-  maruko:    { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'round' },
-  matrix:    { style: 'minimal', border: 'solid', pattern: 'grid', font: 'mono', radius: 'sharp' },
-  cyberpunk: { style: 'minimal', border: 'solid', pattern: 'grid', font: 'mono', radius: 'sharp' },
+  paper: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  sand: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  mint: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  ink: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  celadon: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'kai', radius: 'soft' },
+  cinnabar: { style: 'sketch', border: 'dashed', pattern: 'grid', font: 'hand', radius: 'soft' },
+  breeze: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
+  gadgetcat: { style: 'fresh', border: 'solid', pattern: 'dots', font: 'sans', radius: 'round' },
+  maruko: { style: 'fresh', border: 'solid', pattern: 'wash', font: 'sans', radius: 'round' },
+  matrix: { style: 'minimal', border: 'solid', pattern: 'none', font: 'mono', radius: 'sharp' },
+  cyberpunk: { style: 'minimal', border: 'solid', pattern: 'none', font: 'sans', radius: 'sharp' },
 };
 
 export function normalizeTheme(value: string | null | undefined): AppTheme {
@@ -120,22 +119,11 @@ export function normalizeCustomize(raw: Partial<ThemeCustomize> | null | undefin
   const fonts: UiFont[] = ['hand', 'kai', 'sans', 'mono'];
   const radii: UiRadius[] = ['sharp', 'soft', 'round'];
 
-  // 兼容上一轮 Aurora 风格值
-  const legacyStyle: Record<string, UiStyle> = { glass: 'sketch', solid: 'fresh' };
-  const legacyBorder: Record<string, UiBorder> = { subtle: 'dashed', visible: 'solid' };
-  const legacyPattern: Record<string, UiPattern> = { gradient: 'wash' };
-  const legacyFont: Record<string, UiFont> = { serif: 'kai' };
-
-  const rawStyle = legacyStyle[base.style] || base.style;
-  const rawBorder = legacyBorder[base.border] || base.border;
-  const rawPattern = legacyPattern[base.pattern] || base.pattern;
-  const rawFont = legacyFont[base.font] || base.font;
-
   return {
-    style: styles.includes(rawStyle) ? rawStyle : DEFAULT_CUSTOMIZE.style,
-    border: borders.includes(rawBorder) ? rawBorder : DEFAULT_CUSTOMIZE.border,
-    pattern: patterns.includes(rawPattern) ? rawPattern : DEFAULT_CUSTOMIZE.pattern,
-    font: fonts.includes(rawFont) ? rawFont : DEFAULT_CUSTOMIZE.font,
+    style: styles.includes(base.style) ? base.style : DEFAULT_CUSTOMIZE.style,
+    border: borders.includes(base.border) ? base.border : DEFAULT_CUSTOMIZE.border,
+    pattern: patterns.includes(base.pattern) ? base.pattern : DEFAULT_CUSTOMIZE.pattern,
+    font: fonts.includes(base.font) ? base.font : DEFAULT_CUSTOMIZE.font,
     radius: radii.includes(base.radius) ? base.radius : DEFAULT_CUSTOMIZE.radius,
     accent: typeof base.accent === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(base.accent)
       ? base.accent
@@ -180,13 +168,13 @@ export function applyThemeToDocument(theme: AppTheme, customize: ThemeCustomize)
   if (customize.accent) {
     const accent = customize.accent;
     root.style.setProperty('--accent', accent);
-    root.style.setProperty('--accent-soft', `${accent}20`);
-    root.style.setProperty('--accent-hover', mixHex(accent, 'black', 0.12));
-    root.style.setProperty('--accent-glow', `${accent}40`);
+    root.style.setProperty('--accent-soft', `${accent}24`);
+    root.style.setProperty('--accent-green', mixHex(accent, 'white', 0.15));
+    root.style.setProperty('--accent-green-strong', mixHex(accent, 'black', 0.12));
   } else {
     root.style.removeProperty('--accent');
     root.style.removeProperty('--accent-soft');
-    root.style.removeProperty('--accent-hover');
-    root.style.removeProperty('--accent-glow');
+    root.style.removeProperty('--accent-green');
+    root.style.removeProperty('--accent-green-strong');
   }
 }

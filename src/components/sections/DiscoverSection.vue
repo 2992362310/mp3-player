@@ -502,7 +502,7 @@ async function searchHot(kw: string) {
   gap: 20px;
   width: min(820px, 100%);
   padding: 18px 20px;
-  border: 1px solid var(--border-soft);
+  border: 1px dashed var(--border-soft);
   border-left: 3px solid var(--accent);
   border-radius: 8px;
   background: linear-gradient(115deg, var(--surface-strong), var(--surface));
@@ -539,7 +539,7 @@ async function searchHot(kw: string) {
   justify-content: space-between;
   gap: 4px;
   padding: 7px 8px;
-  border: 1px solid var(--border-soft);
+  border: 1px dashed var(--border-soft);
   border-radius: 6px;
   background: color-mix(in srgb, var(--paper-bg) 62%, transparent);
   color: var(--ink-soft);

@@ -135,12 +135,10 @@ const isDarkTheme = computed(() => DARK_THEMES.includes(ui.theme));
 function toggleDarkMode() {
   const presets = THEME_PRESETS;
   if (isDarkTheme.value) {
-    // 切到亮色：找第一个非暗色主题
-    const light = presets.find((p) => !p.dark);
+    const light = presets.find((p) => !DARK_THEMES.includes(p.id));
     if (light) ui.setTheme(light.id);
   } else {
-    // 切到暗色：找第一个暗色主题
-    const dark = presets.find((p) => p.dark);
+    const dark = presets.find((p) => DARK_THEMES.includes(p.id));
     if (dark) ui.setTheme(dark.id);
   }
 }
@@ -176,11 +174,11 @@ onMounted(async () => {
 .guide-card {
   width: min(92vw, 520px);
   background: var(--surface-strong, var(--paper-bg));
-  border: 1px solid var(--border);
-  border-radius: var(--ui-radius, 16px);
+  border: 2px dashed var(--border);
+  border-radius: 10px 16px 8px 14px;
   padding: 20px 20px 16px;
   color: var(--text, var(--ink));
-  box-shadow: var(--shadow-lg, 0 8px 30px rgba(0, 0, 0, 0.2));
+  box-shadow: 4px 4px 0 var(--shadow-ink);
   animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

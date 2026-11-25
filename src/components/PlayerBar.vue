@@ -331,10 +331,10 @@ onBeforeUnmount(() => {
   max-width: min(92vw, 420px);
   padding: 10px 12px 10px 14px;
   border: var(--stroke-focus);
-  border-radius: 10px;
+  border-radius: 8px 12px 6px 10px;
   background: color-mix(in srgb, var(--paper-bg) 92%, var(--accent-soft));
   color: var(--accent);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
   font-family: var(--ui-font, inherit);
   font-size: 14px;
   line-height: 1.35;
@@ -417,11 +417,11 @@ onBeforeUnmount(() => {
   bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   right: 16px;
   z-index: 1510;
-  width: 220px;
-  border: var(--stroke-control, 1px solid var(--border, #ddd));
-  border-radius: 12px;
-  background: var(--surface, #fff);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  width: 232px;
+  border: var(--stroke-control, 2px dashed var(--border, #ddd));
+  border-radius: 10px 14px 8px 12px;
+  background: var(--surface-strong, #fff);
+  box-shadow: 3px 3px 0 var(--shadow-ink);
   padding: 12px;
   animation: sleepPopIn 0.18s ease-out;
 }
@@ -459,9 +459,9 @@ onBeforeUnmount(() => {
 
 .sleep-preset-btn {
   padding: 8px 6px;
-  border: var(--stroke-control, 1px solid var(--border, #ddd));
-  border-radius: 8px;
-  background: var(--surface, #fff);
+  border: 1px dashed var(--border, #ddd);
+  border-radius: 7px 10px 6px 9px;
+  background: var(--paper-bg, #fff);
   color: var(--ink-soft, #444);
   font-family: var(--ui-font, inherit);
   font-size: 13px;
@@ -496,7 +496,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid var(--border-soft, #eee);
+  border-top: 1px dashed var(--border-soft, #eee);
   font-family: var(--ui-font, inherit);
   font-size: 12px;
   color: var(--muted, #888);
@@ -516,8 +516,9 @@ onBeforeUnmount(() => {
 .queue-panel {
   width: min(360px, 88vw);
   height: 100%;
-  background: var(--surface, #fff);
-  border-left: var(--stroke-control, 1px solid var(--border, #ddd));
+  background: var(--paper-bg, #fff);
+  border-left: 2px dashed var(--border, #ddd);
+  box-shadow: -3px 0 0 var(--shadow-ink);
   display: flex;
   flex-direction: column;
   animation: queueSlideIn 0.22s ease-out;
@@ -533,7 +534,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid var(--border-soft, #eee);
+  border-bottom: 2px dashed var(--border-soft, #eee);
   flex-shrink: 0;
 }
 
@@ -592,6 +593,8 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 9px 16px;
+  border-left: 3px solid transparent;
+  border-bottom: 1px dashed var(--border-soft, #eee);
   cursor: pointer;
   transition: background 0.12s;
 }
@@ -602,6 +605,7 @@ onBeforeUnmount(() => {
 
 .queue-item.current {
   background: var(--accent-soft, rgba(99, 102, 241, 0.08));
+  border-left-color: var(--accent);
 }
 
 .queue-item-index {

@@ -106,10 +106,10 @@ function createAndAdd() {
   width: min(92vw, 420px);
   background: var(--paper-bg);
   border: 2px var(--stroke-style-decor) var(--border);
-  border-radius: 12px;
+  border-radius: 10px 15px 8px 13px;
   padding: 16px;
   color: var(--ink);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 4px 4px 0 var(--shadow-ink);
 }
 
 .modal-header {

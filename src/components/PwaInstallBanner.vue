@@ -170,19 +170,17 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px dashed var(--border);
   background: var(--surface-strong);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .pwa-update-banner {
-  border-bottom: 1px solid var(--accent-soft);
-  background: var(--accent-soft);
+  border-bottom: 2px dashed var(--accent);
+  background: color-mix(in srgb, var(--paper-bg) 80%, var(--accent-soft));
 }
 
 .pwa-update-banner .pwa-banner-content strong { color: var(--accent); }
-.pwa-update-banner .pwa-banner-content p { color: var(--text-secondary); }
+.pwa-update-banner .pwa-banner-content p { color: var(--ink-soft); }
 
 .pwa-banner-content {
   min-width: 0;
@@ -190,15 +188,15 @@ onBeforeUnmount(() => {
 
 .pwa-banner-content strong {
   display: block;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--ui-display, inherit);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .pwa-banner-content p {
   margin: 2px 0 0;
-  color: var(--text-muted);
+  color: var(--muted);
   font-size: 13px;
   font-family: var(--ui-font, inherit);
 }
